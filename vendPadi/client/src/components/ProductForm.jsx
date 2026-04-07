@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { productAPI } from '../api/axiosInstance';
 import toast from 'react-hot-toast';
-import { FiImage, FiX } from 'react-icons/fi';
+import { FiImage, FiX, FiUpload, FiCheck } from 'react-icons/fi';
 
 const ProductForm = ({ product, onSuccess, onCancel }) => {
+  const isEditing = Boolean(product?._id);
+  
   const [formData, setFormData] = useState({
     name: product?.name || '',
     description: product?.description || '',
@@ -12,7 +14,15 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     inStock: product?.inStock !== false,
     images: product?.images || []
   });
+  const [localImages, setLocalImages] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (product?.images) {
+      setFormData(prev => ({ ...prev, images: product.images }));
+    }
+  }, [product]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -22,28 +32,57 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     }));
   };
 
-  const handleImageUpload = async (e) => {
+  const handleLocalImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    const remaining = 3 - formData.images.length;
+    const remaining = 3 - (formData.images.length + localImages.length);
     if (remaining <= 0) {
       toast.error('Maximum 3 images allowed');
       return;
     }
 
+    const filesToUpload = files.slice(0, remaining);
+
+    for (const file of filesToUpload) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setLocalImages(prev => [...prev, { url: e.target.result, file }]);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLocalImage = (index) => {
+    setLocalImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleImageUpload = async (productId) => {
+    const filesToUpload = localImages.filter(img => img.file);
+    
+    if (filesToUpload.length === 0) return;
+
     setUploading(true);
     try {
-      const uploadPromises = files.slice(0, remaining).map(async (file) => {
-        const formDataImg = new FormData();
-        formDataImg.append('images', file);
+      const newImages = [];
+
+      for (const img of filesToUpload) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('images', img.file);
         
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/products/${product?._id || 'temp'}/images`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/products/${productId}/images`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('vendpadi_token')}`
           },
-          body: formDataImg
+          body: uploadFormData
         });
         
         if (!res.ok) {
@@ -52,27 +91,19 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         }
         
         const data = await res.json();
-        return data.images[data.images.length - 1];
-      });
+        if (data.images && data.images.length > 0) {
+          const existingCount = formData.images.length + newImages.length;
+          newImages.push(data.images[existingCount] || data.images[data.images.length - 1]);
+        }
+      }
 
-      const newImages = await Promise.all(uploadPromises);
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...newImages].slice(0, 3)
-      }));
-      toast.success('Image(s) uploaded!');
+      toast.success('Images uploaded!');
+      setLocalImages([]);
     } catch (error) {
       toast.error(error.message || 'Failed to upload images');
     } finally {
       setUploading(false);
     }
-  };
-
-  const removeImage = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
   };
 
   const handleSubmit = async (e) => {
@@ -87,19 +118,34 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
       return;
     }
 
+    setSaving(true);
     try {
-      if (product?._id) {
+      if (isEditing) {
         await productAPI.update(product._id, formData);
+        
+        if (localImages.length > 0) {
+          await handleImageUpload(product._id);
+        }
+        
         toast.success('Product updated!');
       } else {
-        await productAPI.create(formData);
+        const created = await productAPI.create(formData);
+        
+        if (localImages.length > 0) {
+          await handleImageUpload(created.data._id);
+        }
+        
         toast.success('Product created!');
       }
       onSuccess();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to save product');
+    } finally {
+      setSaving(false);
     }
   };
+
+  const allImages = [...formData.images];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -169,18 +215,33 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         </label>
         <div className="flex flex-wrap gap-2">
           {formData.images.map((img, index) => (
-            <div key={index} className="relative w-20 h-20 rounded-lg overflow-hidden">
+            <div key={`existing-${index}`} className="relative w-20 h-20 rounded-lg overflow-hidden">
               <img src={img} alt="" className="w-full h-full object-cover" />
               <button
                 type="button"
-                onClick={() => removeImage(index)}
+                onClick={() => removeExistingImage(index)}
                 className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-lg"
               >
                 <FiX size={12} />
               </button>
             </div>
           ))}
-          {formData.images.length < 3 && (
+          {localImages.map((img, index) => (
+            <div key={`local-${index}`} className="relative w-20 h-20 rounded-lg overflow-hidden">
+              <img src={img.url} alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <span className="text-white text-xs">New</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeLocalImage(index)}
+                className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-lg"
+              >
+                <FiX size={12} />
+              </button>
+            </div>
+          ))}
+          {(formData.images.length + localImages.length) < 3 && (
             <label className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-padi-green transition-colors">
               <FiImage className="text-gray-400" size={20} />
               <span className="text-xs text-gray-400 mt-1">Add</span>
@@ -188,14 +249,18 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
                 type="file"
                 accept="image/*"
                 multiple
-                onChange={handleImageUpload}
+                onChange={handleLocalImageUpload}
                 className="hidden"
-                disabled={uploading}
               />
             </label>
           )}
         </div>
-        {uploading && <p className="text-sm text-padi-green mt-1">Uploading...</p>}
+        {uploading && (
+          <div className="flex items-center gap-2 text-sm text-padi-green mt-2">
+            <div className="w-4 h-4 border-2 border-padi-green border-t-transparent rounded-full animate-spin"></div>
+            Uploading images...
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -215,15 +280,26 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
       <div className="flex gap-3 pt-4">
         <button
           type="submit"
-          className="btn-primary flex-1"
-          disabled={uploading}
+          className="btn-primary flex-1 flex items-center justify-center gap-2"
+          disabled={saving || uploading}
         >
-          {product?._id ? 'Update Product' : 'Add Product'}
+          {saving || uploading ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              {isEditing ? 'Updating...' : 'Creating...'}
+            </>
+          ) : (
+            <>
+              <FiCheck />
+              {isEditing ? 'Update Product' : 'Add Product'}
+            </>
+          )}
         </button>
         <button
           type="button"
           onClick={onCancel}
           className="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+          disabled={saving || uploading}
         >
           Cancel
         </button>

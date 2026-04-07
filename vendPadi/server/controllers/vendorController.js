@@ -1,65 +1,93 @@
 const Vendor = require('../models/Vendor');
 
-exports.getMe = async (req, res) => {
-  try {
-    const vendor = await Vendor.findById(req.vendor._id).select('-passwordHash');
-    res.json(vendor);
-  } catch (error) {
-    console.error('Get me error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
+const catchAsync = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-exports.updateMe = async (req, res) => {
-  try {
-    const { businessName, description, phone, category } = req.body;
-
-    const vendor = await Vendor.findById(req.vendor._id);
-    if (!vendor) {
-      return res.status(404).json({ message: 'Vendor not found' });
-    }
-
-    if (businessName) vendor.businessName = businessName;
-    if (description !== undefined) vendor.description = description;
-    if (phone) vendor.phone = phone;
-    if (category) vendor.category = category;
-
-    await vendor.save();
-
-    res.json({
-      _id: vendor._id,
-      businessName: vendor.businessName,
-      slug: vendor.slug,
-      email: vendor.email,
-      phone: vendor.phone,
-      category: vendor.category,
-      plan: vendor.plan,
-      logo: vendor.logo,
-      description: vendor.description
-    });
-  } catch (error) {
-    console.error('Update me error:', error);
-    res.status(500).json({ message: 'Server error' });
+exports.getMe = catchAsync(async (req, res) => {
+  const vendor = await Vendor.findById(req.vendor._id).select('-passwordHash');
+  
+  if (!vendor) {
+    return res.status(404).json({ message: 'Vendor not found' });
   }
-};
 
-exports.updateLogo = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No image uploaded' });
-    }
+  res.json(vendor);
+});
 
-    const vendor = await Vendor.findById(req.vendor._id);
-    if (!vendor) {
-      return res.status(404).json({ message: 'Vendor not found' });
-    }
+exports.updateMe = catchAsync(async (req, res) => {
+  const { businessName, description, phone, category } = req.body;
 
-    vendor.logo = req.file.path;
-    await vendor.save();
-
-    res.json({ logo: vendor.logo });
-  } catch (error) {
-    console.error('Update logo error:', error);
-    res.status(500).json({ message: 'Server error' });
+  const vendor = await Vendor.findById(req.vendor._id);
+  if (!vendor) {
+    return res.status(404).json({ message: 'Vendor not found' });
   }
-};
+
+  if (businessName !== undefined) {
+    if (!businessName.trim()) {
+      return res.status(400).json({ message: 'Business name cannot be empty' });
+    }
+    vendor.businessName = businessName.trim();
+  }
+
+  if (description !== undefined) {
+    vendor.description = description.trim();
+  }
+
+  if (phone !== undefined) {
+    if (!phone.trim()) {
+      return res.status(400).json({ message: 'Phone number cannot be empty' });
+    }
+    vendor.phone = phone.trim();
+  }
+
+  if (category !== undefined) {
+    const validCategories = ['food', 'fashion', 'phones', 'cakes', 'other'];
+    if (!validCategories.includes(category)) {
+      return res.status(400).json({ message: 'Invalid category' });
+    }
+    vendor.category = category;
+  }
+
+  await vendor.save();
+
+  res.json({
+    _id: vendor._id,
+    businessName: vendor.businessName,
+    slug: vendor.slug,
+    email: vendor.email,
+    phone: vendor.phone,
+    category: vendor.category,
+    plan: vendor.plan,
+    logo: vendor.logo,
+    description: vendor.description
+  });
+});
+
+exports.updateLogo = catchAsync(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image file uploaded' });
+  }
+
+  const vendor = await Vendor.findById(req.vendor._id);
+  if (!vendor) {
+    return res.status(404).json({ message: 'Vendor not found' });
+  }
+
+  const allowedFormats = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!allowedFormats.includes(req.file.mimetype)) {
+    return res.status(400).json({ message: 'Only JPG, PNG, and WebP images are allowed' });
+  }
+
+  const maxSize = 2 * 1024 * 1024;
+  if (req.file.size > maxSize) {
+    return res.status(400).json({ message: 'Image size must be less than 2MB' });
+  }
+
+  vendor.logo = req.file.path;
+  await vendor.save();
+
+  res.json({ 
+    logo: vendor.logo,
+    message: 'Logo updated successfully'
+  });
+});
