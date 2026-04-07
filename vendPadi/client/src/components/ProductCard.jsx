@@ -1,49 +1,89 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { addItem } from "../store/cartSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addItem, incrementQty, decrementQty } from "../store/cartSlice";
 import {
   FiShoppingCart,
   FiChevronLeft,
   FiChevronRight,
   FiCheck,
+  FiPlus,
+  FiMinus,
+  FiEye,
+  FiZap,
 } from "react-icons/fi";
 
-const CategoryIcon = ({ category }) => {
-  const icons = {
-    food: "🍔",
-    fashion: "👗",
-    phones: "📱",
-    cakes: "🎂",
-    other: "📦",
-  };
-  return <span className="text-4xl">{icons[category] || icons.other}</span>;
+const CATEGORY_META = {
+  food: {
+    icon: "🍔",
+    label: "Food",
+    bg: "bg-orange-50",
+    text: "text-orange-600",
+    border: "border-orange-200",
+  },
+  fashion: {
+    icon: "👗",
+    label: "Fashion",
+    bg: "bg-pink-50",
+    text: "text-pink-600",
+    border: "border-pink-200",
+  },
+  phones: {
+    icon: "📱",
+    label: "Phones",
+    bg: "bg-blue-50",
+    text: "text-blue-600",
+    border: "border-blue-200",
+  },
+  cakes: {
+    icon: "🎂",
+    label: "Cakes",
+    bg: "bg-purple-50",
+    text: "text-purple-600",
+    border: "border-purple-200",
+  },
+  other: {
+    icon: "📦",
+    label: "Other",
+    bg: "bg-gray-50",
+    text: "text-gray-600",
+    border: "border-gray-200",
+  },
 };
 
-const ProductCard = ({ product, onOpenDetail }) => {
-  const dispatch = useDispatch();
-  const [currentImage, setCurrentImage] = useState(0);
-  const [added, setAdded] = useState(false);
+const CategoryBadge = ({ category, size = "sm" }) => {
+  const meta = CATEGORY_META[category] || CATEGORY_META.other;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium ${meta.bg} ${meta.text} ${meta.border}`}>
+      <span>{meta.icon}</span>
+      <span className="capitalize">{meta.label}</span>
+    </span>
+  );
+};
 
-  const handleAddToCart = (e) => {
+// ─── IMAGE CAROUSEL ────────────────────────────────────────────────
+const ImageCarousel = ({ images, name, category, compact = false }) => {
+  const [current, setCurrent] = useState(0);
+  const hasMany = images && images.length > 1;
+
+  const prev = (e) => {
     e.stopPropagation();
-    dispatch(addItem(product));
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1200);
+    setCurrent((i) => (i - 1 + images.length) % images.length);
+  };
+  const next = (e) => {
+    e.stopPropagation();
+    setCurrent((i) => (i + 1) % images.length);
   };
 
-  const hasMultipleImages = product.images && product.images.length > 1;
-
-  const nextImage = (e) => {
-    e.stopPropagation();
-    setCurrentImage((prev) => (prev + 1) % product.images.length);
-  };
-
-  const prevImage = (e) => {
-    e.stopPropagation();
-    setCurrentImage(
-      (prev) => (prev - 1 + product.images.length) % product.images.length,
+  if (!images || images.length === 0) {
+    const meta = CATEGORY_META[category] || CATEGORY_META.other;
+    return (
+      <div
+        className={`w-full h-full flex items-center justify-center ${meta.bg}`}>
+        <span className={compact ? "text-4xl" : "text-6xl"}>{meta.icon}</span>
+      </div>
     );
-  };
+  }
 
   return (
     <div className="relative w-full h-full group/img">
@@ -145,37 +185,40 @@ const GridCard = ({ product, onOpenDetail, cartItem }) => {
         </div>
 
         {!product.inStock && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="bg-red-500 text-white px-4 py-1.5 rounded-full text-xs font-semibold">
+          <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center z-10">
+            <span className="bg-white text-gray-700 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide">
               Out of Stock
             </span>
           </div>
         )}
       </div>
 
-      <div className="p-3.5">
-        <h3 className="font-sora font-semibold text-navy text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+      {/* Body */}
+      <div className="p-3.5 flex flex-col flex-1">
+        <CategoryBadge category={product.category} />
+        <h3 className="font-sora font-semibold text-navy text-sm leading-snug mt-2 line-clamp-2 flex-1">
           {product.name}
         </h3>
-        <div className="mt-2.5 flex items-center justify-between gap-2">
-          <span className="font-bold text-padi-green text-base whitespace-nowrap">
+
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span className="font-bold text-padi-green text-base">
             ₦{product.price.toLocaleString()}
           </span>
-          {product.inStock && (
-            <button
-              onClick={handleAddToCart}
-              className={`p-2 rounded-xl transition-all ${
-                added
-                  ? "bg-green-500 text-white"
-                  : "bg-padi-green hover:bg-padi-green-dark text-white shadow-md hover:shadow-lg"
-              }`}>
-              {added ? (
-                <FiCheck className="text-sm" />
-              ) : (
-                <FiShoppingCart className="text-sm" />
-              )}
-            </button>
-          )}
+
+          {product.inStock &&
+            (cartItem ? (
+              <QtyControl qty={cartItem.qty} productId={product._id} compact />
+            ) : (
+              <button
+                onClick={handleAdd}
+                className={`p-2 rounded-xl transition-all duration-300 shadow-sm ${
+                  justAdded
+                    ? "bg-emerald-500 text-white scale-90"
+                    : "bg-navy text-white hover:bg-padi-green hover:shadow-md hover:shadow-padi-green/30 hover:scale-105"
+                }`}>
+                {justAdded ? <FiCheck size={14} /> : <FiPlus size={14} />}
+              </button>
+            ))}
         </div>
       </div>
     </div>
