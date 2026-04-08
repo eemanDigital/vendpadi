@@ -1,9 +1,22 @@
-import { Link } from 'react-router-dom';
-import { FiTrendingUp, FiShare2, FiMessageCircle, FiCheck, FiStar, FiMenu, FiX } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiTrendingUp, FiShare2, FiMessageCircle, FiCheck, FiStar, FiMenu, FiX, FiLogOut, FiLayout } from 'react-icons/fi';
 import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../store/authSlice';
+import { clearCart } from '../store/cartSlice';
 
 const Landing = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isAuthenticated, vendor } = useSelector((state) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    dispatch(clearCart());
+    navigate('/');
+    setMobileMenuOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -20,8 +33,24 @@ const Landing = () => {
             
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-6">
-              <Link to="/login" className="hover:text-padi-green transition-colors font-medium">Login</Link>
-              <Link to="/register" className="btn-primary text-sm py-2.5 px-5">Get Started Free</Link>
+              {isAuthenticated ? (
+                <>
+                  <Link to="/dashboard" className="hover:text-padi-green transition-colors font-medium flex items-center gap-2">
+                    <FiLayout size={18} /> Dashboard
+                  </Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="hover:text-red-400 transition-colors font-medium flex items-center gap-2"
+                  >
+                    <FiLogOut size={18} /> Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="hover:text-padi-green transition-colors font-medium">Login</Link>
+                  <Link to="/register" className="btn-primary text-sm py-2.5 px-5">Get Started Free</Link>
+                </>
+              )}
             </div>
             
             {/* Mobile Menu Button */}
@@ -37,20 +66,40 @@ const Landing = () => {
           {mobileMenuOpen && (
             <div className="md:hidden py-4 border-t border-white/10">
               <div className="flex flex-col gap-3">
-                <Link 
-                  to="/login" 
-                  className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link 
-                  to="/register" 
-                  className="mx-4 btn-primary text-center py-2.5"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Get Started Free
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link 
+                      to="/dashboard" 
+                      className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <FiLayout size={18} /> Dashboard
+                    </Link>
+                    <button 
+                      onClick={handleLogout}
+                      className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-2 text-left text-red-400"
+                    >
+                      <FiLogOut size={18} /> Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      to="/login" 
+                      className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Login
+                    </Link>
+                    <Link 
+                      to="/register" 
+                      className="mx-4 btn-primary text-center py-2.5"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Get Started Free
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           )}

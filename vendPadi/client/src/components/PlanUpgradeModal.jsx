@@ -116,21 +116,26 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
       return;
     }
 
-    const pendingRequest = requests.find(r => r.requestedPlan === selectedPlan && r.status === 'pending');
-    if (!pendingRequest) {
-      toast.error('No pending request found');
-      return;
-    }
-
     setLoading(true);
     try {
+      let requestId;
+      
+      const existingRequest = requests.find(r => r.requestedPlan === selectedPlan && r.status === 'pending');
+      
+      if (!existingRequest) {
+        const { data } = await planAPI.requestUpgrade(selectedPlan);
+        requestId = data._id;
+      } else {
+        requestId = existingRequest._id;
+      }
+
       const formData = new FormData();
       if (proofFile) {
         formData.append('proof', proofFile);
       }
       formData.append('paymentReference', paymentRef);
 
-      await planAPI.uploadProof(pendingRequest._id, formData);
+      await planAPI.uploadProof(requestId, formData);
       toast.success('Payment proof submitted! We will verify and activate your plan shortly.');
       setProofFile(null);
       setProofPreview('');
@@ -330,24 +335,34 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Screenshot of Transfer Receipt</label>
-                    {proofPreview ? (
-                      <div className="relative inline-block">
-                        <img src={proofPreview} alt="Proof" className="w-40 h-40 object-cover rounded-xl" />
-                        <button
-                          onClick={() => { setProofFile(null); setProofPreview(''); }}
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
-                        >
-                          <FiX size={12} />
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-padi-green hover:bg-padi-green/5 transition-colors">
-                        <FiUpload className="text-gray-400 mb-2" size={24} />
-                        <span className="text-sm text-gray-500">Click to upload screenshot</span>
-                        <span className="text-xs text-gray-400 mt-1">JPG, PNG or WebP (Max 5MB)</span>
-                        <input type="file" accept="image/*" onChange={handleProofChange} className="hidden" />
-                      </label>
-                    )}
+                    <div className="relative">
+                      {proofPreview ? (
+                        <div className="relative inline-block">
+                          <img src={proofPreview} alt="Proof" className="w-48 h-48 object-cover rounded-xl border-2 border-padi-green" />
+                          <button
+                            type="button"
+                            onClick={() => { setProofFile(null); setProofPreview(''); }}
+                            className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                          >
+                            <FiX size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-padi-green hover:bg-padi-green/5 transition-colors bg-gray-50"
+                          onClick={() => document.getElementById('proof-input').click()}>
+                          <FiUpload className="text-gray-400 mb-2" size={32} />
+                          <span className="text-sm text-gray-500 font-medium">Click to upload screenshot</span>
+                          <span className="text-xs text-gray-400 mt-1">JPG, PNG or WebP (Max 5MB)</span>
+                        </div>
+                      )}
+                      <input 
+                        id="proof-input"
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleProofChange} 
+                        className="hidden" 
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
