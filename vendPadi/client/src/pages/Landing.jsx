@@ -22,16 +22,16 @@ const Landing = () => {
     <div className="min-h-screen bg-white">
       {/* Nav */}
       <nav className="bg-navy text-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             <Link to="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-padi-green rounded-lg flex items-center justify-center">
                 <span className="font-sora font-bold text-lg">V</span>
               </div>
-              <span className="font-sora font-bold text-xl">VendPadi</span>
+              <span className="font-sora font-bold text-lg sm:text-xl">VendPadi</span>
             </Link>
             
-            {/* Desktop Nav */}
+            {/* Desktop Nav - hidden on mobile */}
             <div className="hidden md:flex items-center gap-6">
               {isAuthenticated ? (
                 <>
@@ -48,61 +48,59 @@ const Landing = () => {
               ) : (
                 <>
                   <Link to="/login" className="hover:text-padi-green transition-colors font-medium">Login</Link>
-                  <Link to="/register" className="btn-primary text-sm py-2.5 px-5">Get Started Free</Link>
+                  <Link to="/register" className="btn-primary text-sm py-2 px-4">Get Started Free</Link>
                 </>
               )}
             </div>
             
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - visible on mobile */}
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="p-2 -mr-2 hover:bg-white/10 rounded-lg transition-colors md:hidden"
             >
-              {mobileMenuOpen ? <FiX /> : <FiMenu />}
+              {mobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
             </button>
           </div>
           
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-white/10">
-              <div className="flex flex-col gap-3">
-                {isAuthenticated ? (
-                  <>
-                    <Link 
-                      to="/dashboard" 
-                      className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-2"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <FiLayout size={18} /> Dashboard
-                    </Link>
-                    <button 
-                      onClick={handleLogout}
-                      className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-2 text-left text-red-400"
-                    >
-                      <FiLogOut size={18} /> Logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link 
-                      to="/login" 
-                      className="px-4 py-2 hover:bg-white/10 rounded-lg transition-colors font-medium"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Login
-                    </Link>
-                    <Link 
-                      to="/register" 
-                      className="mx-4 btn-primary text-center py-2.5"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Get Started Free
-                    </Link>
-                  </>
-                )}
-              </div>
+          {/* Mobile Menu Dropdown */}
+          <div className={`md:hidden overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'max-h-48 pb-4' : 'max-h-0'}`}>
+            <div className="flex flex-col gap-1 pt-2 border-t border-white/10">
+              {isAuthenticated ? (
+                <>
+                  <Link 
+                    to="/dashboard" 
+                    className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-3"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <FiLayout size={20} /> Dashboard
+                  </Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-3 text-left text-red-400"
+                  >
+                    <FiLogOut size={20} /> Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    to="/login" 
+                    className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link 
+                    to="/register" 
+                    className="mt-2 mx-1 btn-primary text-center py-3"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Get Started Free
+                  </Link>
+                </>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </nav>
 
