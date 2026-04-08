@@ -45,4 +45,11 @@ export const storeAPI = {
   createOrder: (slug, data) => api.post(`/store/${slug}/order`, data)
 };
 
+export const orderAPI = {
+  getAll: () => api.get('/orders'),
+  getStats: () => api.get('/orders/stats'),
+  getOne: (id) => api.get(`/orders/${id}`),
+  updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status })
+};
+
 export default api;

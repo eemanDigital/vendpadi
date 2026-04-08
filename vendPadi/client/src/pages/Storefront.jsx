@@ -24,8 +24,6 @@ import {
   FiMessageCircle,
   FiTrash2,
   FiX,
-  FiChevronLeft,
-  FiChevronRight,
   FiArrowLeft,
   FiPackage,
   FiGrid,
@@ -512,7 +510,7 @@ const Storefront = () => {
       <header className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-3">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate(-1)}
             className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0">
             <FiArrowLeft size={18} className="text-gray-600" />
           </button>

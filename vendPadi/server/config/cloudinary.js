@@ -13,7 +13,21 @@ const productStorage = new CloudinaryStorage({
   params: {
     folder: 'vendpadi/products',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [{ width: 800, height: 800, crop: 'limit', quality: 'auto' }]
+    transformation: [
+      { width: 200, height: 200, crop: 'fill', quality: 'auto', effect: 'format:webp' },
+      { overlay: 'original', width: 800, height: 800, crop: 'limit', quality: 'auto:eco' }
+    ]
+  }
+});
+
+const productThumbnailStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'vendpadi/products/thumbnails',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { width: 100, height: 100, crop: 'fill', quality: 60, format: 'webp' }
+    ]
   }
 });
 
@@ -22,11 +36,20 @@ const logoStorage = new CloudinaryStorage({
   params: {
     folder: 'vendpadi/logos',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [{ width: 400, height: 400, crop: 'fill', quality: 'auto' }]
+    transformation: [
+      { width: 200, height: 200, crop: 'fill', quality: 'auto', format: 'webp' }
+    ]
   }
 });
 
-const uploadProduct = multer({ storage: productStorage });
-const uploadLogo = multer({ storage: logoStorage });
+const uploadProduct = multer({ 
+  storage: productStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+const uploadLogo = multer({ 
+  storage: logoStorage,
+  limits: { fileSize: 2 * 1024 * 1024 }
+});
 
 module.exports = { cloudinary, uploadProduct, uploadLogo };

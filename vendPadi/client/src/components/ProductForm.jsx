@@ -71,7 +71,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
 
     setUploading(true);
     try {
-      const newImages = [];
+      const uploadedUrls = [];
 
       for (const img of filesToUpload) {
         const uploadFormData = new FormData();
@@ -92,13 +92,20 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         
         const data = await res.json();
         if (data.images && data.images.length > 0) {
-          const existingCount = formData.images.length + newImages.length;
-          newImages.push(data.images[existingCount] || data.images[data.images.length - 1]);
+          const newUrl = data.images[data.images.length - 1];
+          uploadedUrls.push(newUrl);
         }
       }
 
-      toast.success('Images uploaded!');
+      if (uploadedUrls.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, ...uploadedUrls]
+        }));
+      }
+      
       setLocalImages([]);
+      toast.success(`${uploadedUrls.length} image(s) uploaded!`);
     } catch (error) {
       toast.error(error.message || 'Failed to upload images');
     } finally {
@@ -144,8 +151,6 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
       setSaving(false);
     }
   };
-
-  const allImages = [...formData.images];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -210,57 +215,60 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Images (max 3)
-        </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-sm font-medium text-gray-700">
+            Product Images (max 3)
+          </label>
+          <span className="text-xs text-gray-400">
+            {formData.images.length + localImages.length}/3
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-3">
           {formData.images.map((img, index) => (
-            <div key={`existing-${index}`} className="relative w-20 h-20 rounded-lg overflow-hidden">
+            <div key={`existing-${index}`} className="relative w-24 h-24 rounded-xl overflow-hidden group">
               <img src={img} alt="" className="w-full h-full object-cover" />
               <button
                 type="button"
                 onClick={() => removeExistingImage(index)}
-                className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-lg"
+                className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <FiX size={12} />
               </button>
             </div>
           ))}
           {localImages.map((img, index) => (
-            <div key={`local-${index}`} className="relative w-20 h-20 rounded-lg overflow-hidden">
+            <div key={`local-${index}`} className="relative w-24 h-24 rounded-xl overflow-hidden">
               <img src={img.url} alt="" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <span className="text-white text-xs">New</span>
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span className="text-white text-xs font-medium">Uploading...</span>
               </div>
               <button
                 type="button"
                 onClick={() => removeLocalImage(index)}
-                className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-lg"
+                className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
               >
                 <FiX size={12} />
               </button>
             </div>
           ))}
           {(formData.images.length + localImages.length) < 3 && (
-            <label className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-padi-green transition-colors">
-              <FiImage className="text-gray-400" size={20} />
-              <span className="text-xs text-gray-400 mt-1">Add</span>
+            <label className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-padi-green hover:bg-padi-green/5 transition-colors">
+              <FiImage className="text-gray-400" size={24} />
+              <span className="text-xs text-gray-400 mt-1">Add Photo</span>
               <input
                 type="file"
                 accept="image/*"
                 multiple
                 onChange={handleLocalImageUpload}
                 className="hidden"
+                disabled={uploading || saving}
               />
             </label>
           )}
         </div>
-        {uploading && (
-          <div className="flex items-center gap-2 text-sm text-padi-green mt-2">
-            <div className="w-4 h-4 border-2 border-padi-green border-t-transparent rounded-full animate-spin"></div>
-            Uploading images...
-          </div>
-        )}
+        <p className="text-xs text-gray-400 mt-2">
+          Upload up to {3 - formData.images.length} more images. These will appear as a gallery for this product.
+        </p>
       </div>
 
       <div className="flex items-center gap-2">
@@ -283,7 +291,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
           className="btn-primary flex-1 flex items-center justify-center gap-2"
           disabled={saving || uploading}
         >
-          {saving || uploading ? (
+          {saving ? (
             <>
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               {isEditing ? 'Updating...' : 'Creating...'}

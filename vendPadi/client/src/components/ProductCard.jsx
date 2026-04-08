@@ -64,15 +64,18 @@ const CategoryBadge = ({ category, size = "sm" }) => {
 // ─── IMAGE CAROUSEL ────────────────────────────────────────────────
 const ImageCarousel = ({ images, name, category, compact = false }) => {
   const [current, setCurrent] = useState(0);
+  const [loaded, setLoaded] = useState(false);
   const hasMany = images && images.length > 1;
 
   const prev = (e) => {
     e.stopPropagation();
     setCurrent((i) => (i - 1 + images.length) % images.length);
+    setLoaded(false);
   };
   const next = (e) => {
     e.stopPropagation();
     setCurrent((i) => (i + 1) % images.length);
+    setLoaded(false);
   };
 
   if (!images || images.length === 0) {
@@ -87,11 +90,20 @@ const ImageCarousel = ({ images, name, category, compact = false }) => {
 
   return (
     <div className="relative w-full h-full group/img">
+      {/* Loading skeleton */}
+      {!loaded && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+      )}
+      
       <img
         src={images[current]}
         alt={name}
-        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        className={`w-full h-full object-cover transition-all duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} group-hover:scale-105`}
       />
+      
       {hasMany && (
         <>
           <button
@@ -111,6 +123,7 @@ const ImageCarousel = ({ images, name, category, compact = false }) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   setCurrent(idx);
+                  setLoaded(false);
                 }}
                 className={`h-1.5 rounded-full transition-all duration-300 ${idx === current ? "w-5 bg-padi-green" : "w-1.5 bg-white/80 hover:bg-white"}`}
               />
