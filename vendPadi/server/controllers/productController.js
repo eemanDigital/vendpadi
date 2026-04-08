@@ -147,3 +147,12 @@ exports.uploadImages = catchAsync(async (req, res) => {
 
   res.json({ images: product.images, message: 'Images uploaded successfully' });
 });
+
+exports.uploadImagesStandalone = catchAsync(async (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ message: 'No images uploaded' });
+  }
+
+  const images = req.files.map(f => f.path);
+  res.json({ images, message: 'Images uploaded successfully' });
+});

@@ -64,10 +64,12 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     }));
   };
 
-  const handleImageUpload = async (productId) => {
+  const uploadImagesAndCreateProduct = async (productData) => {
     const filesToUpload = localImages.filter(img => img.file);
     
-    if (filesToUpload.length === 0) return;
+    if (filesToUpload.length === 0) {
+      return productData;
+    }
 
     setUploading(true);
     try {
@@ -77,7 +79,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         const uploadFormData = new FormData();
         uploadFormData.append('images', img.file);
         
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/products/${productId}/images`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/products/images`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('vendpadi_token')}`
@@ -92,22 +94,20 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         
         const data = await res.json();
         if (data.images && data.images.length > 0) {
-          const newUrl = data.images[data.images.length - 1];
-          uploadedUrls.push(newUrl);
+          uploadedUrls.push(data.images[data.images.length - 1]);
         }
       }
 
-      if (uploadedUrls.length > 0) {
-        setFormData(prev => ({
-          ...prev,
-          images: [...prev.images, ...uploadedUrls]
-        }));
-      }
-      
       setLocalImages([]);
       toast.success(`${uploadedUrls.length} image(s) uploaded!`);
+      
+      return {
+        ...productData,
+        images: [...(productData.images || []), ...uploadedUrls]
+      };
     } catch (error) {
       toast.error(error.message || 'Failed to upload images');
+      throw error;
     } finally {
       setUploading(false);
     }
@@ -127,26 +127,26 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
 
     setSaving(true);
     try {
+      let finalData = { ...formData };
+
       if (isEditing) {
-        await productAPI.update(product._id, formData);
-        
         if (localImages.length > 0) {
-          await handleImageUpload(product._id);
+          finalData = await uploadImagesAndCreateProduct(finalData);
         }
-        
+        await productAPI.update(product._id, finalData);
         toast.success('Product updated!');
       } else {
-        const created = await productAPI.create(formData);
-        
-        if (localImages.length > 0) {
-          await handleImageUpload(created.data._id);
-        }
-        
+        finalData = await uploadImagesAndCreateProduct(finalData);
+        await productAPI.create(finalData);
         toast.success('Product created!');
       }
       onSuccess();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save product');
+      if (error.response?.data?.message || error.message) {
+        toast.error(error.response?.data?.message || error.message);
+      } else {
+        toast.error('Failed to save product');
+      }
     } finally {
       setSaving(false);
     }
@@ -239,9 +239,11 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
           {localImages.map((img, index) => (
             <div key={`local-${index}`} className="relative w-24 h-24 rounded-xl overflow-hidden">
               <img src={img.url} alt="" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <span className="text-white text-xs font-medium">Uploading...</span>
-              </div>
+              {uploading && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <span className="text-white text-xs font-medium">Uploading...</span>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => removeLocalImage(index)}
@@ -261,7 +263,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
                 multiple
                 onChange={handleLocalImageUpload}
                 className="hidden"
-                disabled={uploading || saving}
+                disabled={saving}
               />
             </label>
           )}
@@ -289,12 +291,12 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         <button
           type="submit"
           className="btn-primary flex-1 flex items-center justify-center gap-2"
-          disabled={saving || uploading}
+          disabled={saving}
         >
           {saving ? (
             <>
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              {isEditing ? 'Updating...' : 'Creating...'}
+              {uploading ? 'Uploading...' : (isEditing ? 'Updating...' : 'Creating...')}
             </>
           ) : (
             <>
@@ -307,7 +309,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
           type="button"
           onClick={onCancel}
           className="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-          disabled={saving || uploading}
+          disabled={saving}
         >
           Cancel
         </button>

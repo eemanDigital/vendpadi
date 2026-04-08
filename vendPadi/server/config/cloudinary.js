@@ -14,8 +14,7 @@ const productStorage = new CloudinaryStorage({
     folder: 'vendpadi/products',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
     transformation: [
-      { width: 200, height: 200, crop: 'fill', quality: 'auto', effect: 'format:webp' },
-      { overlay: 'original', width: 800, height: 800, crop: 'limit', quality: 'auto:eco' }
+      { width: 800, height: 800, crop: 'limit', quality: 'auto', format: 'webp' }
     ]
   }
 });
