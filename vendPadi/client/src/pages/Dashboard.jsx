@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { productAPI, vendorAPI } from '../api/axiosInstance';
 import ProductCard from '../components/ProductCard';
 import ProductForm from '../components/ProductForm';
 import PlanBadge from '../components/PlanBadge';
+import { logout } from '../store/authSlice';
+import { clearCart } from '../store/cartSlice';
 import toast from 'react-hot-toast';
-import { FiPlus, FiCopy, FiEdit2, FiTrash2, FiExternalLink, FiX, FiPackage, FiSettings, FiShoppingBag, FiTrendingUp } from 'react-icons/fi';
+import { FiPlus, FiCopy, FiEdit2, FiTrash2, FiExternalLink, FiX, FiPackage, FiSettings, FiShoppingBag, FiTrendingUp, FiLogOut } from 'react-icons/fi';
 
 const PLAN_LIMITS = {
   free: { products: 5, images: 1 },
@@ -16,6 +18,7 @@ const PLAN_LIMITS = {
 
 const Dashboard = () => {
   const { vendor } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +29,12 @@ const Dashboard = () => {
   const planLimits = PLAN_LIMITS[vendor?.plan?.type || 'free'];
   const currentLimit = planLimits.products;
   const isAtLimit = products.length >= currentLimit && currentLimit !== Infinity;
+
+  const handleLogout = () => {
+    dispatch(logout());
+    dispatch(clearCart());
+    navigate('/');
+  };
 
   const fetchProducts = async () => {
     try {
@@ -85,15 +94,15 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="hidden lg:block fixed left-0 top-0 w-64 h-full bg-navy text-white p-6">
-        <Link to="/" className="flex items-center gap-3 mb-8">
+      <aside className="hidden lg:block fixed left-0 top-0 w-64 h-screen bg-navy text-white p-6 flex flex-col overflow-y-auto">
+        <Link to="/" className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-padi-green rounded-xl flex items-center justify-center">
             <span className="font-sora font-bold text-xl">V</span>
           </div>
           <span className="font-sora font-bold text-lg">VendPadi</span>
         </Link>
 
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="w-16 h-16 bg-padi-green/20 rounded-xl mx-auto flex items-center justify-center mb-3 overflow-hidden">
             {vendor?.logo ? (
               <img src={vendor.logo} alt="" className="w-full h-full object-cover" />
@@ -120,7 +129,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <nav className="space-y-1">
+        <nav className="space-y-1 mb-auto">
           <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-padi-green/20 text-padi-green">
             <FiPackage /> Products
           </Link>
@@ -132,7 +141,7 @@ const Dashboard = () => {
           </Link>
         </nav>
 
-        <div className="mt-8 p-4 bg-white/10 rounded-xl">
+        <div className="mt-4 p-4 bg-white/10 rounded-xl">
           <p className="text-xs text-gray-400 mb-2">Your Store Link</p>
           <p className="text-sm font-medium break-all">/store/{vendor?.slug}</p>
           <button
@@ -152,7 +161,14 @@ const Dashboard = () => {
             </Link>
           </div>
         )}
-      </div>
+
+        <button
+          onClick={handleLogout}
+          className="mt-4 flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-red-400"
+        >
+          <FiLogOut /> Logout
+        </button>
+      </aside>
 
       {/* Mobile Header */}
       <header className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20">
