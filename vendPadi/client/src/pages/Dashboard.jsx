@@ -5,6 +5,7 @@ import { productAPI, vendorAPI } from '../api/axiosInstance';
 import ProductCard from '../components/ProductCard';
 import ProductForm from '../components/ProductForm';
 import PlanBadge from '../components/PlanBadge';
+import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import { logout } from '../store/authSlice';
 import { clearCart } from '../store/cartSlice';
 import toast from 'react-hot-toast';
@@ -25,6 +26,7 @@ const Dashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const planLimits = PLAN_LIMITS[vendor?.plan?.type || 'free'];
   const currentLimit = planLimits.products;
@@ -154,11 +156,11 @@ const Dashboard = () => {
 
         {vendor?.plan?.type !== 'premium' && (
           <div className="mt-4 p-4 bg-gold/20 rounded-xl border border-gold/30">
-            <p className="text-xs text-gold font-medium mb-2">👑 Upgrade to Premium</p>
-            <p className="text-xs text-gray-400 mb-3">Unlimited products & PDF invoices</p>
-            <Link to="/settings" className="text-xs bg-gold hover:bg-gold/90 text-white px-3 py-1.5 rounded-lg font-medium">
+            <p className="text-xs text-gold font-medium mb-2">👑 Upgrade Your Plan</p>
+            <p className="text-xs text-gray-400 mb-3">Unlock more features & products</p>
+            <button onClick={() => setShowUpgradeModal(true)} className="text-xs bg-gold hover:bg-gold/90 text-white px-3 py-1.5 rounded-lg font-medium">
               Upgrade Now
-            </Link>
+            </button>
           </div>
         )}
 
@@ -317,6 +319,12 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      <PlanUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onSuccess={() => setShowUpgradeModal(false)}
+      />
     </div>
   );
 };

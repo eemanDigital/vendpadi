@@ -11,6 +11,7 @@ const vendorRoutes = require('./routes/vendorRoutes');
 const productRoutes = require('./routes/productRoutes');
 const storeRoutes = require('./routes/storeRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const planRoutes = require('./routes/planRoutes');
 
 const app = express();
 
@@ -105,6 +106,7 @@ app.use('/api/vendor', vendorRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/store', storeRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/plans', planRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ 

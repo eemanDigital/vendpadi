@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Orders from './pages/Orders';
 import Storefront from './pages/Storefront';
+import AdminPanel from './pages/AdminPanel';
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -73,15 +74,23 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/orders"
-          element={
-            <ProtectedRoute>
-              <Orders />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute>
+                <Orders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
     </BrowserRouter>
   );
 }

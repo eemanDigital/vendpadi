@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom';
 import { vendorAPI } from '../api/axiosInstance';
 import { updateVendor } from '../store/authSlice';
 import PlanBadge from '../components/PlanBadge';
+import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import toast from 'react-hot-toast';
-import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag } from 'react-icons/fi';
+import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp } from 'react-icons/fi';
 
 const CATEGORIES = ['food', 'fashion', 'phones', 'cakes', 'other'];
 
@@ -28,6 +29,7 @@ const Settings = () => {
   const [logoFile, setLogoFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const currentFeatures = PLAN_FEATURES[vendor?.plan?.type || 'free'];
 
@@ -156,11 +158,21 @@ const Settings = () => {
                   <PlanBadge plan={vendor?.plan} size="md" />
                 </div>
               </div>
-              <span className="text-3xl">
-                {vendor?.plan?.type === 'free' && '🆓'}
-                {vendor?.plan?.type === 'basic' && '💡'}
-                {vendor?.plan?.type === 'premium' && '👑'}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">
+                  {vendor?.plan?.type === 'free' && '🆓'}
+                  {vendor?.plan?.type === 'basic' && '💡'}
+                  {vendor?.plan?.type === 'premium' && '👑'}
+                </span>
+                {vendor?.plan?.type !== 'premium' && (
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
+                  >
+                    <FiTrendingUp size={14} /> Upgrade
+                  </button>
+                )}
+              </div>
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-gray-100">
@@ -272,6 +284,12 @@ const Settings = () => {
           </Link>
         </div>
       </nav>
+
+      <PlanUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onSuccess={() => setShowUpgradeModal(false)}
+      />
     </div>
   );
 };
