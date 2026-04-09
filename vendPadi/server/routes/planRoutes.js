@@ -7,18 +7,32 @@ const PlanRequest = require('../models/PlanRequest');
 const Vendor = require('../models/Vendor');
 const { protect } = require('../middleware/authMiddleware');
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+const DEFAULT_PAYMENT = {
+  bankName: 'First Bank of Nigeria',
+  accountName: 'VendPadi Ltd',
+  accountNumber: '3084721938'
+};
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: { folder: 'vendpadi/payments' }
-});
+let storage, upload;
 
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+
+  storage = new CloudinaryStorage({
+    cloudinary,
+    params: { folder: 'vendpadi/payments' }
+  });
+
+  upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+} else {
+  storage = multer.memoryStorage();
+  upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+  console.warn('Cloudinary not configured, using memory storage for plan proofs');
+}
 
 const catchAsync = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);

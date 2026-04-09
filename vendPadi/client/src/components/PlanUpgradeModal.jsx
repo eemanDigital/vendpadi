@@ -52,11 +52,17 @@ const PLAN_DETAILS = {
   }
 };
 
+const FALLBACK_PAYMENT = {
+  bankName: 'First Bank of Nigeria',
+  accountName: 'VendPadi Ltd',
+  accountNumber: '3084721938'
+};
+
 const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
   const { vendor } = useSelector((state) => state.auth);
   const [step, setStep] = useState('select');
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [paymentDetails, setPaymentDetails] = useState(null);
+  const [paymentDetails, setPaymentDetails] = useState(FALLBACK_PAYMENT);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [proofFile, setProofFile] = useState(null);
@@ -75,9 +81,9 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
   const fetchPlans = async () => {
     try {
       const { data } = await planAPI.getPlans();
-      setPaymentDetails(data.paymentDetails);
+      setPaymentDetails(data.paymentDetails || FALLBACK_PAYMENT);
     } catch (error) {
-      toast.error('Failed to load payment details');
+      setPaymentDetails(FALLBACK_PAYMENT);
     }
   };
 
@@ -111,8 +117,8 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   const handleProofUpload = async () => {
-    if (!proofFile && !paymentRef) {
-      toast.error('Please upload payment proof or enter payment reference');
+    if (!proofFile && !paymentRef.trim()) {
+      toast.error('Please enter the transfer reference from your bank app');
       return;
     }
 
@@ -133,7 +139,9 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
       if (proofFile) {
         formData.append('proof', proofFile);
       }
-      formData.append('paymentReference', paymentRef);
+      if (paymentRef.trim()) {
+        formData.append('paymentReference', paymentRef.trim());
+      }
 
       await planAPI.uploadProof(requestId, formData);
       toast.success('Payment proof submitted! We will verify and activate your plan shortly.');
@@ -143,7 +151,7 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
       setStep('success');
       fetchRequests();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to upload proof');
+      toast.error(error.response?.data?.message || 'Failed to submit. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -295,53 +303,61 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
 
               <div className="bg-navy text-white rounded-2xl p-5">
                 <h4 className="font-semibold mb-4 flex items-center gap-2">
-                  <FiCreditCard /> Payment Details
+                  <FiCreditCard /> Make Transfer To
                 </h4>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-300">Bank Name</span>
+                    <span className="text-gray-300">Bank</span>
                     <span className="font-medium">{paymentDetails.bankName}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-300">Account Name</span>
                     <span className="font-medium">{paymentDetails.accountName}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-300">Account Number</span>
-                    <span className="font-bold text-lg tracking-wider">{paymentDetails.accountNumber}</span>
+                    <span className="font-bold text-xl tracking-wider">{paymentDetails.accountNumber}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-white/20">
+                    <span className="text-gray-300">Amount</span>
+                    <span className="font-bold text-padi-green text-lg">₦{PLAN_DETAILS[selectedPlan]?.price.toLocaleString()}</span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 mt-4">
-                  Transfer the exact amount above to the account details. Your plan will be activated within 24 hours after verification.
+                <p className="text-xs text-gray-400 mt-4 leading-relaxed">
+                  Transfer the exact amount. After payment, copy the reference from your bank app and paste it below.
                 </p>
               </div>
 
               <div className="bg-gray-50 rounded-2xl p-5">
                 <h4 className="font-semibold mb-4 flex items-center gap-2">
-                  <FiUpload /> Upload Payment Receipt
+                  <FiCreditCard /> Confirm Your Payment
                 </h4>
                 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200">
-                    <FiCreditCard className="text-padi-green text-xl flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-xs text-gray-500 mb-0.5">Transfer Reference (Optional)</p>
-                      <input
-                        type="text"
-                        value={paymentRef}
-                        onChange={(e) => setPaymentRef(e.target.value)}
-                        placeholder="Paste your transfer reference here"
-                        className="w-full text-sm font-medium bg-transparent outline-none"
-                      />
-                    </div>
+                  <div className="p-4 bg-white rounded-xl border-2 border-padi-green/30">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bank Transfer Reference <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">
+                      Copy the reference from your bank app after making the transfer
+                    </p>
+                    <input
+                      type="text"
+                      value={paymentRef}
+                      onChange={(e) => setPaymentRef(e.target.value)}
+                      placeholder="e.g., TRF123456789"
+                      className="input-field"
+                    />
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">Upload Screenshot</p>
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      Upload Screenshot <span className="text-gray-400 font-normal">(optional)</span>
+                    </p>
                     <div className="relative">
                       {proofPreview ? (
                         <div className="relative">
-                          <img src={proofPreview} alt="Receipt" className="w-full h-48 object-cover rounded-xl border-2 border-padi-green" />
+                          <img src={proofPreview} alt="Receipt" className="w-full h-40 object-cover rounded-xl border-2 border-padi-green" />
                           <button
                             type="button"
                             onClick={() => { setProofFile(null); setProofPreview(''); }}
@@ -349,18 +365,19 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                           >
                             <FiX size={16} />
                           </button>
-                          <p className="absolute bottom-2 left-2 text-xs text-white bg-black/60 px-2 py-1 rounded-lg">Receipt uploaded</p>
+                          <div className="absolute bottom-2 left-2 flex items-center gap-1.5 text-xs text-white bg-padi-green px-2 py-1 rounded-lg">
+                            <FiCheck size={12} /> Screenshot added
+                          </div>
                         </div>
                       ) : (
                         <label
                           htmlFor="proof-input"
-                          className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-padi-green hover:bg-padi-green/5 transition-colors bg-white">
-                          <div className="w-14 h-14 bg-padi-green/10 rounded-full flex items-center justify-center mb-3">
-                            <FiUpload className="text-padi-green" size={24} />
+                          className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-padi-green hover:bg-padi-green/5 transition-colors bg-white">
+                          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-2">
+                            <FiUpload className="text-gray-400" size={20} />
                           </div>
-                          <span className="text-sm font-medium text-gray-700">Tap to select screenshot</span>
-                          <span className="text-xs text-gray-500 mt-1">from your gallery</span>
-                          <span className="text-xs text-gray-400 mt-2">JPG, PNG or WebP (Max 5MB)</span>
+                          <span className="text-sm font-medium text-gray-600">Tap to add screenshot</span>
+                          <span className="text-xs text-gray-400 mt-1">JPG, PNG (max 5MB)</span>
                         </label>
                       )}
                       <input 
