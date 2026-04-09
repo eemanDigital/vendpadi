@@ -10,39 +10,49 @@ import {
   FiMinus,
   FiEye,
   FiZap,
+  FiBox,
+  FiHeadphones,
+  FiGift,
+  FiSmartphone,
 } from "react-icons/fi";
+
+const CategoryIcon = ({ category, size = 16, className = "" }) => {
+  const props = { size, className };
+  switch (category) {
+    case "food": return <FiGift {...props} />;
+    case "fashion": return <FiBox {...props} />;
+    case "phones": return <FiSmartphone {...props} />;
+    case "cakes": return <FiGift {...props} />;
+    default: return <FiBox {...props} />;
+  }
+};
 
 const CATEGORY_META = {
   food: {
-    icon: "🍔",
     label: "Food",
     bg: "bg-orange-50",
     text: "text-orange-600",
     border: "border-orange-200",
   },
   fashion: {
-    icon: "👗",
     label: "Fashion",
     bg: "bg-pink-50",
     text: "text-pink-600",
     border: "border-pink-200",
   },
   phones: {
-    icon: "📱",
     label: "Phones",
     bg: "bg-blue-50",
     text: "text-blue-600",
     border: "border-blue-200",
   },
   cakes: {
-    icon: "🎂",
     label: "Cakes",
     bg: "bg-purple-50",
     text: "text-purple-600",
     border: "border-purple-200",
   },
   other: {
-    icon: "📦",
     label: "Other",
     bg: "bg-gray-50",
     text: "text-gray-600",
@@ -50,12 +60,12 @@ const CATEGORY_META = {
   },
 };
 
-const CategoryBadge = ({ category, size = "sm" }) => {
+const CategoryBadge = ({ category }) => {
   const meta = CATEGORY_META[category] || CATEGORY_META.other;
   return (
     <span
       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium ${meta.bg} ${meta.text} ${meta.border}`}>
-      <span>{meta.icon}</span>
+      <CategoryIcon category={category} size={12} />
       <span className="capitalize">{meta.label}</span>
     </span>
   );
@@ -81,16 +91,14 @@ const ImageCarousel = ({ images, name, category, compact = false }) => {
   if (!images || images.length === 0) {
     const meta = CATEGORY_META[category] || CATEGORY_META.other;
     return (
-      <div
-        className={`w-full h-full flex items-center justify-center ${meta.bg}`}>
-        <span className={compact ? "text-4xl" : "text-6xl"}>{meta.icon}</span>
+      <div className={`w-full h-full flex items-center justify-center ${meta.bg}`}>
+        <CategoryIcon category={category} size={compact ? 32 : 48} className={meta.text} />
       </div>
     );
   }
 
   return (
     <div className="relative w-full h-full group/img">
-      {/* Loading skeleton */}
       {!loaded && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse" />
       )}
@@ -108,15 +116,17 @@ const ImageCarousel = ({ images, name, category, compact = false }) => {
         <>
           <button
             onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110 z-10">
+            aria-label="Previous image"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110 z-10 touch-manipulation">
             <FiChevronLeft size={14} className="text-gray-700" />
           </button>
           <button
             onClick={next}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110 z-10">
+            aria-label="Next image"
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110 z-10 touch-manipulation">
             <FiChevronRight size={14} className="text-gray-700" />
           </button>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 hidden sm:flex">
             {images.map((_, idx) => (
               <button
                 key={idx}
@@ -125,6 +135,7 @@ const ImageCarousel = ({ images, name, category, compact = false }) => {
                   setCurrent(idx);
                   setLoaded(false);
                 }}
+                aria-label={`View image ${idx + 1}`}
                 className={`h-1.5 rounded-full transition-all duration-300 ${idx === current ? "w-5 bg-padi-green" : "w-1.5 bg-white/80 hover:bg-white"}`}
               />
             ))}
@@ -178,24 +189,22 @@ const GridCard = ({ product, onOpenDetail, cartItem }) => {
     setTimeout(() => setJustAdded(false), 1000);
   };
 
+  const handleCardClick = () => {
+    if (onOpenDetail) {
+      onOpenDetail(product);
+    }
+  };
+
   return (
     <div
-      onClick={() => onOpenDetail?.(product)}
+      onClick={handleCardClick}
       className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-padi-green/30 hover:shadow-xl hover:shadow-padi-green/10 transition-all duration-300 cursor-pointer flex flex-col">
-      {/* Image */}
       <div className="aspect-square relative overflow-hidden bg-gray-50">
         <ImageCarousel
           images={product.images}
           name={product.name}
           category={product.category}
         />
-
-        {/* Quick view pill */}
-        <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0 duration-200 z-10">
-          <span className="flex items-center gap-1 bg-white/95 text-gray-700 text-xs font-medium px-2.5 py-1.5 rounded-full shadow-md">
-            <FiEye size={11} /> Quick view
-          </span>
-        </div>
 
         {!product.inStock && (
           <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center z-10">
@@ -206,8 +215,7 @@ const GridCard = ({ product, onOpenDetail, cartItem }) => {
         )}
       </div>
 
-      {/* Body */}
-      <div className="p-3.5 flex flex-col flex-1">
+      <div className="p-3 flex flex-col flex-1">
         <CategoryBadge category={product.category} />
         <h3 className="font-sora font-semibold text-navy text-sm leading-snug mt-2 line-clamp-2 flex-1">
           {product.name}
@@ -224,7 +232,8 @@ const GridCard = ({ product, onOpenDetail, cartItem }) => {
             ) : (
               <button
                 onClick={handleAdd}
-                className={`p-2 rounded-xl transition-all duration-300 shadow-sm ${
+                aria-label="Add to cart"
+                className={`p-2 rounded-xl transition-all duration-300 shadow-sm touch-manipulation ${
                   justAdded
                     ? "bg-emerald-500 text-white scale-90"
                     : "bg-navy text-white hover:bg-padi-green hover:shadow-md hover:shadow-padi-green/30 hover:scale-105"
@@ -250,12 +259,17 @@ const ListCard = ({ product, onOpenDetail, cartItem }) => {
     setTimeout(() => setJustAdded(false), 1000);
   };
 
+  const handleCardClick = () => {
+    if (onOpenDetail) {
+      onOpenDetail(product);
+    }
+  };
+
   return (
     <div
-      onClick={() => onOpenDetail?.(product)}
+      onClick={handleCardClick}
       className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-padi-green/30 hover:shadow-lg hover:shadow-padi-green/10 transition-all duration-300 cursor-pointer flex gap-0">
-      {/* Image */}
-      <div className="w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0 relative overflow-hidden bg-gray-50">
+      <div className="w-24 h-24 xs:w-28 xs:h-28 sm:w-36 sm:h-36 flex-shrink-0 relative overflow-hidden bg-gray-50">
         <ImageCarousel
           images={product.images}
           name={product.name}
@@ -271,30 +285,29 @@ const ListCard = ({ product, onOpenDetail, cartItem }) => {
         )}
       </div>
 
-      {/* Body */}
-      <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+      <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between min-w-0">
         <div>
           <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <CategoryBadge category={product.category} />
-              <h3 className="font-sora font-semibold text-navy text-base mt-1.5 line-clamp-1">
+              <h3 className="font-sora font-semibold text-navy text-sm sm:text-base mt-1 sm:mt-1.5 line-clamp-2">
                 {product.name}
               </h3>
             </div>
-            <span className="font-bold text-padi-green text-lg flex-shrink-0">
+            <span className="font-bold text-padi-green text-sm sm:text-lg flex-shrink-0">
               ₦{product.price.toLocaleString()}
             </span>
           </div>
           {product.description && (
-            <p className="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed">
+            <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-1.5 line-clamp-2 leading-relaxed hidden sm:block">
               {product.description}
             </p>
           )}
         </div>
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-2 sm:mt-3 flex items-center justify-between gap-2">
           <span className="text-xs text-gray-400 flex items-center gap-1">
-            <FiEye size={11} /> Tap to view details
+            <FiEye size={11} /> <span className="hidden sm:inline">Tap to view details</span>
           </span>
           {product.inStock &&
             (cartItem ? (
@@ -302,18 +315,19 @@ const ListCard = ({ product, onOpenDetail, cartItem }) => {
             ) : (
               <button
                 onClick={handleAdd}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                aria-label="Add to cart"
+                className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 touch-manipulation ${
                   justAdded
                     ? "bg-emerald-500 text-white"
                     : "bg-navy text-white hover:bg-padi-green hover:shadow-md hover:shadow-padi-green/30"
                 }`}>
                 {justAdded ? (
                   <>
-                    <FiCheck size={13} /> Added
+                    <FiCheck size={11} className="sm:size-[13px]" /> <span className="hidden sm:inline">Added</span>
                   </>
                 ) : (
                   <>
-                    <FiPlus size={13} /> Add
+                    <FiPlus size={11} className="sm:size-[13px]" /> <span className="hidden sm:inline">Add</span>
                   </>
                 )}
               </button>
@@ -336,65 +350,64 @@ const ShowcaseCard = ({ product, onOpenDetail, cartItem }) => {
     setTimeout(() => setJustAdded(false), 1000);
   };
 
-  const meta = CATEGORY_META[product.category] || CATEGORY_META.other;
+  const handleCardClick = () => {
+    if (onOpenDetail) {
+      onOpenDetail(product);
+    }
+  };
 
   return (
     <div
-      onClick={() => onOpenDetail?.(product)}
-      className="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-padi-green/40 hover:shadow-2xl hover:shadow-padi-green/10 transition-all duration-500 cursor-pointer">
-      {/* Image tall */}
-      <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
+      onClick={handleCardClick}
+      className="group bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-100 hover:border-padi-green/40 hover:shadow-2xl hover:shadow-padi-green/10 transition-all duration-500 cursor-pointer">
+      <div className="aspect-[4/3] sm:aspect-[4/3] relative overflow-hidden bg-gray-50">
         <ImageCarousel
           images={product.images}
           name={product.name}
           category={product.category}
         />
 
-        {/* Category floating pill */}
-        <div className="absolute top-3 left-3 z-10">
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
           <CategoryBadge category={product.category} />
         </div>
 
-        {/* Price floating */}
-        <div className="absolute top-3 right-3 z-10">
-          <span className="bg-navy text-white text-sm font-bold px-3 py-1.5 rounded-xl shadow-lg">
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10">
+          <span className="bg-navy text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-lg">
             ₦{product.price.toLocaleString()}
           </span>
         </div>
 
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 z-10">
-          <span className="text-white text-sm font-medium flex items-center gap-1.5">
-            <FiZap size={14} className="text-padi-green" /> Tap for full details
+        <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3 sm:p-4 z-10">
+          <span className="text-white text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-1.5">
+            <FiZap size={12} className="sm:size-[14px] text-padi-green" /> Tap for full details
           </span>
         </div>
 
         {!product.inStock && (
           <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center z-20">
-            <span className="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-semibold">
+            <span className="bg-white text-gray-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
               Out of Stock
             </span>
           </div>
         )}
       </div>
 
-      {/* Body */}
-      <div className="p-5">
-        <h3 className="font-sora font-bold text-navy text-lg leading-snug line-clamp-2">
+      <div className="p-3 sm:p-5">
+        <h3 className="font-sora font-bold text-navy text-base sm:text-lg leading-snug line-clamp-2">
           {product.name}
         </h3>
         {product.description && (
-          <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">
+          <p className="text-xs sm:text-sm text-gray-500 mt-1.5 sm:mt-2 line-clamp-2 leading-relaxed hidden sm:block">
             {product.description}
           </p>
         )}
 
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="mt-3 sm:mt-4 flex items-center justify-between gap-2 sm:gap-3">
           <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">
+            <p className="text-xs text-gray-400 uppercase tracking-wider font-medium hidden sm:block">
               Price
             </p>
-            <p className="font-bold text-padi-green text-2xl">
+            <p className="font-bold text-padi-green text-lg sm:text-2xl">
               ₦{product.price.toLocaleString()}
             </p>
           </div>
@@ -405,18 +418,19 @@ const ShowcaseCard = ({ product, onOpenDetail, cartItem }) => {
             ) : (
               <button
                 onClick={handleAdd}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                aria-label="Add to cart"
+                className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 touch-manipulation ${
                   justAdded
                     ? "bg-emerald-500 text-white scale-95"
                     : "bg-padi-green text-white hover:bg-padi-green-dark shadow-lg shadow-padi-green/30 hover:shadow-padi-green/50 hover:scale-105"
                 }`}>
                 {justAdded ? (
                   <>
-                    <FiCheck size={16} /> Added
+                    <FiCheck size={13} className="sm:size-[16px]" /> Added
                   </>
                 ) : (
                   <>
-                    <FiShoppingCart size={16} /> Add to Order
+                    <FiShoppingCart size={13} className="sm:size-[16px]" /> <span className="hidden sm:inline">Add to Order</span>
                   </>
                 )}
               </button>

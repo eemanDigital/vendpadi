@@ -53,86 +53,98 @@ const ProductDetailModal = ({ product, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-end sm:items-center justify-center"
       onClick={onClose}>
       <div
-        className="bg-white w-full sm:max-w-lg sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl max-h-[92vh] flex flex-col"
+        className="bg-white w-full sm:max-w-md sm:mx-4 sm:rounded-2xl rounded-t-3xl overflow-hidden shadow-2xl max-h-[95vh] sm:max-h-[85vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}>
-        {/* Image area */}
-        <div className="relative aspect-square sm:aspect-[4/3] flex-shrink-0 bg-gray-50 overflow-hidden">
-          <ImageCarousel
-            images={product.images}
-            name={product.name}
-            category={product.category}
-          />
-
-          {/* Close */}
+        {/* Header bar */}
+        <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-100">
+          <h2 className="font-sora font-semibold text-navy text-base sm:text-lg truncate pr-4">
+            {product.name}
+          </h2>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-9 h-9 bg-white/95 hover:bg-white text-gray-600 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 z-20">
+            className="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full flex items-center justify-center transition-colors">
             <FiX size={16} />
           </button>
-
-          {/* Category */}
-          <div className="absolute top-4 left-4 z-20">
-            <CategoryBadge category={product.category} />
-          </div>
-
-          {!product.inStock && (
-            <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center z-20">
-              <span className="bg-white text-gray-700 px-5 py-2 rounded-full font-semibold">
-                Out of Stock
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* Info */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <h2 className="font-sora font-bold text-2xl text-navy leading-tight">
-                {product.name}
-              </h2>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-                Price
-              </p>
-              <p className="font-bold text-3xl text-padi-green">
-                ₦{product.price.toLocaleString()}
-              </p>
-            </div>
-          </div>
-
-          {product.description && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-2xl">
-              <p className="text-gray-600 leading-relaxed text-sm">
-                {product.description}
-              </p>
-            </div>
-          )}
-
-          {/* Stock badge */}
-          <div
-            className={`mt-4 flex items-center gap-2 text-sm font-medium ${product.inStock ? "text-emerald-600" : "text-red-500"}`}>
-            <span
-              className={`w-2 h-2 rounded-full ${product.inStock ? "bg-emerald-500 animate-pulse" : "bg-red-400"}`}
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Image */}
+          <div className="relative aspect-square sm:aspect-[4/3] bg-gray-50">
+            <ImageCarousel
+              images={product.images}
+              name={product.name}
+              category={product.category}
             />
-            {product.inStock
-              ? "In stock — ready to order"
-              : "Currently out of stock"}
+
+            {/* Category badge */}
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
+              <CategoryBadge category={product.category} />
+            </div>
+
+            {!product.inStock && (
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span className="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium">
+                  Out of Stock
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Details card */}
+          <div className="p-4 sm:p-5 space-y-4">
+            {/* Price & stock row */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">Price</p>
+                <p className="font-bold text-padi-green text-2xl sm:text-3xl">
+                  ₦{product.price.toLocaleString()}
+                </p>
+              </div>
+              {product.inStock && (
+                <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-xs font-medium">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                  In Stock
+                </div>
+              )}
+            </div>
+
+            {/* Description */}
+            {product.description && (
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+            )}
+
+            {/* Quick info */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="text-xs text-gray-500 mb-0.5">Category</p>
+                <p className="text-sm font-medium text-navy capitalize">{product.category}</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="text-xs text-gray-500 mb-0.5">Availability</p>
+                <p className={`text-sm font-medium ${product.inStock ? "text-emerald-600" : "text-red-500"}`}>
+                  {product.inStock ? "Available" : "Out of Stock"}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Footer CTA */}
+        {/* Fixed bottom CTA */}
         {product.inStock && (
-          <div className="p-5 border-t border-gray-100 bg-white">
+          <div className="p-4 sm:p-5 border-t border-gray-100 bg-white">
             {cartItem ? (
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs text-gray-500 mb-0.5">In your order</p>
-                  <p className="font-bold text-navy">
+                  <p className="text-xs text-gray-500">In your order</p>
+                  <p className="font-bold text-navy text-lg">
                     ₦{(product.price * cartItem.qty).toLocaleString()}
                   </p>
                 </div>
@@ -141,18 +153,18 @@ const ProductDetailModal = ({ product, onClose }) => {
             ) : (
               <button
                 onClick={handleAdd}
-                className={`w-full py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 transition-all duration-300 ${
+                className={`w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base flex items-center justify-center gap-2 transition-all duration-300 touch-manipulation ${
                   justAdded
                     ? "bg-emerald-500 text-white"
-                    : "bg-navy hover:bg-padi-green text-white shadow-lg hover:shadow-padi-green/30"
+                    : "bg-navy active:bg-padi-green text-white"
                 }`}>
                 {justAdded ? (
                   <>
-                    <FiCheck size={18} /> Added to Order
+                    <FiCheck size={16} /> Added
                   </>
                 ) : (
                   <>
-                    <FiShoppingCart size={18} /> Add to Order
+                    <FiShoppingCart size={16} /> Add to Order
                   </>
                 )}
               </button>
