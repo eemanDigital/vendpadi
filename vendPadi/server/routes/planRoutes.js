@@ -5,7 +5,7 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const PlanRequest = require('../models/PlanRequest');
 const Vendor = require('../models/Vendor');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const DEFAULT_PAYMENT = {
   bankName: 'First Bank of Nigeria',
@@ -127,22 +127,53 @@ router.post('/upload-proof/:id', protect, upload.single('proof'), catchAsync(asy
   res.json(request);
 }));
 
-router.get('/admin/requests', protect, catchAsync(async (req, res) => {
-  if (!req.vendor.isAdmin) {
-    return res.status(403).json({ message: 'Admin access required' });
-  }
-
+router.get('/admin/requests', protect, adminOnly, catchAsync(async (req, res) => {
   const requests = await PlanRequest.find({ status: 'pending' })
     .populate('vendorId', 'businessName email phone slug')
     .sort({ createdAt: 1 });
   res.json(requests);
 }));
 
-router.put('/admin/approve/:id', protect, catchAsync(async (req, res) => {
-  if (!req.vendor.isAdmin) {
-    return res.status(403).json({ message: 'Admin access required' });
-  }
+router.get('/admin/stats', protect, adminOnly, catchAsync(async (req, res) => {
+  const totalVendors = await Vendor.countDocuments();
+  
+  const planStats = await Vendor.aggregate([
+    {
+      $group: {
+        _id: '$plan.type',
+        count: { $sum: 1 }
+      }
+    }
+  ]);
 
+  const stats = {
+    total: totalVendors,
+    byPlan: {
+      free: 0,
+      basic: 0,
+      premium: 0
+    }
+  };
+
+  planStats.forEach(stat => {
+    if (stat._id && stats.byPlan.hasOwnProperty(stat._id)) {
+      stats.byPlan[stat._id] = stat.count;
+    }
+  });
+
+  const pendingRequests = await PlanRequest.countDocuments({ status: 'pending' });
+  const approvedThisMonth = await PlanRequest.countDocuments({
+    status: 'approved',
+    reviewedAt: { $gte: new Date(new Date().setDate(1)) }
+  });
+
+  stats.pendingRequests = pendingRequests;
+  stats.approvedThisMonth = approvedThisMonth;
+
+  res.json(stats);
+}));
+
+router.put('/admin/approve/:id', protect, adminOnly, catchAsync(async (req, res) => {
   const request = await PlanRequest.findById(req.params.id);
   if (!request) {
     return res.status(404).json({ message: 'Request not found' });
@@ -165,11 +196,7 @@ router.put('/admin/approve/:id', protect, catchAsync(async (req, res) => {
   res.json({ message: 'Plan upgraded successfully', request });
 }));
 
-router.put('/admin/reject/:id', protect, catchAsync(async (req, res) => {
-  if (!req.vendor.isAdmin) {
-    return res.status(403).json({ message: 'Admin access required' });
-  }
-
+router.put('/admin/reject/:id', protect, adminOnly, catchAsync(async (req, res) => {
   const { reason } = req.body;
   const request = await PlanRequest.findById(req.params.id);
   if (!request) {

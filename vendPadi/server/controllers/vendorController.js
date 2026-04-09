@@ -59,7 +59,8 @@ exports.updateMe = catchAsync(async (req, res) => {
     category: vendor.category,
     plan: vendor.plan,
     logo: vendor.logo,
-    description: vendor.description
+    description: vendor.description,
+    isAdmin: vendor.isAdmin
   });
 });
 

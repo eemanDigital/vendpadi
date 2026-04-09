@@ -10,7 +10,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('vendpadi_token');
+  const adminToken = localStorage.getItem('vendpadi_admin_token');
+  const vendorToken = localStorage.getItem('vendpadi_token');
+  const token = adminToken || vendorToken;
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -61,6 +64,7 @@ export const planAPI = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   getAdminRequests: () => api.get('/plans/admin/requests'),
+  getAdminStats: () => api.get('/plans/admin/stats'),
   approveRequest: (id) => api.put(`/plans/admin/approve/${id}`),
   rejectRequest: (id, reason) => api.put(`/plans/admin/reject/${id}`, { reason })
 };

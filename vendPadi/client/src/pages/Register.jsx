@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import { authAPI } from '../api/axiosInstance';
 import toast from 'react-hot-toast';
+import { FiKey, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 const CATEGORIES = ['food', 'fashion', 'phones', 'cakes', 'other'];
 
@@ -11,12 +12,14 @@ const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const [showAdminCode, setShowAdminCode] = useState(false);
   const [formData, setFormData] = useState({
     businessName: '',
     email: '',
     password: '',
     phone: '',
-    category: 'food'
+    category: 'food',
+    adminCode: ''
   });
 
   const handleChange = (e) => {
@@ -136,6 +139,31 @@ const Register = () => {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setShowAdminCode(!showAdminCode)}
+                className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <FiKey size={12} />
+                {showAdminCode ? 'Hide admin code' : 'Have an admin code?'}
+                {showAdminCode ? <FiChevronUp size={12} /> : <FiChevronDown size={12} />}
+              </button>
+
+              {showAdminCode && (
+                <div className="mt-2">
+                  <input
+                    type="password"
+                    name="adminCode"
+                    value={formData.adminCode}
+                    onChange={handleChange}
+                    className="input-field text-sm"
+                    placeholder="Enter admin code"
+                  />
+                </div>
+              )}
             </div>
           </div>
 

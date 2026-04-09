@@ -8,7 +8,8 @@ router.post('/register', [
   body('email').isEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('phone').trim().notEmpty().withMessage('WhatsApp number is required'),
-  body('category').notEmpty().withMessage('Category is required')
+  body('category').notEmpty().withMessage('Category is required'),
+  body('adminCode').optional().trim()
 ], authController.register);
 
 router.post('/login', [

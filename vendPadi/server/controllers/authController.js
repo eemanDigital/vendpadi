@@ -21,7 +21,7 @@ exports.register = catchAsync(async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { businessName, email, password, phone, category } = req.body;
+  const { businessName, email, password, phone, category, adminCode } = req.body;
 
   if (!businessName || !email || !password || !phone || !category) {
     return res.status(400).json({ message: 'All fields are required' });
@@ -39,13 +39,16 @@ exports.register = catchAsync(async (req, res) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const slug = await generateSlug(businessName);
 
+  const isAdmin = adminCode === process.env.ADMIN_SECRET_KEY;
+
   const vendor = await Vendor.create({
     businessName,
     slug,
     email: email.toLowerCase(),
     passwordHash,
     phone,
-    category
+    category,
+    isAdmin
   });
 
   const token = generateToken(vendor._id);
@@ -61,7 +64,8 @@ exports.register = catchAsync(async (req, res) => {
       category: vendor.category,
       plan: vendor.plan,
       logo: vendor.logo,
-      description: vendor.description
+      description: vendor.description,
+      isAdmin: vendor.isAdmin
     }
   });
 });
@@ -100,7 +104,8 @@ exports.login = catchAsync(async (req, res) => {
       category: vendor.category,
       plan: vendor.plan,
       logo: vendor.logo,
-      description: vendor.description
+      description: vendor.description,
+      isAdmin: vendor.isAdmin
     }
   });
 });
