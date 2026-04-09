@@ -318,42 +318,50 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
 
               <div className="bg-gray-50 rounded-2xl p-5">
                 <h4 className="font-semibold mb-4 flex items-center gap-2">
-                  <FiUpload /> Upload Payment Proof
+                  <FiUpload /> Upload Payment Receipt
                 </h4>
                 
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Payment Reference (Optional)</label>
-                    <input
-                      type="text"
-                      value={paymentRef}
-                      onChange={(e) => setPaymentRef(e.target.value)}
-                      placeholder="e.g., TRF/1234567890"
-                      className="input-field"
-                    />
+                  <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200">
+                    <FiCreditCard className="text-padi-green text-xl flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-500 mb-0.5">Transfer Reference (Optional)</p>
+                      <input
+                        type="text"
+                        value={paymentRef}
+                        onChange={(e) => setPaymentRef(e.target.value)}
+                        placeholder="Paste your transfer reference here"
+                        className="w-full text-sm font-medium bg-transparent outline-none"
+                      />
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Screenshot of Transfer Receipt</label>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Upload Screenshot</p>
                     <div className="relative">
                       {proofPreview ? (
-                        <div className="relative inline-block">
-                          <img src={proofPreview} alt="Proof" className="w-48 h-48 object-cover rounded-xl border-2 border-padi-green" />
+                        <div className="relative">
+                          <img src={proofPreview} alt="Receipt" className="w-full h-48 object-cover rounded-xl border-2 border-padi-green" />
                           <button
                             type="button"
                             onClick={() => { setProofFile(null); setProofPreview(''); }}
-                            className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                            className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                           >
-                            <FiX size={14} />
+                            <FiX size={16} />
                           </button>
+                          <p className="absolute bottom-2 left-2 text-xs text-white bg-black/60 px-2 py-1 rounded-lg">Receipt uploaded</p>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-padi-green hover:bg-padi-green/5 transition-colors bg-gray-50"
-                          onClick={() => document.getElementById('proof-input').click()}>
-                          <FiUpload className="text-gray-400 mb-2" size={32} />
-                          <span className="text-sm text-gray-500 font-medium">Click to upload screenshot</span>
-                          <span className="text-xs text-gray-400 mt-1">JPG, PNG or WebP (Max 5MB)</span>
-                        </div>
+                        <label
+                          htmlFor="proof-input"
+                          className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-padi-green hover:bg-padi-green/5 transition-colors bg-white">
+                          <div className="w-14 h-14 bg-padi-green/10 rounded-full flex items-center justify-center mb-3">
+                            <FiUpload className="text-padi-green" size={24} />
+                          </div>
+                          <span className="text-sm font-medium text-gray-700">Tap to select screenshot</span>
+                          <span className="text-xs text-gray-500 mt-1">from your gallery</span>
+                          <span className="text-xs text-gray-400 mt-2">JPG, PNG or WebP (Max 5MB)</span>
+                        </label>
                       )}
                       <input 
                         id="proof-input"

@@ -125,11 +125,14 @@ const ProductDetailModal = ({ product, onClose }) => {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-500 mb-0.5">Category</p>
-                <p className="text-sm font-medium text-navy capitalize">{product.category}</p>
+                <p className="text-sm font-medium text-navy capitalize">
+                  {product.category}
+                </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-500 mb-0.5">Availability</p>
-                <p className={`text-sm font-medium ${product.inStock ? "text-emerald-600" : "text-red-500"}`}>
+                <p
+                  className={`text-sm font-medium ${product.inStock ? "text-emerald-600" : "text-red-500"}`}>
                   {product.inStock ? "Available" : "Out of Stock"}
                 </p>
               </div>

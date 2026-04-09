@@ -1,8 +1,24 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const PlanRequest = require('../models/PlanRequest');
 const Vendor = require('../models/Vendor');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: 'vendpadi/payments' }
+});
+
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 const catchAsync = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -76,40 +92,7 @@ router.delete('/request/:id', protect, catchAsync(async (req, res) => {
   res.json({ message: 'Request cancelled' });
 }));
 
-router.post('/upload-proof/:id', protect, catchAsync(async (req, res) => {
-  const multer = require('multer');
-  const cloudinary = require('cloudinary').v2;
-  const { CloudinaryStorage } = require('multer-storage-cloudinary');
-
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-  });
-
-  const storage = new CloudinaryStorage({
-    cloudinary,
-    params: { folder: 'vendpadi/payments' }
-  });
-
-  const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
-
-  const uploadMiddleware = (req, res, next) => {
-    upload.single('proof')(req, res, (err) => {
-      if (err) {
-        return res.status(400).json({ message: 'File upload failed' });
-      }
-      next();
-    });
-  };
-
-  await new Promise((resolve, reject) => {
-    uploadMiddleware(req, res, (err) => {
-      if (err) reject(err);
-      else resolve();
-    });
-  });
-
+router.post('/upload-proof/:id', protect, upload.single('proof'), catchAsync(async (req, res) => {
   const request = await PlanRequest.findOne({
     _id: req.params.id,
     vendorId: req.vendor._id
