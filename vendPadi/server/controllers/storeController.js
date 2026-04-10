@@ -1,6 +1,7 @@
 const Vendor = require('../models/Vendor');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
+const { sendOrderNotificationEmail } = require('../utils/email');
 
 const catchAsync = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -71,6 +72,20 @@ exports.createOrder = catchAsync(async (req, res) => {
     customerPhone: customerPhone?.trim() || '',
     note: note?.trim() || ''
   });
+
+  sendOrderNotificationEmail(vendor.email, vendor.businessName, {
+    customerName: customerName || 'Anonymous',
+    items: order.items,
+    total: totalAmount,
+    orderId: order._id.toString(),
+    date: new Date(order.createdAt).toLocaleDateString('en-NG', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }).catch(err => console.error('Failed to send order email:', err));
 
   res.status(201).json({ 
     message: 'Order created successfully',

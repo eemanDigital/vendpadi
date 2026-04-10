@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { planAPI } from '../api/axiosInstance';
+import { planAPI, adminAPI } from '../api/axiosInstance';
 import { logout } from '../store/authSlice';
 import toast from 'react-hot-toast';
 import { 
@@ -16,8 +16,20 @@ import {
   FiTrendingUp,
   FiDollarSign,
   FiUsers,
-  FiPackage
+  FiPackage,
+  FiMail,
+  FiSend,
+  FiStar,
+  FiGift,
+  FiAward
 } from 'react-icons/fi';
+
+const GREETING_TYPES = [
+  { value: 'general', label: 'General Check-in', icon: FiMail, description: 'Friendly message to all vendors' },
+  { value: 'newYear', label: 'New Year Greeting', icon: FiStar, description: '🎊 Happy New Year wishes' },
+  { value: 'holiday', label: 'Holiday Greeting', icon: FiGift, description: '🎄 Season\'s greetings' },
+  { value: 'milestone', label: 'Milestone Celebration', icon: FiAward, description: '🏆 Achievement message' },
+];
 
 const AdminPanel = () => {
   const dispatch = useDispatch();
@@ -35,6 +47,10 @@ const AdminPanel = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
   const [activeTab, setActiveTab] = useState('stats');
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [selectedGreeting, setSelectedGreeting] = useState(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailResult, setEmailResult] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -93,6 +109,22 @@ const AdminPanel = () => {
     localStorage.removeItem('vendpadi_admin_token');
     dispatch(logout());
     navigate('/admin-login');
+  };
+
+  const handleSendGreeting = async () => {
+    if (!selectedGreeting) return;
+
+    setSendingEmail(true);
+    try {
+      const result = await adminAPI.sendGreeting(selectedGreeting.value);
+      setEmailResult(result.data);
+      toast.success(`Email sent to ${result.data.sent} vendors!`);
+      setShowEmailModal(false);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to send emails');
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   const formatDate = (date) => {
@@ -159,6 +191,17 @@ const AdminPanel = () => {
                 {stats.pendingRequests}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab('email')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+              activeTab === 'email' 
+                ? 'bg-padi-green text-white' 
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <FiMail size={16} />
+            <span className="hidden sm:inline">Send Email</span>
           </button>
         </div>
 
@@ -262,8 +305,7 @@ const AdminPanel = () => {
               </div>
             </div>
           </div>
-        ) : (
-          /* Requests Tab */
+        ) : activeTab === 'requests' ? (
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-navy">Upgrade Requests</h2>
@@ -294,7 +336,6 @@ const AdminPanel = () => {
                 {requests.map((req) => (
                   <div key={req._id} className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 hover:shadow-lg transition-shadow">
                     <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                      {/* Vendor Info */}
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
                           <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
@@ -343,7 +384,6 @@ const AdminPanel = () => {
                         </div>
                       </div>
 
-                      {/* Actions */}
                       <div className="flex sm:flex-col gap-2 lg:min-w-[200px]">
                         <button
                           onClick={() => handleApprove(req._id)}
@@ -374,7 +414,53 @@ const AdminPanel = () => {
               </div>
             )}
           </div>
-        )}
+        ) : activeTab === 'email' ? (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl p-6 border border-gray-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center">
+                  <FiMail className="text-padi-green text-xl" />
+                </div>
+                <div>
+                  <h2 className="font-sora font-bold text-lg text-navy">Send Email to Vendors</h2>
+                  <p className="text-sm text-gray-500">Send greetings or notifications to your vendors</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {GREETING_TYPES.map((greeting) => {
+                  const Icon = greeting.icon;
+                  return (
+                    <button
+                      key={greeting.value}
+                      onClick={() => { setSelectedGreeting(greeting); setShowEmailModal(true); }}
+                      className="p-5 border border-gray-200 rounded-xl hover:border-padi-green hover:bg-padi-green/5 text-left transition-all group"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 bg-gray-100 group-hover:bg-padi-green/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <Icon className="text-gray-500 group-hover:text-padi-green" size={24} />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-navy mb-1">{greeting.label}</h3>
+                          <p className="text-sm text-gray-500">{greeting.description}</p>
+                        </div>
+                        <FiSend className="text-gray-300 group-hover:text-padi-green flex-shrink-0" size={20} />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {emailResult && (
+              <div className="bg-padi-green/10 border border-padi-green/20 rounded-xl p-4">
+                <p className="text-padi-green font-medium">
+                  ✓ Sent {emailResult.sent} emails successfully ({emailResult.failed} failed)
+                </p>
+              </div>
+            )}
+          </div>
+        ) : null}
       </main>
 
       {/* Reject Modal */}
@@ -420,6 +506,55 @@ const AdminPanel = () => {
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   'Reject Request'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Confirmation Modal */}
+      {showEmailModal && selectedGreeting && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowEmailModal(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-padi-green/10 rounded-full flex items-center justify-center">
+                <FiMail className="text-padi-green text-xl" />
+              </div>
+              <div>
+                <h3 className="font-sora font-bold text-lg text-navy">Send {selectedGreeting.label}</h3>
+                <p className="text-sm text-gray-500">This will email all {stats.total} vendors</p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+              <p className="text-amber-800 text-sm">
+                ⚠️ This will send an email to all <strong>{stats.total} vendors</strong>. Make sure you want to proceed.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowEmailModal(false); setSelectedGreeting(null); }}
+                className="flex-1 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendGreeting}
+                disabled={sendingEmail}
+                className="flex-1 py-3 bg-padi-green hover:bg-padi-green-dark text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {sendingEmail ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <FiSend size={18} />
+                    Send Email
+                  </>
                 )}
               </button>
             </div>

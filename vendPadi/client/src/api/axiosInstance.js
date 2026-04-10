@@ -68,8 +68,17 @@ export const planAPI = {
   }),
   getAdminRequests: () => api.get('/plans/admin/requests'),
   getAdminStats: () => api.get('/plans/admin/stats'),
-  approveRequest: (id) => api.put(`/plans/admin/approve/${id}`),
-  rejectRequest: (id, reason) => api.put(`/plans/admin/reject/${id}`, { reason })
+  approveRequest: (id) => api.put('/plans/admin/approve/${id}'),
+  rejectRequest: (id, reason) => api.put('/plans/admin/reject/${id}', { reason })
+};
+
+export const adminAPI = {
+  getVendors: () => api.get('/admin/vendors'),
+  getVendor: (id) => api.get(`/admin/vendors/${id}`),
+  getStats: () => api.get('/admin/stats'),
+  approvePlan: (vendorId, planType) => api.put(`/admin/vendors/${vendorId}/approve-plan`, { planType }),
+  rejectPlan: (vendorId, reason) => api.put(`/admin/vendors/${vendorId}/reject-plan`, { vendorId, reason }),
+  sendGreeting: (greetingType, vendorIds) => api.post('/admin/send-greeting', { greetingType, vendorIds })
 };
 
 export default api;

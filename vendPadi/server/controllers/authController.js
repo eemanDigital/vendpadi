@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const { validationResult } = require('express-validator');
 const Vendor = require('../models/Vendor');
 const generateSlug = require('../utils/generateSlug');
-const { sendPasswordResetEmail } = require('../utils/email');
+const { sendPasswordResetEmail, sendWelcomeEmail } = require('../utils/email');
 
 const catchAsync = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -54,6 +54,10 @@ exports.register = catchAsync(async (req, res) => {
   });
 
   const token = generateToken(vendor._id);
+
+  sendWelcomeEmail(vendor.email, vendor.businessName).catch(err => {
+    console.error('Failed to send welcome email:', err);
+  });
 
   res.status(201).json({
     token,
