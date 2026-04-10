@@ -7,15 +7,59 @@ import PlanBadge from '../components/PlanBadge';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import Logo from '../components/Logo';
 import toast from 'react-hot-toast';
-import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle } from 'react-icons/fi';
+import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch } from 'react-icons/fi';
 
 const CATEGORIES = ['food', 'fashion', 'phones', 'cakes', 'other'];
 
 const PLAN_FEATURES = {
-  free: { products: 10, images: 2, logo: false, pdf: false },
-  starter: { products: 50, images: 4, logo: true, pdf: false },
-  business: { products: 200, images: 6, logo: true, pdf: true },
-  premium: { products: '∞', images: 8, logo: true, pdf: true }
+  free: { 
+    products: 10, 
+    images: 2, 
+    logo: false, 
+    pdf: false,
+    stockTracking: true,
+    lowStockAlert: '10 items',
+    filtering: true,
+    sorting: false,
+    wishlist: true,
+    reviews: true
+  },
+  starter: { 
+    products: 50, 
+    images: 4, 
+    logo: true, 
+    pdf: false,
+    stockTracking: true,
+    lowStockAlert: '8 items',
+    filtering: true,
+    sorting: false,
+    wishlist: true,
+    reviews: true
+  },
+  business: { 
+    products: 200, 
+    images: 6, 
+    logo: true, 
+    pdf: true,
+    stockTracking: true,
+    lowStockAlert: '5 items',
+    filtering: true,
+    sorting: true,
+    wishlist: true,
+    reviews: true
+  },
+  premium: { 
+    products: '∞', 
+    images: 8, 
+    logo: true, 
+    pdf: true,
+    stockTracking: true,
+    lowStockAlert: '3 items',
+    filtering: true,
+    sorting: true,
+    wishlist: true,
+    reviews: true
+  }
 };
 
 const Settings = () => {
@@ -232,6 +276,33 @@ const Settings = () => {
               <div className="text-center p-3 bg-gray-50 rounded-xl">
                 <p className="text-lg">{currentFeatures.pdf ? '✅' : '❌'}</p>
                 <p className="text-xs text-gray-500">PDF Invoices</p>
+              </div>
+            </div>
+
+            {/* New Features */}
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <p className="text-xs text-gray-500 mb-3 font-medium">Included Features:</p>
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-medium">
+                  <FiPackage size={12} /> Stock Tracking
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium">
+                  <FiAlertTriangle size={12} /> Low Stock ({currentFeatures.lowStockAlert})
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium">
+                  <FiSearch size={12} /> Search & Filter
+                </span>
+                {currentFeatures.sorting && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium">
+                    <FiGrid size={12} /> Advanced Sorting
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-pink-50 text-pink-700 rounded-lg text-xs font-medium">
+                  <FiHeart size={12} /> Wishlist
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-medium">
+                  <FiMessageSquare size={12} /> Reviews
+                </span>
               </div>
             </div>
           </div>

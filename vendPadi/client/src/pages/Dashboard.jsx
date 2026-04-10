@@ -1,16 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { productAPI, vendorAPI } from '../api/axiosInstance';
+import { motion, AnimatePresence } from 'framer-motion';
+import { productAPI } from '../api/axiosInstance';
 import ProductCard from '../components/ProductCard';
 import ProductForm from '../components/ProductForm';
 import PlanBadge from '../components/PlanBadge';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import Logo from '../components/Logo';
+import SearchInput from '../components/ui/SearchInput';
+import SortDropdown from '../components/ui/SortDropdown';
+import FilterBar from '../components/ui/FilterBar';
+import EmptyState from '../components/ui/EmptyState';
+import LowStockAlert from '../components/ui/LowStockAlert';
+import InventoryModal from '../components/store/InventoryModal';
+import Loading from '../components/Loading';
 import { logout } from '../store/authSlice';
 import { clearCart } from '../store/cartSlice';
 import toast from 'react-hot-toast';
-import { FiPlus, FiCopy, FiEdit2, FiTrash2, FiExternalLink, FiX, FiPackage, FiSettings, FiShoppingBag, FiTrendingUp, FiLogOut } from 'react-icons/fi';
+import { FiPlus, FiCopy, FiEdit2, FiTrash2, FiExternalLink, FiX, FiPackage, FiSettings, FiShoppingBag, FiLogOut, FiGrid, FiList, FiAlertTriangle, FiPackage as FiBox } from 'react-icons/fi';
 
 const PLAN_LIMITS = {
   free: { products: 10, images: 2 },
@@ -26,21 +34,66 @@ const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showInventoryModal, setShowInventoryModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [copied, setCopied] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  const [filters, setFilters] = useState({
+    category: '',
+    inStock: undefined,
+    minPrice: undefined,
+    maxPrice: undefined,
+    lowStock: false
+  });
 
   const planLimits = PLAN_LIMITS[vendor?.plan?.type || 'free'];
   const currentLimit = planLimits.products;
   const isAtLimit = products.length >= currentLimit && currentLimit !== Infinity;
 
-  const handleLogout = () => {
-    dispatch(logout());
-    dispatch(clearCart());
-    navigate('/');
-  };
+  const lowStockProducts = useMemo(() => 
+    products.filter(p => p.lowStockAlert),
+    [products]
+  );
 
-  const fetchProducts = async () => {
+  const filteredProducts = useMemo(() => {
+    let result = [...products];
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query) ||
+        p.description?.toLowerCase().includes(query)
+      );
+    }
+
+    if (filters.category) {
+      result = result.filter(p => p.category === filters.category);
+    }
+
+    if (filters.inStock !== undefined) {
+      result = result.filter(p => p.inStock === filters.inStock);
+    }
+
+    if (filters.minPrice !== undefined) {
+      result = result.filter(p => p.price >= filters.minPrice);
+    }
+
+    if (filters.maxPrice !== undefined) {
+      result = result.filter(p => p.price <= filters.maxPrice);
+    }
+
+    if (filters.lowStock) {
+      result = result.filter(p => p.lowStockAlert);
+    }
+
+    return result;
+  }, [products, searchQuery, filters]);
+
+  const fetchProducts = useCallback(async () => {
     try {
       const { data } = await productAPI.getAll();
       setProducts(data);
@@ -49,11 +102,17 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    dispatch(clearCart());
+    navigate('/');
+  };
 
   const handleDelete = async (productId) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
@@ -95,10 +154,22 @@ const Dashboard = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({ category: '', inStock: undefined, minPrice: undefined, maxPrice: undefined, lowStock: false });
+    setSearchQuery('');
+  };
+
+  const gridCols = viewMode === 'grid' 
+    ? 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' 
+    : 'grid-cols-1';
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="hidden lg:block fixed left-0 top-0 w-64 h-screen bg-navy text-white p-6 flex flex-col overflow-y-auto">
+      <aside className="hidden lg:block fixed left-0 top-0 w-64 h-screen bg-navy text-white p-6 flex flex-col overflow-y-auto z-20">
         <Link to="/" className="flex items-center gap-3 mb-6">
           <Logo variant="icon-light" size="md" />
         </Link>
@@ -142,6 +213,18 @@ const Dashboard = () => {
           </Link>
         </nav>
 
+        {lowStockProducts.length > 0 && (
+          <button
+            onClick={() => setShowInventoryModal(true)}
+            className="mt-4 p-3 bg-amber-500/20 hover:bg-amber-500/30 rounded-xl border border-amber-500/30 transition-colors"
+          >
+            <div className="flex items-center gap-2 text-amber-400">
+              <FiAlertTriangle size={16} />
+              <span className="text-sm font-medium">{lowStockProducts.length} Low Stock</span>
+            </div>
+          </button>
+        )}
+
         <div className="mt-4 p-4 bg-white/10 rounded-xl">
           <p className="text-xs text-gray-400 mb-2">Your Store Link</p>
           <p className="text-sm font-medium break-all">/store/{vendor?.slug}</p>
@@ -171,7 +254,6 @@ const Dashboard = () => {
         </button>
       </aside>
 
-      {/* Mobile Header */}
       <header className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -181,25 +263,24 @@ const Dashboard = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="lg:ml-64 pb-20 lg:pb-6">
-        <div className="max-w-6xl mx-auto p-4 lg:p-6">
+        <div className="max-w-7xl mx-auto p-4 lg:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="font-sora font-bold text-2xl text-navy">Your Products</h1>
-              <p className="text-gray-500">
-                {products.length} of {currentLimit === Infinity ? '∞' : currentLimit} products
-                {vendor?.plan?.type !== 'free' && ` • ${planLimits.images} images/product`}
+              <h1 className="font-sora font-bold text-2xl text-navy">Products</h1>
+              <p className="text-gray-500 text-sm">
+                {filteredProducts.length} of {products.length} products
+                {vendor?.plan?.type !== 'free' && ` • ${planLimits.images} images max`}
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <a
                 href={`/store/${vendor?.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-gray-600 hover:text-padi-green transition-colors"
+                className="hidden sm:flex items-center gap-2 text-sm text-gray-600 hover:text-padi-green transition-colors"
               >
-                <FiExternalLink /> View Store
+                <FiExternalLink /> Preview
               </a>
               <button
                 onClick={handleAddNew}
@@ -208,6 +289,52 @@ const Dashboard = () => {
               >
                 <FiPlus /> Add Product
               </button>
+            </div>
+          </div>
+
+          <LowStockAlert 
+            products={lowStockProducts} 
+            onManageInventory={() => setShowInventoryModal(true)}
+            className="mb-6"
+          />
+
+          <div className="bg-white rounded-xl p-4 mb-6 shadow-sm">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1">
+                <SearchInput
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search products..."
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <SortDropdown
+                  value={sortBy}
+                  onChange={setSortBy}
+                />
+                <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                  >
+                    <FiGrid size={18} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+                  >
+                    <FiList size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <FilterBar
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onClearFilters={clearFilters}
+              />
             </div>
           </div>
 
@@ -228,51 +355,76 @@ const Dashboard = () => {
 
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="w-12 h-12 border-4 border-padi-green border-t-transparent rounded-full animate-spin"></div>
+              <Loading variant="spinner" size="lg" />
             </div>
-          ) : products.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-5xl">📦</span>
-              </div>
-              <h3 className="font-sora font-semibold text-xl mb-2">No Products Yet</h3>
-              <p className="text-gray-500 mb-6">Add your first product to start selling</p>
-              <button onClick={handleAddNew} className="btn-primary inline-flex items-center gap-2">
-                <FiPlus /> Add Your First Product
-              </button>
-            </div>
+          ) : filteredProducts.length === 0 ? (
+            products.length === 0 ? (
+              <EmptyState
+                icon={FiBox}
+                title="No Products Yet"
+                description="Add your first product to start selling on WhatsApp"
+                action={handleAddNew}
+                actionLabel="Add Your First Product"
+              />
+            ) : (
+              <EmptyState
+                icon={FiPackage}
+                title="No Products Found"
+                description="Try adjusting your search or filters"
+                action={clearFilters}
+                actionLabel="Clear Filters"
+              />
+            )
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {products.map((product) => (
-                <div key={product._id} className="relative group">
-                  <ProductCard product={product} />
-                  <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <button
-                      onClick={() => handleEdit(product)}
-                      className="p-2 bg-white rounded-lg shadow-lg hover:bg-navy hover:text-white transition-colors"
-                    >
-                      <FiEdit2 size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product._id)}
-                      className="p-2 bg-white rounded-lg shadow-lg hover:bg-red-500 hover:text-white transition-colors"
-                    >
-                      <FiTrash2 size={14} />
-                    </button>
-                  </div>
-                  {!product.inStock && (
-                    <div className="absolute top-2 left-2">
-                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">Out of Stock</span>
+            <motion.div 
+              layout
+              className={`grid ${gridCols} gap-4`}
+            >
+              <AnimatePresence mode="popLayout">
+                {filteredProducts.map((product) => (
+                  <motion.div
+                    key={product._id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="relative group"
+                  >
+                    <ProductCard product={product} view={viewMode} />
+                    <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="p-2 bg-white rounded-lg shadow-lg hover:bg-navy hover:text-white transition-colors"
+                      >
+                        <FiEdit2 size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product._id)}
+                        className="p-2 bg-white rounded-lg shadow-lg hover:bg-red-500 hover:text-white transition-colors"
+                      >
+                        <FiTrash2 size={14} />
+                      </button>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                    {product.lowStockAlert && (
+                      <div className="absolute top-2 left-2">
+                        <span className="bg-amber-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                          <FiAlertTriangle size={10} /> Low
+                        </span>
+                      </div>
+                    )}
+                    {!product.inStock && (
+                      <div className="absolute top-2 left-2">
+                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">Out</span>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
           )}
         </div>
       </div>
 
-      {/* Mobile Bottom Nav */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-2 z-30">
         <div className="flex items-center justify-around">
           <Link to="/dashboard" className="flex flex-col items-center gap-1 text-padi-green">
@@ -290,31 +442,49 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="p-5 border-b flex items-center justify-between sticky top-0 bg-white">
-              <h2 className="font-sora font-bold text-lg">
-                {editingProduct ? 'Edit Product' : 'Add New Product'}
-              </h2>
-              <button
-                onClick={() => { setShowModal(false); setEditingProduct(null); }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <FiX size={20} />
-              </button>
-            </div>
-            <div className="p-5">
-              <ProductForm
-                product={editingProduct}
-                onSuccess={handleSuccess}
-                onCancel={() => { setShowModal(false); setEditingProduct(null); }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            >
+              <div className="p-5 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+                <h2 className="font-sora font-bold text-lg">
+                  {editingProduct ? 'Edit Product' : 'Add New Product'}
+                </h2>
+                <button
+                  onClick={() => { setShowModal(false); setEditingProduct(null); }}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+              <div className="p-5">
+                <ProductForm
+                  product={editingProduct}
+                  onSuccess={handleSuccess}
+                  onCancel={() => { setShowModal(false); setEditingProduct(null); }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <InventoryModal
+        isOpen={showInventoryModal}
+        onClose={() => setShowInventoryModal(false)}
+        products={products.filter(p => p.stock > 0)}
+        onUpdate={fetchProducts}
+      />
 
       <PlanUpgradeModal
         isOpen={showUpgradeModal}

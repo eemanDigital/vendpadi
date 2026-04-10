@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem, incrementQty, decrementQty } from "../store/cartSlice";
+import WishlistButton from "./store/WishlistButton";
+import StockBadge from "./ui/StockBadge";
 import {
   FiShoppingCart,
   FiChevronLeft,
@@ -207,6 +209,18 @@ const GridCard = ({ product, onOpenDetail, cartItem }) => {
           name={product.name}
           category={product.category}
         />
+        
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+          <WishlistButton product={product} size="sm" />
+        </div>
+
+        {product.lowStockAlert && (
+          <div className="absolute top-2 left-2 z-10">
+            <span className="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+              Low Stock
+            </span>
+          </div>
+        )}
 
         {!product.inStock && (
           <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center z-10">

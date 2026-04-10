@@ -6,9 +6,11 @@ const { checkProductLimit, checkImageLimit } = require('../middleware/planMiddle
 const { uploadProductImages } = require('../middleware/uploadMiddleware');
 
 router.get('/', protect, productController.getProducts);
+router.get('/low-stock', protect, productController.getLowStockProducts);
 router.post('/', protect, checkProductLimit, productController.createProduct);
 router.post('/images', protect, uploadProductImages, productController.uploadImagesStandalone);
 router.put('/:id', protect, productController.updateProduct);
+router.patch('/:id/stock', protect, productController.updateStock);
 router.delete('/:id', protect, productController.deleteProduct);
 router.post('/:id/images', protect, uploadProductImages, checkImageLimit, productController.uploadImages);
 

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { FiTrendingUp, FiShare2, FiMessageCircle, FiCheck, FiStar, FiMenu, FiX, FiLogOut, FiLayout } from 'react-icons/fi';
+import { FiTrendingUp, FiShare2, FiMessageCircle, FiCheck, FiStar, FiMenu, FiX, FiLogOut, FiLayout, FiPackage, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch } from 'react-icons/fi';
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
@@ -19,6 +19,15 @@ const Landing = () => {
     setMobileMenuOpen(false);
   };
 
+  const features = [
+    { icon: FiPackage, title: 'Stock Management', desc: 'Track inventory, get low stock alerts, manage quantities easily' },
+    { icon: FiGrid, title: 'Smart Filtering', desc: 'Search, sort & filter products by category, price, or stock' },
+    { icon: FiHeart, title: 'Wishlist', desc: 'Customers can save favorite items for later purchase' },
+    { icon: FiMessageSquare, title: 'Reviews & Ratings', desc: 'Build trust with customer reviews and star ratings' },
+    { icon: FiAlertTriangle, title: 'Low Stock Alerts', desc: 'Get notified when products are running low' },
+    { icon: FiSearch, title: 'Product Search', desc: 'Fast search across your entire product catalog' },
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       {/* Nav */}
@@ -29,7 +38,6 @@ const Landing = () => {
               <Logo variant="icon-light" size="sm" />
             </Link>
             
-            {/* Desktop Nav - hidden on mobile */}
             <div className="hidden md:flex items-center gap-6">
               {isAuthenticated ? (
                 <>
@@ -51,7 +59,6 @@ const Landing = () => {
               )}
             </div>
             
-            {/* Mobile Menu Button - visible on mobile */}
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 -mr-2 hover:bg-white/10 rounded-lg transition-colors md:hidden"
@@ -60,7 +67,6 @@ const Landing = () => {
             </button>
           </div>
           
-          {/* Mobile Menu Dropdown */}
           <div className={`md:hidden overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'max-h-48 pb-4' : 'max-h-0'}`}>
             <div className="flex flex-col gap-1 pt-2 border-t border-white/10">
               {isAuthenticated ? (
@@ -131,8 +137,28 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* Features */}
       <section className="py-16 sm:py-20 px-4 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">Powerful Features</h2>
+          <p className="text-gray-500 text-center mb-10">Everything you need to manage and grow your business</p>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature, i) => (
+              <div key={i} className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
+                  <feature.icon className="text-padi-green text-xl" />
+                </div>
+                <h3 className="font-sora font-semibold text-lg mb-2">{feature.title}</h3>
+                <p className="text-gray-500 text-sm">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16 sm:py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">How It Works</h2>
           <p className="text-gray-500 text-center mb-10">Three simple steps to start selling</p>
@@ -140,10 +166,10 @@ const Landing = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { step: '1', icon: FiCheck, title: 'Register Your Store', desc: 'Sign up in 30 seconds. Get a unique link like vendpadi.com/store/yourname' },
-              { step: '2', icon: FiTrendingUp, title: 'Add Your Products', desc: 'Upload photos, set prices, add descriptions. Your catalog is ready instantly.' },
+              { step: '2', icon: FiTrendingUp, title: 'Add Your Products', desc: 'Upload photos, set prices, add stock. Your catalog is ready instantly.' },
               { step: '3', icon: FiShare2, title: 'Share & Get Orders', desc: 'Share your link on WhatsApp. Customers tap to order — it opens WhatsApp with their order ready.' }
             ].map((item, i) => (
-              <div key={i} className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow text-center">
+              <div key={i} className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow text-center border border-gray-100">
                 <div className="w-14 h-14 bg-padi-green/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <item.icon className="text-padi-green text-2xl" />
                 </div>
@@ -157,7 +183,7 @@ const Landing = () => {
       </section>
 
       {/* Pricing */}
-      <section className="py-16 sm:py-20 px-4">
+      <section className="py-16 sm:py-20 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">Simple Pricing</h2>
           <p className="text-gray-500 text-center mb-10">Start free, upgrade when you grow</p>
@@ -169,7 +195,17 @@ const Landing = () => {
                 icon: '🆓',
                 price: '₦0', 
                 period: 'forever',
-                features: ['10 products', '2 images/product', 'WhatsApp orders', 'Store QR code'],
+                features: [
+                  '10 products',
+                  '2 images per product',
+                  'WhatsApp orders',
+                  'Store QR code',
+                  'Stock tracking',
+                  'Low stock alerts (10 items)',
+                  'Product filtering & search',
+                  'Wishlist for customers',
+                  'Customer reviews'
+                ],
                 cta: 'Get Started',
                 highlight: false,
                 badge: null
@@ -179,7 +215,17 @@ const Landing = () => {
                 icon: '💡',
                 price: '₦999', 
                 period: '/month',
-                features: ['50 products', '4 images/product', 'Logo upload', 'Product QR codes'],
+                features: [
+                  '50 products',
+                  '4 images per product',
+                  'Logo upload',
+                  'Product QR codes',
+                  'Stock tracking',
+                  'Low stock alerts (8 items)',
+                  'Advanced filtering',
+                  'Wishlist for customers',
+                  'Customer reviews'
+                ],
                 cta: 'Upgrade',
                 highlight: false,
                 badge: null
@@ -189,7 +235,17 @@ const Landing = () => {
                 icon: '🚀',
                 price: '₦2,499', 
                 period: '/month',
-                features: ['200 products', '6 images/product', 'PDF invoices', 'Advanced analytics'],
+                features: [
+                  '200 products',
+                  '6 images per product',
+                  'Logo upload',
+                  'Product QR codes',
+                  'Stock tracking',
+                  'Low stock alerts (5 items)',
+                  'Advanced filtering & sorting',
+                  'Wishlist for customers',
+                  'Customer reviews'
+                ],
                 cta: 'Go Business',
                 highlight: true,
                 badge: 'Most Popular'
@@ -199,7 +255,17 @@ const Landing = () => {
                 icon: '👑',
                 price: '₦4,999', 
                 period: '/month',
-                features: ['Unlimited products', '8 images/product', 'Cover image', 'Priority support'],
+                features: [
+                  'Unlimited products',
+                  '8 images per product',
+                  'Custom cover image',
+                  'Priority support',
+                  'Stock tracking',
+                  'Low stock alerts (3 items)',
+                  'Advanced filtering & sorting',
+                  'Wishlist for customers',
+                  'Customer reviews'
+                ],
                 cta: 'Go Premium',
                 highlight: false,
                 badge: null
@@ -217,11 +283,11 @@ const Landing = () => {
                   <span className="text-4xl sm:text-5xl font-bold">{item.price}</span>
                   <span className={`text-sm ${item.highlight ? 'text-gray-300' : 'text-gray-500'}`}>{item.period}</span>
                 </div>
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-2.5 mb-6">
                   {item.features.map((f, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm">
-                      <FiCheck className={`flex-shrink-0 ${item.highlight ? 'text-padi-green' : 'text-padi-green'}`} />
-                      {f}
+                    <li key={j} className="flex items-start gap-2 text-sm">
+                      <FiCheck className={`flex-shrink-0 mt-0.5 ${item.highlight ? 'text-padi-green' : 'text-padi-green'}`} size={16} />
+                      <span>{f}</span>
                     </li>
                   ))}
                 </ul>

@@ -1,8 +1,8 @@
-import { FiArrowLeft, FiShare2, FiCheck } from "react-icons/fi";
+import { FiArrowLeft, FiShare2, FiCheck, FiHeart } from "react-icons/fi";
 import { motion } from "framer-motion";
 import OptimizedImage from "../OptimizedImage";
 
-const StoreHeader = ({ vendor, onBack, onShare, copied }) => {
+const StoreHeader = ({ vendor, onBack, onShare, onWishlist, wishlistCount = 0, copied }) => {
   return (
     <header className="bg-white/90 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-30">
       <div className="max-w-5xl mx-auto px-2 sm:px-4 h-12 sm:h-14 flex items-center gap-2 sm:gap-3">
@@ -26,6 +26,17 @@ const StoreHeader = ({ vendor, onBack, onShare, copied }) => {
             {vendor.businessName}
           </p>
         </div>
+
+        <button
+          onClick={onWishlist}
+          className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl hover:bg-gray-100 transition-all active:scale-95 flex-shrink-0">
+          <FiHeart size={16} className="text-gray-500" />
+          {wishlistCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              {wishlistCount > 9 ? '9+' : wishlistCount}
+            </span>
+          )}
+        </button>
 
         <button
           onClick={onShare}

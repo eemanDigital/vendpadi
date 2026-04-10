@@ -5,7 +5,7 @@ import { clearCart } from "../store/cartSlice";
 import { storeAPI } from "../api/axiosInstance";
 import { buildWhatsAppOrderLink } from "../utils/whatsapp";
 import toast from "react-hot-toast";
-import { FiPackage, FiHome, FiChevronRight, FiShare2 } from "react-icons/fi";
+import { FiPackage, FiHome, FiChevronRight, FiHeart } from "react-icons/fi";
 import { AnimatePresence, motion } from "framer-motion";
 
 import StoreHeader from "../components/store/StoreHeader";
@@ -17,6 +17,8 @@ import StoreSkeleton from "../components/store/StoreSkeleton";
 import ProductDetailModal from "../components/store/ProductDetailModal";
 import CartDrawer from "../components/store/CartDrawer";
 import WhatsAppQRModal from "../components/WhatsAppQRModal";
+import WishlistDrawer from "../components/store/WishlistDrawer";
+import { selectWishlistCount, setWishlistOpen } from "../store/wishlistSlice";
 
 const scaleIn = {
   initial: { opacity: 0, scale: 0.9 },
@@ -29,10 +31,12 @@ const Storefront = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const cartItems = useSelector((s) => s.cart.items);
+  const wishlistCount = useSelector(selectWishlistCount);
 
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCart, setShowCart] = useState(false);
+  const [showWishlist, setShowWishlist] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [view, setView] = useState("grid");
   const [search, setSearch] = useState("");
@@ -135,6 +139,11 @@ const Storefront = () => {
     }
   };
 
+  const handleOpenWishlist = () => {
+    dispatch(setWishlistOpen(true));
+    setShowWishlist(true);
+  };
+
   if (loading) {
     return <StoreSkeleton />;
   }
@@ -174,6 +183,8 @@ const Storefront = () => {
         vendor={vendor}
         onBack={() => navigate(-1)}
         onShare={handleShare}
+        onWishlist={handleOpenWishlist}
+        wishlistCount={wishlistCount}
         copied={copied}
       />
 
@@ -204,6 +215,11 @@ const Storefront = () => {
         isOpen={showCart}
         onClose={() => setShowCart(false)}
         onOrder={handleOrder}
+      />
+
+      <WishlistDrawer
+        isOpen={showWishlist}
+        onClose={() => setShowWishlist(false)}
       />
 
       <StoreBottomBar

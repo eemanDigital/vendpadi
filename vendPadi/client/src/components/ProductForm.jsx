@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { productAPI } from '../api/axiosInstance';
 import toast from 'react-hot-toast';
-import { FiImage, FiX, FiUpload, FiCheck } from 'react-icons/fi';
+import { FiImage, FiX, FiCheck, FiPackage, FiAlertTriangle } from 'react-icons/fi';
+import { CATEGORIES } from './ui/FilterBar';
+import StockBadge from './ui/StockBadge';
 
 const PLAN_IMAGE_LIMITS = {
   free: 2,
@@ -22,6 +24,8 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     price: product?.price || '',
     category: product?.category || '',
     inStock: product?.inStock !== false,
+    stock: product?.stock || 0,
+    lowStockThreshold: product?.lowStockThreshold || 5,
     images: product?.images || []
   });
   const [localImages, setLocalImages] = useState([]);
@@ -162,8 +166,10 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     }
   };
 
+  const isLowStock = formData.stock > 0 && formData.stock <= formData.lowStockThreshold;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Product Name *
@@ -213,16 +219,65 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Category
           </label>
-          <input
-            type="text"
+          <select
             name="category"
             value={formData.category}
             onChange={handleChange}
             className="input-field"
-            placeholder="e.g., Rice"
+          >
+            {CATEGORIES.map(cat => (
+              <option key={cat.value} value={cat.value}>
+                {cat.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Stock Quantity
+          </label>
+          <input
+            type="number"
+            name="stock"
+            value={formData.stock}
+            onChange={handleChange}
+            className="input-field"
+            placeholder="0"
+            min="0"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Low Stock Alert At
+          </label>
+          <input
+            type="number"
+            name="lowStockThreshold"
+            value={formData.lowStockThreshold}
+            onChange={handleChange}
+            className="input-field"
+            placeholder="5"
+            min="1"
           />
         </div>
       </div>
+
+      {formData.stock > 0 && (
+        <div className="flex items-center justify-between bg-gray-50 rounded-xl p-3">
+          <div className="flex items-center gap-2">
+            <FiPackage className="text-gray-400" />
+            <span className="text-sm text-gray-600">Stock Status:</span>
+          </div>
+          <StockBadge 
+            stock={Number(formData.stock)} 
+            threshold={Number(formData.lowStockThreshold)} 
+            size="sm"
+          />
+        </div>
+      )}
 
       <div>
         <div className="flex items-center justify-between mb-2">
@@ -235,7 +290,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         </div>
         <div className="flex flex-wrap gap-3">
           {formData.images.map((img, index) => (
-            <div key={`existing-${index}`} className="relative w-24 h-24 rounded-xl overflow-hidden group">
+            <div key={`existing-${index}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden group">
               <img src={img} alt="" className="w-full h-full object-cover" />
               <button
                 type="button"
@@ -247,11 +302,11 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
             </div>
           ))}
           {localImages.map((img, index) => (
-            <div key={`local-${index}`} className="relative w-24 h-24 rounded-xl overflow-hidden">
+            <div key={`local-${index}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden">
               <img src={img.url} alt="" className="w-full h-full object-cover" />
               {uploading && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <span className="text-white text-xs font-medium">Uploading...</span>
+                  <span className="text-white text-xs font-medium">...</span>
                 </div>
               )}
               <button
@@ -264,9 +319,9 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
             </div>
           ))}
           {(formData.images.length + localImages.length) < maxImages && (
-            <label className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-padi-green hover:bg-padi-green/5 transition-colors">
-              <FiImage className="text-gray-400" size={24} />
-              <span className="text-xs text-gray-400 mt-1">Add Photo</span>
+            <label className="w-20 h-20 sm:w-24 sm:h-24 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-padi-green hover:bg-padi-green/5 transition-colors">
+              <FiImage className="text-gray-400" size={20} />
+              <span className="text-xs text-gray-400 mt-1 hidden sm:block">Add</span>
               <input
                 type="file"
                 accept="image/*"
@@ -278,12 +333,9 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
             </label>
           )}
         </div>
-        <p className="text-xs text-gray-400 mt-2">
-          Upload up to {maxImages - formData.images.length} more images. These will appear as a gallery for this product.
-        </p>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
         <input
           type="checkbox"
           name="inStock"
@@ -297,7 +349,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         </label>
       </div>
 
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-3 pt-2">
         <button
           type="submit"
           className="btn-primary flex-1 flex items-center justify-center gap-2"
@@ -318,7 +370,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+          className="px-5 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
           disabled={saving}
         >
           Cancel

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { planAPI } from '../api/axiosInstance';
 import toast from 'react-hot-toast';
-import { FiX, FiCheck, FiUpload, FiClock, FiAlertCircle, FiCreditCard, FiSmartphone, FiRefreshCw, FiTrendingUp, FiZap, FiStar, FiMail, FiBarChart2, FiGrid, FiMaximize } from 'react-icons/fi';
+import { FiX, FiCheck, FiUpload, FiClock, FiAlertCircle, FiCreditCard, FiSmartphone, FiRefreshCw, FiTrendingUp, FiZap, FiStar, FiMail, FiBarChart2, FiGrid, FiMaximize, FiPackage, FiSearch, FiHeart, FiMessageSquare, FiAlertTriangle } from 'react-icons/fi';
 
 const PLAN_DETAILS = {
   free: {
@@ -14,15 +14,15 @@ const PLAN_DETAILS = {
     features: [
       { text: '10 products', included: true, icon: FiGrid },
       { text: '2 images per product', included: true, icon: FiMaximize },
+      { text: 'Stock tracking', included: true, icon: FiPackage },
+      { text: 'Low stock alerts (10 items)', included: true, icon: FiAlertTriangle },
+      { text: 'Product search & filter', included: true, icon: FiSearch },
+      { text: 'Wishlist for customers', included: true, icon: FiHeart },
+      { text: 'Customer reviews', included: true, icon: FiMessageSquare },
       { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
       { text: 'Store QR code', included: true, icon: FiZap },
-      { text: 'Shareable store link', included: true, icon: FiSmartphone },
-      { text: 'Basic analytics', included: true, icon: FiBarChart2 },
       { text: 'Logo upload', included: false },
-      { text: 'Custom store link', included: false },
-      { text: 'Product QR codes', included: false },
-      { text: 'PDF invoices & receipts', included: false },
-      { text: 'Email order notifications', included: false },
+      { text: 'Advanced sorting', included: false },
       { text: 'Priority support', included: false }
     ]
   },
@@ -35,15 +35,15 @@ const PLAN_DETAILS = {
     features: [
       { text: '50 products', included: true, icon: FiGrid },
       { text: '4 images per product', included: true, icon: FiMaximize },
+      { text: 'Stock tracking', included: true, icon: FiPackage },
+      { text: 'Low stock alerts (8 items)', included: true, icon: FiAlertTriangle },
+      { text: 'Product search & filter', included: true, icon: FiSearch },
+      { text: 'Wishlist for customers', included: true, icon: FiHeart },
+      { text: 'Customer reviews', included: true, icon: FiMessageSquare },
       { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
-      { text: 'Store QR code', included: true, icon: FiZap },
-      { text: 'Product QR codes', included: true, icon: FiZap },
       { text: 'Logo upload', included: true, icon: FiStar },
-      { text: 'Custom store link', included: true, icon: FiTrendingUp },
-      { text: 'Basic analytics', included: true, icon: FiBarChart2 },
-      { text: 'Email order notifications', included: true, icon: FiMail },
-      { text: 'PDF invoices', included: false },
-      { text: 'PDF receipts', included: false },
+      { text: 'Product QR codes', included: true, icon: FiZap },
+      { text: 'Advanced sorting', included: false },
       { text: 'Priority support', included: false }
     ]
   },
@@ -57,15 +57,15 @@ const PLAN_DETAILS = {
     features: [
       { text: '200 products', included: true, icon: FiGrid },
       { text: '6 images per product', included: true, icon: FiMaximize },
+      { text: 'Stock tracking', included: true, icon: FiPackage },
+      { text: 'Low stock alerts (5 items)', included: true, icon: FiAlertTriangle },
+      { text: 'Product search & filter', included: true, icon: FiSearch },
+      { text: 'Advanced sorting', included: true, icon: FiGrid },
+      { text: 'Wishlist for customers', included: true, icon: FiHeart },
+      { text: 'Customer reviews', included: true, icon: FiMessageSquare },
       { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
-      { text: 'Store QR code', included: true, icon: FiZap },
-      { text: 'Product QR codes', included: true, icon: FiZap },
       { text: 'Logo upload', included: true, icon: FiStar },
-      { text: 'Custom store link', included: true, icon: FiTrendingUp },
-      { text: 'Advanced analytics', included: true, icon: FiBarChart2 },
-      { text: 'Email order notifications', included: true, icon: FiMail },
       { text: 'PDF invoices', included: true, icon: FiStar },
-      { text: 'PDF receipts', included: true, icon: FiStar },
       { text: 'Priority support', included: false }
     ]
   },
@@ -78,15 +78,15 @@ const PLAN_DETAILS = {
     features: [
       { text: 'Unlimited products', included: true, icon: FiGrid },
       { text: '8 images per product', included: true, icon: FiMaximize },
+      { text: 'Stock tracking', included: true, icon: FiPackage },
+      { text: 'Low stock alerts (3 items)', included: true, icon: FiAlertTriangle },
+      { text: 'Product search & filter', included: true, icon: FiSearch },
+      { text: 'Advanced sorting', included: true, icon: FiGrid },
+      { text: 'Wishlist for customers', included: true, icon: FiHeart },
+      { text: 'Customer reviews', included: true, icon: FiMessageSquare },
       { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
-      { text: 'Store QR code', included: true, icon: FiZap },
-      { text: 'Product QR codes', included: true, icon: FiZap },
       { text: 'Logo + Cover image', included: true, icon: FiStar },
-      { text: 'Custom store link', included: true, icon: FiTrendingUp },
-      { text: 'Advanced analytics', included: true, icon: FiBarChart2 },
-      { text: 'Email order notifications', included: true, icon: FiMail },
       { text: 'PDF invoices', included: true, icon: FiStar },
-      { text: 'PDF receipts', included: true, icon: FiStar },
       { text: 'Priority support', included: true, icon: FiStar }
     ]
   }

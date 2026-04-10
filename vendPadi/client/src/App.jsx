@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
@@ -6,25 +6,33 @@ import { store } from './store';
 import { checkAuth } from './store/authSlice';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
-import Landing from './pages/Landing';
-import Register from './pages/Register';
-import Login from './pages/Login';
-import AdminLogin from './pages/AdminLogin';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import Dashboard from './pages/Dashboard';
-import Settings from './pages/Settings';
-import Orders from './pages/Orders';
-import Storefront from './pages/Storefront';
-import AdminPanel from './pages/AdminPanel';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import CookiePolicy from './pages/CookiePolicy';
 import ErrorBoundary from './components/ErrorBoundary';
+import Loading from './components/Loading';
+
+const Landing = lazy(() => import('./pages/Landing'));
+const Register = lazy(() => import('./pages/Register'));
+const Login = lazy(() => import('./pages/Login'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Orders = lazy(() => import('./pages/Orders'));
+const Storefront = lazy(() => import('./pages/Storefront'));
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <Loading variant="spinner" size="lg" />
+  </div>
+);
 
 function AppContent() {
   const dispatch = useDispatch();
-  const { vendor, loading } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.auth);
   const authChecked = useRef(false);
 
   useEffect(() => {
@@ -41,11 +49,7 @@ function AppContent() {
   }, [dispatch]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-12 h-12 border-4 border-padi-green border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (
@@ -84,23 +88,22 @@ function AppContent() {
         }}
       />
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-of-service" element={<TermsOfService />} />
-        <Route path="/cookie-policy" element={<CookiePolicy />} />
-        <Route path="/store/:slug" element={<Storefront />} />
+        <Route path="/" element={<Suspense fallback={<PageLoader />}><Landing /></Suspense>} />
+        <Route path="/register" element={<Suspense fallback={<PageLoader />}><Register /></Suspense>} />
+        <Route path="/login" element={<Suspense fallback={<PageLoader />}><Login /></Suspense>} />
+        <Route path="/admin-login" element={<Suspense fallback={<PageLoader />}><AdminLogin /></Suspense>} />
+        <Route path="/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPassword /></Suspense>} />
+        <Route path="/reset-password/:token" element={<Suspense fallback={<PageLoader />}><ResetPassword /></Suspense>} />
+        <Route path="/privacy-policy" element={<Suspense fallback={<PageLoader />}><PrivacyPolicy /></Suspense>} />
+        <Route path="/terms-of-service" element={<Suspense fallback={<PageLoader />}><TermsOfService /></Suspense>} />
+        <Route path="/cookie-policy" element={<Suspense fallback={<PageLoader />}><CookiePolicy /></Suspense>} />
+        <Route path="/store/:slug" element={<Suspense fallback={<PageLoader />}><Storefront /></Suspense>} />
         
-        {/* Vendor Routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>
             </ProtectedRoute>
           }
         />
@@ -108,7 +111,7 @@ function AppContent() {
           path="/settings"
           element={
             <ProtectedRoute>
-              <Settings />
+              <Suspense fallback={<PageLoader />}><Settings /></Suspense>
             </ProtectedRoute>
           }
         />
@@ -116,17 +119,16 @@ function AppContent() {
           path="/orders"
           element={
             <ProtectedRoute>
-              <Orders />
+              <Suspense fallback={<PageLoader />}><Orders /></Suspense>
             </ProtectedRoute>
           }
         />
         
-        {/* Admin Routes */}
         <Route
           path="/admin-panel"
           element={
             <AdminRoute>
-              <AdminPanel />
+              <Suspense fallback={<PageLoader />}><AdminPanel /></Suspense>
             </AdminRoute>
           }
         />

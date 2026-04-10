@@ -50,3 +50,19 @@ export const Spinner = ({ size = 'md', color = 'padi-green' }) => {
     <div className={`${sizes[size]} ${colors[color]} rounded-full animate-spin`}></div>
   );
 };
+
+const Loading = ({ variant = 'spinner', size = 'md', ...props }) => {
+  switch (variant) {
+    case 'page':
+      return <PageLoader {...props} />;
+    case 'button':
+      return <ButtonLoader size={size} {...props} />;
+    case 'skeleton':
+      return <Skeleton size={size} {...props} />;
+    case 'spinner':
+    default:
+      return <Spinner size={size} {...props} />;
+  }
+};
+
+export default Loading;
