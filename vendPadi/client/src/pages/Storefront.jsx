@@ -209,6 +209,7 @@ const Storefront = () => {
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
         storeSlug={store?.vendor?.slug}
+        vendorId={store?.vendor?._id}
       />
 
       <CartDrawer

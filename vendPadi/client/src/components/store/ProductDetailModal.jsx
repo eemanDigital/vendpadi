@@ -2,10 +2,12 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "../../store/cartSlice";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiX, FiCheck, FiShoppingCart, FiShare2 } from "react-icons/fi";
+import { FiX, FiCheck, FiShoppingCart, FiShare2, FiStar, FiMessageSquare, FiChevronDown } from "react-icons/fi";
 import toast from "react-hot-toast";
 import QRCode from "react-qr-code";
-import { CategoryBadge, ImageCarousel, QtyControl, CATEGORY_META } from "../ProductCard";
+import { CategoryBadge, ImageCarousel, QtyControl } from "../ProductCard";
+import RatingStars from "../ui/RatingStars";
+import ReviewForm from "./ReviewForm";
 
 const springTransition = {
   type: "spring",
@@ -19,13 +21,17 @@ const fadeIn = {
   exit: { opacity: 0 },
 };
 
-const ProductDetailModal = ({ product, onClose, storeSlug }) => {
+const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
   if (!product) return null;
 
   const dispatch = useDispatch();
   const cartItems = useSelector((s) => s.cart.items);
   const [justAdded, setJustAdded] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
   const modalRef = useRef(null);
 
   const cartItem = cartItems.find((i) => i._id === product._id);
@@ -33,6 +39,26 @@ const ProductDetailModal = ({ product, onClose, storeSlug }) => {
   const productLink = useMemo(() => {
     return `${window.location.origin}/store/${storeSlug || 'store'}?product=${product._id}`;
   }, [storeSlug, product._id]);
+
+  const fetchReviews = async () => {
+    if (!product?._id) return;
+    setReviewsLoading(true);
+    try {
+      const res = await fetch(`/api/reviews/product/${product._id}`);
+      const data = await res.json();
+      setReviews(data.reviews || []);
+    } catch (error) {
+      console.error('Failed to fetch reviews');
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showReviews) {
+      fetchReviews();
+    }
+  }, [showReviews, product?._id]);
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -93,6 +119,15 @@ const ProductDetailModal = ({ product, onClose, storeSlug }) => {
     img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
   };
 
+  const handleReviewSubmit = () => {
+    setShowReviewForm(false);
+    fetchReviews();
+  };
+
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+    : 0;
+
   return (
     <AnimatePresence>
       <motion.div
@@ -116,12 +151,12 @@ const ProductDetailModal = ({ product, onClose, storeSlug }) => {
               <h2 className="font-sora font-bold text-navy text-lg truncate">
                 {product.name}
               </h2>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <CategoryBadge category={product.category} />
                 {product.inStock && (
                   <span className="flex items-center gap-1 text-xs text-emerald-600">
                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                    In Stock
+                    In Stock{product.stock > 0 ? ` (${product.stock})` : ''}
                   </span>
                 )}
               </div>
@@ -181,6 +216,87 @@ const ProductDetailModal = ({ product, onClose, storeSlug }) => {
                     #{product._id.slice(-6).toUpperCase()}
                   </p>
                 </div>
+              </div>
+
+              {/* Reviews Section */}
+              <div className="border-t border-gray-100 pt-4">
+                <button
+                  onClick={() => setShowReviews(!showReviews)}
+                  className="w-full flex items-center justify-between py-2 hover:bg-gray-50 -mx-2 px-2 rounded-xl transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <FiMessageSquare size={16} className="text-gray-400" />
+                      <span className="font-medium text-navy text-sm">Reviews</span>
+                      <span className="text-xs text-gray-400">({reviews.length})</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {reviews.length > 0 && (
+                      <RatingStars rating={averageRating} size={14} />
+                    )}
+                    <FiChevronDown
+                      size={16}
+                      className={`text-gray-400 transition-transform ${showReviews ? 'rotate-180' : ''}`}
+                    />
+                  </div>
+                </button>
+
+                {showReviews && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="mt-3 space-y-3"
+                  >
+                    <button
+                      onClick={() => setShowReviewForm(!showReviewForm)}
+                      className="w-full py-2.5 px-4 bg-padi-green/10 hover:bg-padi-green/20 text-padi-green rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                    >
+                      <FiStar size={14} />
+                      Write a Review
+                    </button>
+
+                    {showReviewForm && (
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        <ReviewForm
+                          productId={product._id}
+                          vendorId={product.vendorId}
+                          onSuccess={handleReviewSubmit}
+                        />
+                      </div>
+                    )}
+
+                    {reviewsLoading ? (
+                      <div className="text-center py-4 text-gray-400 text-sm">Loading reviews...</div>
+                    ) : reviews.length === 0 ? (
+                      <p className="text-center py-4 text-gray-400 text-sm">No reviews yet. Be the first!</p>
+                    ) : (
+                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                        {reviews.map((review) => (
+                          <div key={review._id} className="bg-gray-50 rounded-xl p-3">
+                            <div className="flex items-start justify-between mb-1">
+                              <div>
+                                <p className="font-medium text-navy text-sm">{review.customerName}</p>
+                                <p className="text-xs text-gray-400">
+                                  {new Date(review.createdAt).toLocaleDateString('en-NG', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                </p>
+                              </div>
+                              <RatingStars rating={review.rating} size={12} />
+                            </div>
+                            {review.comment && (
+                              <p className="text-sm text-gray-600 mt-2">{review.comment}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
               </div>
             </div>
           </div>

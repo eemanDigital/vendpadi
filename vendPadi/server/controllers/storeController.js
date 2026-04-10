@@ -7,6 +7,13 @@ const catchAsync = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
+const LOW_STOCK_THRESHOLDS = {
+  free: 10,
+  starter: 8,
+  business: 5,
+  premium: 3
+};
+
 exports.getStore = catchAsync(async (req, res) => {
   const { slug } = req.params;
 
@@ -21,14 +28,20 @@ exports.getStore = catchAsync(async (req, res) => {
     return res.status(404).json({ message: 'Store not found' });
   }
 
-  const products = await Product.find({ 
-    vendorId: vendor._id, 
-    inStock: true 
-  }).sort({ createdAt: -1 });
+  const products = await Product.find({ vendorId: vendor._id })
+    .sort({ createdAt: -1 });
+
+  const planType = vendor.plan?.type || 'free';
+  const threshold = LOW_STOCK_THRESHOLDS[planType] || 10;
+
+  const productsWithAlerts = products.map(p => ({
+    ...p.toObject(),
+    lowStockAlert: p.stock > 0 && p.stock <= threshold
+  }));
 
   res.json({
     vendor,
-    products
+    products: productsWithAlerts
   });
 });
 

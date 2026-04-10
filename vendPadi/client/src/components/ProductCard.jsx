@@ -294,6 +294,19 @@ const ListCard = ({ product, onOpenDetail, cartItem }) => {
           category={product.category}
           compact
         />
+        
+        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+          <WishlistButton product={product} size="sm" />
+        </div>
+
+        {product.lowStockAlert && (
+          <div className="absolute top-1 left-1 z-10">
+            <span className="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+              Low
+            </span>
+          </div>
+        )}
+
         {!product.inStock && (
           <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center z-10">
             <span className="bg-white text-gray-600 px-2 py-1 rounded-full text-xs font-semibold">
@@ -325,7 +338,10 @@ const ListCard = ({ product, onOpenDetail, cartItem }) => {
 
         <div className="mt-2 sm:mt-3 flex items-center justify-between gap-2">
           <span className="text-xs text-gray-400 flex items-center gap-1">
-            <FiEye size={11} /> <span className="hidden sm:inline">Tap to view details</span>
+            <FiEye size={11} /> <span className="hidden sm:inline">Tap to view</span>
+            {product.stock > 0 && product.stock <= 5 && (
+              <span className="text-amber-500 ml-1">({product.stock} left)</span>
+            )}
           </span>
           {product.inStock &&
             (cartItem ? (
@@ -391,11 +407,20 @@ const ShowcaseCard = ({ product, onOpenDetail, cartItem }) => {
           <CategoryBadge category={product.category} />
         </div>
 
-        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10">
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 flex items-center gap-2">
+          <WishlistButton product={product} size="sm" />
           <span className="bg-navy text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-lg">
             ₦{product.price.toLocaleString()}
           </span>
         </div>
+
+        {product.lowStockAlert && (
+          <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-10">
+            <span className="bg-amber-500 text-white text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-full font-medium flex items-center gap-1">
+              ⚠️ Low Stock {product.stock} left
+            </span>
+          </div>
+        )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3 sm:p-4 z-10">
           <span className="text-white text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-1.5">
