@@ -256,14 +256,49 @@ const Landing = () => {
 
       {/* Footer */}
       <footer className="bg-navy text-gray-400 py-12 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <Link to="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-padi-green rounded-lg flex items-center justify-center">
-              <span className="font-sora font-bold text-lg text-white">V</span>
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <Link to="/" className="inline-flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-padi-green rounded-lg flex items-center justify-center">
+                  <span className="font-sora font-bold text-lg text-white">V</span>
+                </div>
+                <span className="font-sora font-bold text-xl text-white">VendPadi</span>
+              </Link>
+              <p className="text-sm text-gray-400">Build your online store in minutes. Share on WhatsApp. Sell more.</p>
             </div>
-            <span className="font-sora font-bold text-xl text-white">VendPadi</span>
-          </Link>
-          <p className="text-sm">© 2024 VendPadi. Made with ❤️ in Nigeria.</p>
+            
+            <div>
+              <h4 className="font-semibold text-white mb-4">Legal</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/privacy-policy" className="text-sm hover:text-padi-green transition-colors">Privacy Policy</Link>
+                </li>
+                <li>
+                  <Link to="/terms-of-service" className="text-sm hover:text-padi-green transition-colors">Terms of Service</Link>
+                </li>
+                <li>
+                  <Link to="/cookie-policy" className="text-sm hover:text-padi-green transition-colors">Cookie Policy</Link>
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-white mb-4">Support</h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="mailto:support@vendpadi.com" className="text-sm hover:text-padi-green transition-colors">Contact Us</a>
+                </li>
+                <li>
+                  <Link to="/faq" className="text-sm hover:text-padi-green transition-colors">FAQ</Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="pt-8 border-t border-white/10 text-center">
+            <p className="text-sm">© {new Date().getFullYear()} VendPadi. Made with ❤️ in Nigeria 🇳🇬</p>
+          </div>
         </div>
       </footer>
     </div>

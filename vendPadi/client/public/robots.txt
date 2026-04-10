@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+Disallow: /dashboard
+Disallow: /orders
+Disallow: /settings
+Disallow: /admin
+Disallow: /admin-panel
+Disallow: /api/
+Disallow: /store/*/admin
+
+Sitemap: https://vendpadi.com/sitemap.xml
+
+Crawl-delay: 1

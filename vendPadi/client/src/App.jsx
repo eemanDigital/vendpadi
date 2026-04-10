@@ -17,6 +17,10 @@ import Settings from './pages/Settings';
 import Orders from './pages/Orders';
 import Storefront from './pages/Storefront';
 import AdminPanel from './pages/AdminPanel';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import CookiePolicy from './pages/CookiePolicy';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -49,20 +53,32 @@ function AppContent() {
       <Toaster 
         position="top-center"
         toastOptions={{
+          duration: 4000,
           style: {
             background: '#1A1A2E',
             color: '#fff',
+            padding: '16px',
+            borderRadius: '12px',
+            fontSize: '14px',
+            fontWeight: '500',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
           },
           success: {
             iconTheme: {
               primary: '#25C866',
               secondary: '#fff',
             },
+            style: {
+              background: '#1A1A2E',
+            },
           },
           error: {
             iconTheme: {
               primary: '#ef4444',
               secondary: '#fff',
+            },
+            style: {
+              background: '#1A1A2E',
             },
           },
         }}
@@ -74,6 +90,9 @@ function AppContent() {
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/store/:slug" element={<Storefront />} />
         
         {/* Vendor Routes */}
@@ -123,7 +142,9 @@ function AppContent() {
 function App() {
   return (
     <Provider store={store}>
-      <AppContent />
+      <ErrorBoundary>
+        <AppContent />
+      </ErrorBoundary>
     </Provider>
   );
 }
