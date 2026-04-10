@@ -102,7 +102,6 @@ const generateInvoicePDF = (order, vendor) => {
   doc.setFont("helvetica", "bold");
   doc.text("Items:", 20, y);
 
-  // ✅ FIX 2: Use standalone autoTable(doc, options) instead of doc.autoTable(options)
   autoTable(doc, {
     startY: y + 5,
     head: [["#", "Item Description", "Qty", "Unit Price", "Total"]],
@@ -110,8 +109,8 @@ const generateInvoicePDF = (order, vendor) => {
       idx + 1,
       item.name,
       item.qty,
-      `\u20A6${item.price.toLocaleString()}`,
-      `\u20A6${(item.price * item.qty).toLocaleString()}`,
+      "NGN " + item.price.toLocaleString(),
+      "NGN " + (item.price * item.qty).toLocaleString(),
     ]),
     theme: "striped",
     headStyles: {
@@ -131,7 +130,6 @@ const generateInvoicePDF = (order, vendor) => {
     margin: { left: 20, right: 20 },
   });
 
-  // ✅ FIX 3: Safely read finalY via doc.lastAutoTable with fallback
   const finalY = (doc.lastAutoTable?.finalY ?? y + 40) + 12;
 
   doc.setFillColor(37, 200, 102);
@@ -140,7 +138,7 @@ const generateInvoicePDF = (order, vendor) => {
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.text(
-    `TOTAL: \u20A6${order.totalAmount.toLocaleString()}`,
+    `TOTAL: NGN ${order.totalAmount.toLocaleString()}`,
     115,
     finalY + 9,
   );
@@ -209,7 +207,6 @@ const generateReceiptPDF = (order, vendor) => {
   doc.setFontSize(11);
   doc.text("Items Purchased", 20, y);
 
-  // ✅ FIX 2: Use standalone autoTable(doc, options)
   autoTable(doc, {
     startY: y + 5,
     head: [["#", "Item", "Qty", "Amount"]],
@@ -217,7 +214,7 @@ const generateReceiptPDF = (order, vendor) => {
       idx + 1,
       item.name,
       item.qty,
-      `\u20A6${(item.price * item.qty).toLocaleString()}`,
+      "NGN " + (item.price * item.qty).toLocaleString(),
     ]),
     theme: "grid",
     headStyles: {
@@ -228,15 +225,14 @@ const generateReceiptPDF = (order, vendor) => {
     },
     bodyStyles: { fontSize: 9 },
     columnStyles: {
-      0: { cellWidth: 15, halign: "center" },
-      1: { cellWidth: 95 },
-      2: { cellWidth: 25, halign: "center" },
-      3: { cellWidth: 40, halign: "right" },
+      0: { cellWidth: 12, halign: "center" },
+      1: { cellWidth: 90 },
+      2: { cellWidth: 20, halign: "center" },
+      3: { cellWidth: 48, halign: "right" },
     },
     margin: { left: 20, right: 20 },
   });
 
-  // ✅ FIX 3: Safe finalY fallback
   const finalY = (doc.lastAutoTable?.finalY ?? y + 40) + 12;
 
   doc.setDrawColor(200, 200, 200);
@@ -250,7 +246,7 @@ const generateReceiptPDF = (order, vendor) => {
   doc.setTextColor(37, 200, 102);
   doc.setFontSize(14);
   doc.text(
-    `\u20A6${order.totalAmount.toLocaleString()}`,
+    "NGN " + order.totalAmount.toLocaleString(),
     pageWidth - 20,
     finalY + 10,
     { align: "right" },
