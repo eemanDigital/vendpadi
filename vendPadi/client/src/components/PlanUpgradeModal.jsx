@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { planAPI } from '../api/axiosInstance';
 import toast from 'react-hot-toast';
-import { FiX, FiCheck, FiUpload, FiClock, FiAlertCircle, FiCreditCard, FiSmartphone, FiRefreshCw } from 'react-icons/fi';
+import { FiX, FiCheck, FiUpload, FiClock, FiAlertCircle, FiCreditCard, FiSmartphone, FiRefreshCw, FiTrendingUp, FiZap, FiStar, FiMail, FiBarChart2, FiGrid, FiMaximize } from 'react-icons/fi';
 
 const PLAN_DETAILS = {
   free: {
@@ -10,44 +10,84 @@ const PLAN_DETAILS = {
     icon: '🆓',
     price: 0,
     color: 'gray',
+    tagline: 'Perfect to get started',
     features: [
-      { text: '5 products', included: true },
-      { text: '1 image per product', included: true },
-      { text: 'WhatsApp orders', included: true },
-      { text: 'Shareable store link', included: true },
+      { text: '10 products', included: true, icon: FiGrid },
+      { text: '2 images per product', included: true, icon: FiMaximize },
+      { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
+      { text: 'Store QR code', included: true, icon: FiZap },
+      { text: 'Shareable store link', included: true, icon: FiSmartphone },
+      { text: 'Basic analytics', included: true, icon: FiBarChart2 },
       { text: 'Logo upload', included: false },
-      { text: 'PDF invoices', included: false },
+      { text: 'Custom store link', included: false },
+      { text: 'Product QR codes', included: false },
+      { text: 'PDF invoices & receipts', included: false },
+      { text: 'Email order notifications', included: false },
       { text: 'Priority support', included: false }
     ]
   },
-  basic: {
-    name: 'Basic',
+  starter: {
+    name: 'Starter',
     icon: '💡',
-    price: 1500,
+    price: 999,
     color: 'blue',
+    tagline: 'For growing small businesses',
     features: [
-      { text: '20 products', included: true },
-      { text: '3 images per product', included: true },
-      { text: 'Logo upload', included: true },
-      { text: 'WhatsApp orders', included: true },
-      { text: 'Custom store link', included: true },
+      { text: '50 products', included: true, icon: FiGrid },
+      { text: '4 images per product', included: true, icon: FiMaximize },
+      { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
+      { text: 'Store QR code', included: true, icon: FiZap },
+      { text: 'Product QR codes', included: true, icon: FiZap },
+      { text: 'Logo upload', included: true, icon: FiStar },
+      { text: 'Custom store link', included: true, icon: FiTrendingUp },
+      { text: 'Basic analytics', included: true, icon: FiBarChart2 },
+      { text: 'Email order notifications', included: true, icon: FiMail },
       { text: 'PDF invoices', included: false },
+      { text: 'PDF receipts', included: false },
+      { text: 'Priority support', included: false }
+    ]
+  },
+  business: {
+    name: 'Business',
+    icon: '🚀',
+    price: 2499,
+    color: 'green',
+    tagline: 'For established businesses',
+    popular: true,
+    features: [
+      { text: '200 products', included: true, icon: FiGrid },
+      { text: '6 images per product', included: true, icon: FiMaximize },
+      { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
+      { text: 'Store QR code', included: true, icon: FiZap },
+      { text: 'Product QR codes', included: true, icon: FiZap },
+      { text: 'Logo upload', included: true, icon: FiStar },
+      { text: 'Custom store link', included: true, icon: FiTrendingUp },
+      { text: 'Advanced analytics', included: true, icon: FiBarChart2 },
+      { text: 'Email order notifications', included: true, icon: FiMail },
+      { text: 'PDF invoices', included: true, icon: FiStar },
+      { text: 'PDF receipts', included: true, icon: FiStar },
       { text: 'Priority support', included: false }
     ]
   },
   premium: {
     name: 'Premium',
     icon: '👑',
-    price: 3000,
+    price: 4999,
     color: 'gold',
+    tagline: 'Ultimate power & support',
     features: [
-      { text: 'Unlimited products', included: true },
-      { text: '3 images per product', included: true },
-      { text: 'Logo upload', included: true },
-      { text: 'WhatsApp orders', included: true },
-      { text: 'Custom store link', included: true },
-      { text: 'PDF invoices & receipts', included: true },
-      { text: 'Priority support', included: true }
+      { text: 'Unlimited products', included: true, icon: FiGrid },
+      { text: '8 images per product', included: true, icon: FiMaximize },
+      { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
+      { text: 'Store QR code', included: true, icon: FiZap },
+      { text: 'Product QR codes', included: true, icon: FiZap },
+      { text: 'Logo + Cover image', included: true, icon: FiStar },
+      { text: 'Custom store link', included: true, icon: FiTrendingUp },
+      { text: 'Advanced analytics', included: true, icon: FiBarChart2 },
+      { text: 'Email order notifications', included: true, icon: FiMail },
+      { text: 'PDF invoices', included: true, icon: FiStar },
+      { text: 'PDF receipts', included: true, icon: FiStar },
+      { text: 'Priority support', included: true, icon: FiStar }
     ]
   }
 };
@@ -202,65 +242,78 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
         <div className="flex-1 overflow-y-auto p-5">
           {step === 'select' && (
             <div className="space-y-4">
-              {['basic', 'premium'].map((planKey) => {
-                const plan = PLAN_DETAILS[planKey];
-                const isCurrentPlan = currentPlan === planKey;
-                const isDowngrade = ['basic', 'premium'].indexOf(currentPlan) > ['basic', 'premium'].indexOf(planKey);
-                
-                return (
-                  <div
-                    key={planKey}
-                    className={`relative p-5 rounded-2xl border-2 transition-all ${
-                      isCurrentPlan
-                        ? 'border-gray-200 bg-gray-50 opacity-60'
-                        : 'border-gray-100 hover:border-padi-green/30 hover:shadow-lg'
-                    } ${isDowngrade ? 'opacity-50' : ''}`}
-                  >
-                    {isCurrentPlan && (
-                      <span className="absolute top-3 right-3 bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
-                        Current Plan
-                      </span>
-                    )}
-                    
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{plan.icon}</span>
-                        <div>
-                          <h3 className="font-sora font-bold text-lg">{plan.name}</h3>
-                          <p className="text-2xl font-bold text-padi-green">
-                            ₦{plan.price.toLocaleString()}<span className="text-sm text-gray-400 font-normal">/month</span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <ul className="space-y-2 mb-5">
-                      {plan.features.map((feature, i) => (
-                        <li key={i} className={`flex items-center gap-2 text-sm ${feature.included ? 'text-gray-700' : 'text-gray-400'}`}>
-                          {feature.included ? (
-                            <FiCheck className="text-padi-green flex-shrink-0" />
-                          ) : (
-                            <FiX className="flex-shrink-0" />
-                          )}
-                          {feature.text}
-                        </li>
-                      ))}
-                    </ul>
-
-                    <button
-                      onClick={() => handleSelectPlan(planKey)}
-                      disabled={isCurrentPlan || isDowngrade}
-                      className={`w-full py-3 rounded-xl font-semibold transition-all ${
-                        isCurrentPlan || isDowngrade
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'bg-padi-green text-white hover:bg-padi-green-dark'
-                      }`}
+              <div className="grid grid-cols-2 gap-3">
+                {Object.entries(PLAN_DETAILS).map(([planKey, plan]) => {
+                  const isCurrentPlan = currentPlan === planKey;
+                  const planOrder = ['free', 'starter', 'business', 'premium'];
+                  const currentPlanIndex = planOrder.indexOf(currentPlan);
+                  const thisPlanIndex = planOrder.indexOf(planKey);
+                  const isDowngrade = thisPlanIndex <= currentPlanIndex && isCurrentPlan === false;
+                  
+                  return (
+                    <div
+                      key={planKey}
+                      className={`relative p-4 rounded-2xl border-2 transition-all ${
+                        isCurrentPlan
+                          ? 'border-padi-green bg-padi-green/5'
+                          : plan.popular
+                          ? 'border-padi-green/50 hover:border-padi-green shadow-lg'
+                          : 'border-gray-100 hover:border-gray-200'
+                      } ${isDowngrade ? 'opacity-50' : ''}`}
                     >
-                      {isCurrentPlan ? 'Current Plan' : isDowngrade ? 'Downgrade via Settings' : 'Select Plan'}
-                    </button>
-                  </div>
-                );
-              })}
+                      {plan.popular && !isCurrentPlan && (
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-padi-green text-white text-xs font-medium px-3 py-0.5 rounded-full">
+                          Most Popular
+                        </span>
+                      )}
+                      {isCurrentPlan && (
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-medium px-3 py-0.5 rounded-full">
+                          Current Plan
+                        </span>
+                      )}
+                      
+                      <div className="text-center mb-3">
+                        <span className="text-3xl">{plan.icon}</span>
+                        <h3 className="font-sora font-bold text-lg mt-1">{plan.name}</h3>
+                        {plan.tagline && (
+                          <p className="text-xs text-gray-400 mt-0.5">{plan.tagline}</p>
+                        )}
+                        <p className="text-xl font-bold text-padi-green mt-2">
+                          {plan.price === 0 ? 'Free' : `₦${plan.price.toLocaleString()}`}
+                          {plan.price > 0 && <span className="text-xs text-gray-400 font-normal">/mo</span>}
+                        </p>
+                      </div>
+
+                      <ul className="space-y-1.5 mb-4">
+                        {plan.features.slice(0, 6).map((feature, i) => (
+                          <li key={i} className={`flex items-center gap-2 text-xs ${feature.included ? 'text-gray-700' : 'text-gray-400'}`}>
+                            {feature.included ? (
+                              <FiCheck className="text-padi-green flex-shrink-0 w-3.5 h-3.5" />
+                            ) : (
+                              <FiX className="flex-shrink-0 w-3.5 h-3.5 text-gray-300" />
+                            )}
+                            {feature.text}
+                          </li>
+                        ))}
+                      </ul>
+
+                      <button
+                        onClick={() => handleSelectPlan(planKey)}
+                        disabled={isCurrentPlan || isDowngrade || planKey === 'free'}
+                        className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all ${
+                          isCurrentPlan
+                            ? 'bg-green-100 text-green-700 cursor-default'
+                            : planKey === 'free'
+                            ? 'bg-gray-100 text-gray-400 cursor-default'
+                            : 'bg-padi-green text-white hover:bg-padi-green-dark'
+                        }`}
+                      >
+                        {isCurrentPlan ? 'Active' : planKey === 'free' ? 'Free Plan' : 'Upgrade'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
 
               {requests.length > 0 && (
                 <div className="mt-6 pt-6 border-t">

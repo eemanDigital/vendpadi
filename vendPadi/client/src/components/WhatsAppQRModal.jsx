@@ -2,22 +2,39 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiDownload, FiShare2 } from "react-icons/fi";
 import QRCode from "react-qr-code";
+import toast from "react-hot-toast";
 
 const WhatsAppQRModal = ({ isOpen, onClose, whatsappLink, storeName }) => {
   const [downloading, setDownloading] = useState(false);
 
-  const handleDownloadQR = () => {
-    setDownloading(true);
-    const canvas = document.getElementById("whatsapp-qr-code");
-    const svg = document.getElementById("whatsapp-qr-code");
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvasEl = document.createElement("canvas");
-    const ctx = canvasEl.getContext("2d");
-    const img = new Image();
+  const svgToImage = (svgElement) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const svgData = new XMLSerializer().serializeToString(svgElement);
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
 
-    img.onload = () => {
+  const handleDownloadQR = async () => {
+    setDownloading(true);
+    try {
+      const svg = document.getElementById("whatsapp-qr-code");
+      if (!svg) {
+        toast.error("QR code not found");
+        return;
+      }
+
+      const img = await svgToImage(svg);
+      const canvasEl = document.createElement("canvas");
       canvasEl.width = 300;
       canvasEl.height = 300;
+      const ctx = canvasEl.getContext("2d");
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvasEl.width, canvasEl.height);
       ctx.drawImage(img, 0, 0, 300, 300);
@@ -27,45 +44,50 @@ const WhatsAppQRModal = ({ isOpen, onClose, whatsappLink, storeName }) => {
       downloadLink.download = `${storeName?.replace(/\s+/g, "-").toLowerCase() || "store"}-whatsapp-qr.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
+    } catch (err) {
+      console.error("Download failed:", err);
+    } finally {
       setDownloading(false);
-    };
-
-    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+    }
   };
 
   const handleShareQR = async () => {
+    setDownloading(true);
     try {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
       const svg = document.getElementById("whatsapp-qr-code");
-      const svgData = new XMLSerializer().serializeToString(svg);
-      const img = new Image();
+      if (!svg) {
+        toast.error("QR code not found");
+        return;
+      }
 
-      img.onload = () => {
-        canvas.width = 300;
-        canvas.height = 300;
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, 300, 300);
-        canvas.toBlob(async (blob) => {
-          if (blob) {
-            const file = new File([blob], "whatsapp-qr.png", { type: "image/png" });
-            if (navigator.share && navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                files: [file],
-                title: "Order from our store",
-                text: `Scan QR code to order from ${storeName} on WhatsApp!`,
-              });
-            } else {
-              handleDownloadQR();
-            }
+      const img = await svgToImage(svg);
+      const canvas = document.createElement("canvas");
+      canvas.width = 300;
+      canvas.height = 300;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, 300, 300);
+
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          const file = new File([blob], "whatsapp-qr.png", { type: "image/png" });
+          if (navigator.share && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: "Order from our store",
+              text: `Scan QR code to order from ${storeName} on WhatsApp!`,
+            });
+          } else {
+            await handleDownloadQR();
           }
-        });
-      };
-
-      img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        }
+      });
     } catch (err) {
-      handleDownloadQR();
+      console.error("Share failed:", err);
+      await handleDownloadQR();
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -110,15 +132,21 @@ const WhatsAppQRModal = ({ isOpen, onClose, whatsappLink, storeName }) => {
           <div className="p-6">
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 flex flex-col items-center">
               <div className="bg-white p-4 rounded-2xl shadow-lg mb-4">
-                <QRCode
-                  id="whatsapp-qr-code"
-                  value={whatsappLink}
-                  size={180}
-                  level="H"
-                  includeMargin={false}
-                  bgColor="#ffffff"
-                  fgColor="#1a1a2e"
-                />
+                {whatsappLink ? (
+                  <QRCode
+                    id="whatsapp-qr-code"
+                    value={whatsappLink}
+                    size={180}
+                    level="H"
+                    includeMargin={false}
+                    bgColor="#ffffff"
+                    fgColor="#1a1a2e"
+                  />
+                ) : (
+                  <div className="w-[180px] h-[180px] flex items-center justify-center text-gray-400 text-sm">
+                    No link available
+                  </div>
+                )}
               </div>
               <p className="font-medium text-gray-700 text-sm text-center mb-1">
                 {storeName}

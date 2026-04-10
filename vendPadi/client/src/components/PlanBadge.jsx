@@ -4,10 +4,15 @@ const PLAN_CONFIG = {
     color: 'bg-gray-100 text-gray-600',
     badge: ''
   },
-  basic: {
-    label: 'Basic',
-    color: 'bg-padi-green/10 text-padi-green',
+  starter: {
+    label: 'Starter',
+    color: 'bg-blue-100 text-blue-600',
     badge: '💡'
+  },
+  business: {
+    label: 'Business',
+    color: 'bg-green-100 text-green-600',
+    badge: '🚀'
   },
   premium: {
     label: 'Premium',

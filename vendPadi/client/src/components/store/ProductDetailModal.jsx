@@ -249,16 +249,22 @@ const ProductDetailModal = ({ product, onClose, storeSlug }) => {
                   </button>
                 </div>
                 <div className="p-6 flex flex-col items-center">
-                  <p className="font-semibold text-navy text-center mb-3">{product.name}</p>
+                  <p className="font-semibold text-navy text-center mb-3">{product?.name}</p>
                   <div className="bg-gray-50 p-4 rounded-2xl mb-4">
-                    <QRCode
-                      id="product-qr"
-                      value={productLink}
-                      size={160}
-                      level="H"
-                      bgColor="#f9fafb"
-                      fgColor="#1a1a2e"
-                    />
+                    {productLink ? (
+                      <QRCode
+                        id="product-qr"
+                        value={productLink}
+                        size={160}
+                        level="H"
+                        bgColor="#f9fafb"
+                        fgColor="#1a1a2e"
+                      />
+                    ) : (
+                      <div className="w-[160px] h-[160px] flex items-center justify-center text-gray-400 text-sm">
+                        No link available
+                      </div>
+                    )}
                   </div>
                   <p className="text-xs text-gray-400 text-center mb-4">Scan to view product</p>
                   <button

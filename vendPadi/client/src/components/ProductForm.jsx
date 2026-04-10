@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { productAPI } from '../api/axiosInstance';
 import toast from 'react-hot-toast';
 import { FiImage, FiX, FiUpload, FiCheck } from 'react-icons/fi';
 
+const PLAN_IMAGE_LIMITS = {
+  free: 2,
+  starter: 4,
+  business: 6,
+  premium: 8
+};
+
 const ProductForm = ({ product, onSuccess, onCancel }) => {
+  const { vendor } = useSelector((state) => state.auth);
   const isEditing = Boolean(product?._id);
+  const maxImages = PLAN_IMAGE_LIMITS[vendor?.plan?.type || 'free'];
   
   const [formData, setFormData] = useState({
     name: product?.name || '',
@@ -36,9 +46,9 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    const remaining = 3 - (formData.images.length + localImages.length);
+    const remaining = maxImages - (formData.images.length + localImages.length);
     if (remaining <= 0) {
-      toast.error('Maximum 3 images allowed');
+      toast.error(`Maximum ${maxImages} images allowed for your plan`);
       return;
     }
 
@@ -217,10 +227,10 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="text-sm font-medium text-gray-700">
-            Product Images (max 3)
+            Product Images (max {maxImages})
           </label>
           <span className="text-xs text-gray-400">
-            {formData.images.length + localImages.length}/3
+            {formData.images.length + localImages.length}/{maxImages}
           </span>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -253,7 +263,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
               </button>
             </div>
           ))}
-          {(formData.images.length + localImages.length) < 3 && (
+          {(formData.images.length + localImages.length) < maxImages && (
             <label className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-padi-green hover:bg-padi-green/5 transition-colors">
               <FiImage className="text-gray-400" size={24} />
               <span className="text-xs text-gray-400 mt-1">Add Photo</span>
@@ -269,7 +279,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
           )}
         </div>
         <p className="text-xs text-gray-400 mt-2">
-          Upload up to {3 - formData.images.length} more images. These will appear as a gallery for this product.
+          Upload up to {maxImages - formData.images.length} more images. These will appear as a gallery for this product.
         </p>
       </div>
 

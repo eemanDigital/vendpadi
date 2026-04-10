@@ -12,9 +12,10 @@ import toast from 'react-hot-toast';
 import { FiPlus, FiCopy, FiEdit2, FiTrash2, FiExternalLink, FiX, FiPackage, FiSettings, FiShoppingBag, FiTrendingUp, FiLogOut } from 'react-icons/fi';
 
 const PLAN_LIMITS = {
-  free: { products: 5, images: 1 },
-  basic: { products: 20, images: 3 },
-  premium: { products: Infinity, images: 3 }
+  free: { products: 10, images: 2 },
+  starter: { products: 50, images: 4 },
+  business: { products: 200, images: 6 },
+  premium: { products: Infinity, images: 8 }
 };
 
 const Dashboard = () => {

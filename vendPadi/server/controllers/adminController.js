@@ -7,9 +7,10 @@ const catchAsync = (fn) => (req, res, next) => {
 };
 
 const PLAN_FEATURES = {
-  free: ['5 products', '1 image per product', 'Basic support'],
-  basic: ['20 products', '3 images per product', 'Logo upload', 'Priority support'],
-  premium: ['Unlimited products', '3 images per product', 'Logo upload', 'PDF invoices & receipts', 'Priority support']
+  free: ['10 products', '2 images per product', 'WhatsApp orders', 'Store QR code', 'Basic analytics'],
+  starter: ['50 products', '4 images per product', 'Logo upload', 'Product QR codes', 'Email notifications'],
+  business: ['200 products', '6 images per product', 'PDF invoices & receipts', 'Advanced analytics'],
+  premium: ['Unlimited products', '8 images per product', 'Logo + Cover image', 'Priority support']
 };
 
 exports.getAllVendors = catchAsync(async (req, res) => {
@@ -43,11 +44,7 @@ exports.approvePlanRequest = catchAsync(async (req, res) => {
   }
 
   const expiresAt = new Date();
-  if (planType === 'basic') {
-    expiresAt.setMonth(expiresAt.getMonth() + 1);
-  } else if (planType === 'premium') {
-    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-  }
+  expiresAt.setMonth(expiresAt.getMonth() + 1);
 
   vendor.plan = {
     type: planType,
@@ -117,12 +114,13 @@ exports.sendGreeting = catchAsync(async (req, res) => {
 });
 
 exports.getVendorStats = catchAsync(async (req, res) => {
-  const [total, free, basic, premium] = await Promise.all([
+  const [total, free, starter, business, premium] = await Promise.all([
     Vendor.countDocuments({ isAdmin: { $ne: true } }),
     Vendor.countDocuments({ 'plan.type': 'free', isAdmin: { $ne: true } }),
-    Vendor.countDocuments({ 'plan.type': 'basic', isAdmin: { $ne: true } }),
+    Vendor.countDocuments({ 'plan.type': 'starter', isAdmin: { $ne: true } }),
+    Vendor.countDocuments({ 'plan.type': 'business', isAdmin: { $ne: true } }),
     Vendor.countDocuments({ 'plan.type': 'premium', isAdmin: { $ne: true } })
   ]);
 
-  res.json({ total, free, basic, premium });
+  res.json({ total, free, starter, business, premium });
 });

@@ -15,7 +15,7 @@ const vendorSchema = new mongoose.Schema({
     default: 'other'
   },
   plan: {
-    type: { type: String, enum: ['free', 'basic', 'premium'], default: 'free' },
+    type: { type: String, enum: ['free', 'starter', 'business', 'premium'], default: 'free' },
     expiresAt: { type: Date, default: null }
   },
   isActive: { type: Boolean, default: true },

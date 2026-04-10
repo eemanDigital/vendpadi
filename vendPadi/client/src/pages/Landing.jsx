@@ -164,43 +164,57 @@ const Landing = () => {
           <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">Simple Pricing</h2>
           <p className="text-gray-500 text-center mb-10">Start free, upgrade when you grow</p>
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
             {[
               { 
                 plan: 'Free', 
+                icon: '🆓',
                 price: '₦0', 
                 period: 'forever',
-                features: ['5 products', '1 image per product', 'WhatsApp orders', 'Shareable store link'],
+                features: ['10 products', '2 images/product', 'WhatsApp orders', 'Store QR code'],
                 cta: 'Get Started',
                 highlight: false,
                 badge: null
               },
               { 
-                plan: 'Basic', 
-                price: '₦1,500', 
+                plan: 'Starter', 
+                icon: '💡',
+                price: '₦999', 
                 period: '/month',
-                features: ['20 products', '3 images per product', 'Logo upload', 'WhatsApp orders', 'Custom store link'],
-                cta: 'Upgrade to Basic',
-                highlight: true,
+                features: ['50 products', '4 images/product', 'Logo upload', 'Product QR codes'],
+                cta: 'Upgrade',
+                highlight: false,
                 badge: null
               },
               { 
-                plan: 'Premium', 
-                price: '₦3,000', 
+                plan: 'Business', 
+                icon: '🚀',
+                price: '₦2,499', 
                 period: '/month',
-                features: ['Unlimited products', '3 images per product', 'Logo upload', 'WhatsApp orders', 'PDF Invoices & Receipts', 'Priority support'],
+                features: ['200 products', '6 images/product', 'PDF invoices', 'Advanced analytics'],
+                cta: 'Go Business',
+                highlight: true,
+                badge: 'Most Popular'
+              },
+              { 
+                plan: 'Premium', 
+                icon: '👑',
+                price: '₦4,999', 
+                period: '/month',
+                features: ['Unlimited products', '8 images/product', 'Cover image', 'Priority support'],
                 cta: 'Go Premium',
                 highlight: false,
-                badge: '👑'
+                badge: null
               }
             ].map((item, i) => (
-              <div key={i} className={`relative p-6 sm:p-8 rounded-2xl transition-transform hover:scale-[1.02] ${item.highlight ? 'bg-navy text-white ring-4 ring-padi-green shadow-xl' : 'bg-white border border-gray-200 hover:border-padi-green/30'}`}>
+              <div key={i} className={`relative p-5 sm:p-6 rounded-2xl transition-transform hover:scale-[1.02] ${item.highlight ? 'bg-navy text-white ring-2 ring-padi-green shadow-xl' : 'bg-white border border-gray-200 hover:border-padi-green/30'}`}>
                 {item.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-white px-4 py-1 rounded-full text-sm font-bold">
-                    {item.badge} Most Popular
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-padi-green text-white px-4 py-1 rounded-full text-sm font-bold">
+                    {item.badge}
                   </div>
                 )}
-                <h3 className="font-sora font-bold text-xl sm:text-2xl mt-2">{item.plan}</h3>
+                <div className="text-4xl mb-2">{item.icon}</div>
+                <h3 className="font-sora font-bold text-xl sm:text-2xl">{item.plan}</h3>
                 <div className="mt-4 mb-6">
                   <span className="text-4xl sm:text-5xl font-bold">{item.price}</span>
                   <span className={`text-sm ${item.highlight ? 'text-gray-300' : 'text-gray-500'}`}>{item.period}</span>

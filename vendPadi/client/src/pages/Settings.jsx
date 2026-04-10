@@ -11,9 +11,10 @@ import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppin
 const CATEGORIES = ['food', 'fashion', 'phones', 'cakes', 'other'];
 
 const PLAN_FEATURES = {
-  free: { products: 5, images: 1, logo: false, pdf: false },
-  basic: { products: 20, images: 3, logo: true, pdf: false },
-  premium: { products: '∞', images: 3, logo: true, pdf: true }
+  free: { products: 10, images: 2, logo: false, pdf: false },
+  starter: { products: 50, images: 4, logo: true, pdf: false },
+  business: { products: 200, images: 6, logo: true, pdf: true },
+  premium: { products: '∞', images: 8, logo: true, pdf: true }
 };
 
 const Settings = () => {
@@ -205,7 +206,8 @@ const Settings = () => {
               <div className="flex items-center gap-3">
                 <span className="text-3xl">
                   {vendor?.plan?.type === 'free' && '🆓'}
-                  {vendor?.plan?.type === 'basic' && '💡'}
+                  {vendor?.plan?.type === 'starter' && '💡'}
+                  {vendor?.plan?.type === 'business' && '🚀'}
                   {vendor?.plan?.type === 'premium' && '👑'}
                 </span>
                 {vendor?.plan?.type !== 'premium' && (
