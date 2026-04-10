@@ -1,7 +1,7 @@
-import { FiShoppingCart, FiMessageCircle, FiChevronRight } from "react-icons/fi";
+import { FiShoppingCart, FiMessageCircle, FiChevronRight, FiShare2 } from "react-icons/fi";
 import { motion } from "framer-motion";
 
-const StoreBottomBar = ({ cartCount, cartTotal, onCartClick, onOrderClick }) => {
+const StoreBottomBar = ({ cartCount, cartTotal, onCartClick, onOrderClick, onQRClick }) => {
   return (
     <motion.div
       initial={{ y: 100 }}
@@ -10,7 +10,7 @@ const StoreBottomBar = ({ cartCount, cartTotal, onCartClick, onOrderClick }) => 
       className="fixed bottom-0 left-0 right-0 z-40">
       <div className="bg-white/95 backdrop-blur-xl border-t border-gray-100 shadow-2xl">
         <div className="max-w-5xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={onCartClick}
               className="flex items-center gap-3 flex-1 bg-gray-50 hover:bg-gray-100 px-4 py-3 rounded-2xl transition-all text-left">
@@ -35,10 +35,10 @@ const StoreBottomBar = ({ cartCount, cartTotal, onCartClick, onOrderClick }) => 
                   </motion.span>
                 )}
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 {cartCount > 0 ? (
                   <>
-                    <p className="font-semibold text-navy">
+                    <p className="font-semibold text-navy text-sm">
                       View Order - NGN{cartTotal.toLocaleString()}
                     </p>
                     <p className="text-xs text-gray-400">
@@ -47,7 +47,7 @@ const StoreBottomBar = ({ cartCount, cartTotal, onCartClick, onOrderClick }) => 
                   </>
                 ) : (
                   <>
-                    <p className="font-medium text-gray-400">
+                    <p className="font-medium text-gray-400 text-sm">
                       Your order is empty
                     </p>
                     <p className="text-xs text-gray-300">
@@ -56,8 +56,19 @@ const StoreBottomBar = ({ cartCount, cartTotal, onCartClick, onOrderClick }) => 
                   </>
                 )}
               </div>
-              <FiChevronRight className="ml-auto text-gray-400" size={20} />
+              <FiChevronRight className="text-gray-400" size={20} />
             </button>
+
+            <motion.button
+              whileTap={{ scale: cartCount > 0 ? 0.95 : 1 }}
+              onClick={onQRClick}
+              className="w-14 h-14 rounded-2xl bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] transition-all flex items-center justify-center flex-shrink-0">
+              <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+                <path d="M3 11h8a4 4 0 0 1 4 4v8M17 5h4M7 3 3 7l4 4m4 10 4-4-4-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                <rect x="3" y="3" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2" fill="none"/>
+                <rect x="15" y="15" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2" fill="none"/>
+              </svg>
+            </motion.button>
 
             <motion.button
               whileTap={{ scale: cartCount > 0 ? 0.95 : 1 }}

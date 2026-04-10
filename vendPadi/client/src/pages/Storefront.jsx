@@ -5,7 +5,7 @@ import { clearCart } from "../store/cartSlice";
 import { storeAPI } from "../api/axiosInstance";
 import { buildWhatsAppOrderLink } from "../utils/whatsapp";
 import toast from "react-hot-toast";
-import { FiPackage, FiHome, FiChevronRight } from "react-icons/fi";
+import { FiPackage, FiHome, FiChevronRight, FiShare2 } from "react-icons/fi";
 import { AnimatePresence, motion } from "framer-motion";
 
 import StoreHeader from "../components/store/StoreHeader";
@@ -16,6 +16,7 @@ import StoreBottomBar from "../components/store/StoreBottomBar";
 import StoreSkeleton from "../components/store/StoreSkeleton";
 import ProductDetailModal from "../components/store/ProductDetailModal";
 import CartDrawer from "../components/store/CartDrawer";
+import WhatsAppQRModal from "../components/WhatsAppQRModal";
 
 const scaleIn = {
   initial: { opacity: 0, scale: 0.9 },
@@ -37,6 +38,16 @@ const Storefront = () => {
   const [search, setSearch] = useState("");
   const [copied, setCopied] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+
+  const whatsappLink = useMemo(() => {
+    if (!store?.vendor) return "";
+    return buildWhatsAppOrderLink(
+      store.vendor.phone,
+      store.vendor.businessName,
+      cartItems,
+    );
+  }, [store, cartItems]);
 
   const cartTotal = useMemo(
     () => cartItems.reduce((s, i) => s + i.price * i.qty, 0),
@@ -186,6 +197,7 @@ const Storefront = () => {
       <ProductDetailModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
+        storeSlug={store?.vendor?.slug}
       />
 
       <CartDrawer
@@ -199,6 +211,14 @@ const Storefront = () => {
         cartTotal={cartTotal}
         onCartClick={() => setShowCart(true)}
         onOrderClick={handleOrder}
+        onQRClick={() => setShowQRModal(true)}
+      />
+
+      <WhatsAppQRModal
+        isOpen={showQRModal}
+        onClose={() => setShowQRModal(false)}
+        whatsappLink={whatsappLink}
+        storeName={store?.vendor?.businessName}
       />
 
       <AnimatePresence>
