@@ -1,207 +1,271 @@
-import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import { orderAPI } from '../api/axiosInstance';
-import PlanBadge from '../components/PlanBadge';
-import toast from 'react-hot-toast';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import { 
-  FiPackage, FiSettings, FiShoppingBag, FiDownload, FiEye, 
-  FiCheck, FiClock, FiX, FiArrowLeft, FiTrendingUp, FiDollarSign
-} from 'react-icons/fi';
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { orderAPI } from "../api/axiosInstance";
+import PlanBadge from "../components/PlanBadge";
+import toast from "react-hot-toast";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable"; // ✅ FIX 1: Import autoTable as standalone function
+import {
+  FiPackage,
+  FiSettings,
+  FiShoppingBag,
+  FiDownload,
+  FiEye,
+  FiCheck,
+  FiClock,
+  FiX,
+  FiArrowLeft,
+  FiTrendingUp,
+  FiDollarSign,
+} from "react-icons/fi";
 
 const STATUS_CONFIG = {
-  pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700', icon: FiClock },
-  confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-700', icon: FiCheck },
-  delivered: { label: 'Delivered', color: 'bg-green-100 text-green-700', icon: FiCheck },
-  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700', icon: FiX }
+  pending: {
+    label: "Pending",
+    color: "bg-yellow-100 text-yellow-700",
+    icon: FiClock,
+  },
+  confirmed: {
+    label: "Confirmed",
+    color: "bg-blue-100 text-blue-700",
+    icon: FiCheck,
+  },
+  delivered: {
+    label: "Delivered",
+    color: "bg-green-100 text-green-700",
+    icon: FiCheck,
+  },
+  cancelled: {
+    label: "Cancelled",
+    color: "bg-red-100 text-red-700",
+    icon: FiX,
+  },
 };
 
 const generateInvoicePDF = (order, vendor) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  
+
   doc.setFillColor(37, 200, 102);
-  doc.rect(0, 0, pageWidth, 45, 'F');
-  
+  doc.rect(0, 0, pageWidth, 45, "F");
+
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('INVOICE', 20, 22);
-  
+  doc.setFont("helvetica", "bold");
+  doc.text("INVOICE", 20, 22);
+
   doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(vendor.businessName || 'Store', 20, 32);
-  if (vendor.phone) {
+  doc.setFont("helvetica", "normal");
+  doc.text(vendor?.businessName || "Store", 20, 32);
+  if (vendor?.phone) {
     doc.text(`Tel: ${vendor.phone}`, 20, 39);
   }
-  
+
   doc.setTextColor(26, 26, 46);
   let y = 60;
-  
-  doc.setFont('helvetica', 'bold');
+
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text('Bill To:', 20, y);
-  doc.setFont('helvetica', 'normal');
+  doc.text("Bill To:", 20, y);
+  doc.setFont("helvetica", "normal");
   y += 7;
   doc.setFontSize(10);
-  doc.text(order.customerName || 'Customer', 20, y);
+  doc.text(order.customerName || "Customer", 20, y);
   if (order.customerPhone) {
     y += 5;
     doc.text(order.customerPhone, 20, y);
   }
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Order Details:', 120, 60);
-  doc.setFont('helvetica', 'normal');
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Order Details:", 120, 60);
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.text(`Order ID: ${order._id.slice(-8).toUpperCase()}`, 120, 68);
-  doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString('en-NG', { 
-    day: '2-digit', month: 'long', year: 'numeric' 
-  })}`, 120, 75);
-  doc.text(`Status: ${STATUS_CONFIG[order.status]?.label || order.status}`, 120, 82);
-  
+  doc.text(
+    `Date: ${new Date(order.createdAt).toLocaleDateString("en-NG", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    })}`,
+    120,
+    75,
+  );
+  doc.text(
+    `Status: ${STATUS_CONFIG[order.status]?.label || order.status}`,
+    120,
+    82,
+  );
+
   y = 100;
   doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Items:', 20, y);
-  
-  doc.autoTable({
+  doc.setFont("helvetica", "bold");
+  doc.text("Items:", 20, y);
+
+  // ✅ FIX 2: Use standalone autoTable(doc, options) instead of doc.autoTable(options)
+  autoTable(doc, {
     startY: y + 5,
-    head: [['#', 'Item Description', 'Qty', 'Unit Price', 'Total']],
+    head: [["#", "Item Description", "Qty", "Unit Price", "Total"]],
     body: order.items.map((item, idx) => [
       idx + 1,
       item.name,
       item.qty,
-      `₦${item.price.toLocaleString()}`,
-      `₦${(item.price * item.qty).toLocaleString()}`
+      `\u20A6${item.price.toLocaleString()}`,
+      `\u20A6${(item.price * item.qty).toLocaleString()}`,
     ]),
-    theme: 'striped',
-    headStyles: { 
+    theme: "striped",
+    headStyles: {
       fillColor: [26, 26, 46],
       textColor: 255,
-      fontStyle: 'bold',
-      fontSize: 9
+      fontStyle: "bold",
+      fontSize: 9,
     },
     bodyStyles: { fontSize: 9 },
     columnStyles: {
       0: { cellWidth: 12 },
       1: { cellWidth: 80 },
-      2: { cellWidth: 20, halign: 'center' },
-      3: { cellWidth: 35, halign: 'right' },
-      4: { cellWidth: 35, halign: 'right' }
+      2: { cellWidth: 20, halign: "center" },
+      3: { cellWidth: 35, halign: "right" },
+      4: { cellWidth: 35, halign: "right" },
     },
-    margin: { left: 20, right: 20 }
+    margin: { left: 20, right: 20 },
   });
-  
-  const finalY = doc.lastAutoTable.finalY + 12;
-  
+
+  // ✅ FIX 3: Safely read finalY via doc.lastAutoTable with fallback
+  const finalY = (doc.lastAutoTable?.finalY ?? y + 40) + 12;
+
   doc.setFillColor(37, 200, 102);
-  doc.rect(110, finalY, 80, 14, 'F');
+  doc.rect(110, finalY, 80, 14, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`TOTAL: ₦${order.totalAmount.toLocaleString()}`, 115, finalY + 9);
-  
+  doc.setFont("helvetica", "bold");
+  doc.text(
+    `TOTAL: \u20A6${order.totalAmount.toLocaleString()}`,
+    115,
+    finalY + 9,
+  );
+
   if (order.note) {
     doc.setTextColor(80, 80, 80);
     doc.setFontSize(9);
-    doc.setFont('helvetica', 'italic');
+    doc.setFont("helvetica", "italic");
     doc.text(`Note: ${order.note}`, 20, finalY + 25);
   }
-  
+
   doc.setTextColor(120, 120, 120);
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Thank you for your business!', pageWidth / 2, 275, { align: 'center' });
-  doc.text('Generated by VendPadi | vendpadi.com', pageWidth / 2, 280, { align: 'center' });
-  
+  doc.setFont("helvetica", "normal");
+  doc.text("Thank you for your business!", pageWidth / 2, 275, {
+    align: "center",
+  });
+  doc.text("Generated by VendPadi | vendpadi.com", pageWidth / 2, 280, {
+    align: "center",
+  });
+
   doc.save(`Invoice-${order._id.slice(-8).toUpperCase()}.pdf`);
 };
 
 const generateReceiptPDF = (order, vendor) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  
+
   doc.setFillColor(245, 166, 35);
-  doc.rect(0, 0, pageWidth, 35, 'F');
-  
+  doc.rect(0, 0, pageWidth, 35, "F");
+
   doc.setTextColor(26, 26, 46);
   doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('RECEIPT', 20, 22);
-  
+  doc.setFont("helvetica", "bold");
+  doc.text("RECEIPT", 20, 22);
+
   doc.setTextColor(26, 26, 46);
   doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text(vendor.businessName || 'Store', 20, 50);
-  
-  doc.setFont('helvetica', 'normal');
+  doc.setFont("helvetica", "bold");
+  doc.text(vendor?.businessName || "Store", 20, 50);
+
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  if (vendor.phone) {
+  if (vendor?.phone) {
     doc.text(`Tel: ${vendor.phone}`, 20, 58);
   }
-  
+
   doc.line(20, 65, pageWidth - 20, 65);
-  
+
   doc.setFontSize(10);
-  doc.text(`Date: ${new Date(order.createdAt).toLocaleString('en-NG', { 
-    day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-  })}`, 20, 73);
+  doc.text(
+    `Date: ${new Date(order.createdAt).toLocaleString("en-NG", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`,
+    20,
+    73,
+  );
   doc.text(`Receipt #: ${order._id.slice(-8).toUpperCase()}`, 20, 80);
-  
+
   let y = 92;
-  doc.setFont('helvetica', 'bold');
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text('Items Purchased', 20, y);
-  
-  doc.autoTable({
+  doc.text("Items Purchased", 20, y);
+
+  // ✅ FIX 2: Use standalone autoTable(doc, options)
+  autoTable(doc, {
     startY: y + 5,
-    head: [['#', 'Item', 'Qty', 'Amount']],
+    head: [["#", "Item", "Qty", "Amount"]],
     body: order.items.map((item, idx) => [
       idx + 1,
       item.name,
       item.qty,
-      `₦${(item.price * item.qty).toLocaleString()}`
+      `\u20A6${(item.price * item.qty).toLocaleString()}`,
     ]),
-    theme: 'grid',
-    headStyles: { 
+    theme: "grid",
+    headStyles: {
       fillColor: [245, 166, 35],
       textColor: [26, 26, 46],
-      fontStyle: 'bold',
-      fontSize: 9
+      fontStyle: "bold",
+      fontSize: 9,
     },
     bodyStyles: { fontSize: 9 },
     columnStyles: {
-      0: { cellWidth: 15, halign: 'center' },
+      0: { cellWidth: 15, halign: "center" },
       1: { cellWidth: 95 },
-      2: { cellWidth: 25, halign: 'center' },
-      3: { cellWidth: 40, halign: 'right' }
+      2: { cellWidth: 25, halign: "center" },
+      3: { cellWidth: 40, halign: "right" },
     },
-    margin: { left: 20, right: 20 }
+    margin: { left: 20, right: 20 },
   });
-  
-  const finalY = doc.lastAutoTable.finalY + 12;
-  
+
+  // ✅ FIX 3: Safe finalY fallback
+  const finalY = (doc.lastAutoTable?.finalY ?? y + 40) + 12;
+
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.5);
   doc.line(110, finalY, pageWidth - 20, finalY);
-  
+
   doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont("helvetica", "bold");
   doc.setTextColor(26, 26, 46);
-  doc.text('TOTAL PAID:', 110, finalY + 10);
+  doc.text("TOTAL PAID:", 110, finalY + 10);
   doc.setTextColor(37, 200, 102);
   doc.setFontSize(14);
-  doc.text(`₦${order.totalAmount.toLocaleString()}`, pageWidth - 20, finalY + 10, { align: 'right' });
-  
+  doc.text(
+    `\u20A6${order.totalAmount.toLocaleString()}`,
+    pageWidth - 20,
+    finalY + 10,
+    { align: "right" },
+  );
+
   doc.setTextColor(100, 100, 100);
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Payment via WhatsApp Order', pageWidth / 2, 265, { align: 'center' });
-  doc.text('Generated by VendPadi | vendpadi.com', pageWidth / 2, 270, { align: 'center' });
-  
+  doc.setFont("helvetica", "normal");
+  doc.text("Payment via WhatsApp Order", pageWidth / 2, 265, {
+    align: "center",
+  });
+  doc.text("Generated by VendPadi | vendpadi.com", pageWidth / 2, 270, {
+    align: "center",
+  });
+
   doc.save(`Receipt-${order._id.slice(-8).toUpperCase()}.pdf`);
 };
 
@@ -212,8 +276,11 @@ const Orders = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [loadingAction, setLoadingAction] = useState(null);
+  // ✅ FIX 4: Track downloading by orderId+type to avoid global lock on all buttons
+  const [downloadingPdf, setDownloadingPdf] = useState(null); // format: `${orderId}-invoice` or `${orderId}-receipt`
 
-  const isPremium = vendor?.plan?.type === 'premium';
+  const isPremium = vendor?.plan?.type === "premium";
 
   useEffect(() => {
     fetchData();
@@ -223,24 +290,57 @@ const Orders = () => {
     try {
       const [ordersRes, statsRes] = await Promise.all([
         orderAPI.getAll(),
-        orderAPI.getStats()
+        orderAPI.getStats(),
       ]);
       setOrders(ordersRes.data);
       setStats(statsRes.data);
     } catch (error) {
-      toast.error('Failed to load orders');
+      toast.error("Failed to load orders");
     } finally {
       setLoading(false);
     }
   };
 
   const handleStatusUpdate = async (orderId, status) => {
+    setLoadingAction(orderId);
     try {
       await orderAPI.updateStatus(orderId, status);
-      toast.success('Status updated');
+      toast.success("Status updated");
+      setSelectedOrder(null);
       fetchData();
     } catch (error) {
-      toast.error('Failed to update status');
+      toast.error("Failed to update status");
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  // ✅ FIX 5: Removed dead isModal branching — both branches did the same thing
+  const downloadInvoice = (order) => {
+    const key = `${order._id}-invoice`;
+    if (downloadingPdf) return;
+    setDownloadingPdf(key);
+    try {
+      generateInvoicePDF(order, vendor);
+      setSelectedOrder(null);
+    } catch (error) {
+      toast.error("Failed to generate invoice");
+    } finally {
+      setTimeout(() => setDownloadingPdf(null), 300);
+    }
+  };
+
+  const downloadReceipt = (order) => {
+    const key = `${order._id}-receipt`;
+    if (downloadingPdf) return;
+    setDownloadingPdf(key);
+    try {
+      generateReceiptPDF(order, vendor);
+      setSelectedOrder(null);
+    } catch (error) {
+      toast.error("Failed to generate receipt");
+    } finally {
+      setTimeout(() => setDownloadingPdf(null), 300);
     }
   };
 
@@ -266,25 +366,37 @@ const Orders = () => {
         <div className="mb-6">
           <div className="w-16 h-16 bg-padi-green/20 rounded-xl mx-auto flex items-center justify-center mb-3 overflow-hidden">
             {vendor?.logo ? (
-              <img src={vendor.logo} alt="" className="w-full h-full object-cover" />
+              <img
+                src={vendor.logo}
+                alt=""
+                className="w-full h-full object-cover"
+              />
             ) : (
               <span className="text-3xl">🏪</span>
             )}
           </div>
-          <h3 className="font-sora font-semibold text-center">{vendor?.businessName}</h3>
+          <h3 className="font-sora font-semibold text-center">
+            {vendor?.businessName}
+          </h3>
           <div className="flex justify-center mt-2">
             <PlanBadge plan={vendor?.plan} size="sm" />
           </div>
         </div>
 
         <nav className="space-y-2">
-          <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 transition-colors">
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 transition-colors">
             <FiPackage /> Products
           </Link>
-          <Link to="/orders" className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-padi-green/20 text-padi-green">
+          <Link
+            to="/orders"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-padi-green/20 text-padi-green">
             <FiShoppingBag /> Orders
           </Link>
-          <Link to="/settings" className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 transition-colors">
+          <Link
+            to="/settings"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 transition-colors">
             ⚙️ Settings
           </Link>
         </nav>
@@ -295,12 +407,16 @@ const Orders = () => {
         {/* Header */}
         <header className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-10">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg lg:hidden">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-gray-100 rounded-lg lg:hidden">
               <FiArrowLeft />
             </button>
             <div>
               <h1 className="font-sora font-bold text-xl text-navy">Orders</h1>
-              <p className="text-sm text-gray-500">{orders.length} total orders</p>
+              <p className="text-sm text-gray-500">
+                {orders.length} total orders
+              </p>
             </div>
           </div>
         </header>
@@ -315,7 +431,9 @@ const Orders = () => {
                     <FiShoppingBag className="text-padi-green" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-navy">{stats.totalOrders}</p>
+                    <p className="text-2xl font-bold text-navy">
+                      {stats.totalOrders}
+                    </p>
                     <p className="text-xs text-gray-500">Total Orders</p>
                   </div>
                 </div>
@@ -326,7 +444,9 @@ const Orders = () => {
                     <FiClock className="text-yellow-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-navy">{stats.pendingOrders}</p>
+                    <p className="text-2xl font-bold text-navy">
+                      {stats.pendingOrders}
+                    </p>
                     <p className="text-xs text-gray-500">Pending</p>
                   </div>
                 </div>
@@ -337,7 +457,9 @@ const Orders = () => {
                     <FiCheck className="text-green-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-navy">{stats.deliveredOrders}</p>
+                    <p className="text-2xl font-bold text-navy">
+                      {stats.deliveredOrders}
+                    </p>
                     <p className="text-xs text-gray-500">Delivered</p>
                   </div>
                 </div>
@@ -348,7 +470,9 @@ const Orders = () => {
                     <FiDollarSign className="text-gold" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-navy">₦{stats.totalRevenue.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-navy">
+                      ₦{stats.totalRevenue.toLocaleString()}
+                    </p>
                     <p className="text-xs text-gray-500">Revenue</p>
                   </div>
                 </div>
@@ -363,10 +487,14 @@ const Orders = () => {
                 <span className="text-3xl">👑</span>
                 <div>
                   <h3 className="font-semibold">Upgrade to Premium</h3>
-                  <p className="text-sm text-gray-300">Generate PDF invoices & receipts for your orders</p>
+                  <p className="text-sm text-gray-300">
+                    Generate PDF invoices & receipts for your orders
+                  </p>
                 </div>
               </div>
-              <Link to="/settings" className="bg-gold hover:bg-gold/90 text-white px-5 py-2 rounded-xl font-medium transition-colors">
+              <Link
+                to="/settings"
+                className="bg-gold hover:bg-gold/90 text-white px-5 py-2 rounded-xl font-medium transition-colors">
                 Upgrade Now
               </Link>
             </div>
@@ -378,52 +506,81 @@ const Orders = () => {
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FiShoppingBag className="text-4xl text-gray-300" />
               </div>
-              <h3 className="font-sora font-semibold text-xl mb-2">No Orders Yet</h3>
-              <p className="text-gray-500">Orders will appear here when customers place them.</p>
+              <h3 className="font-sora font-semibold text-xl mb-2">
+                No Orders Yet
+              </h3>
+              <p className="text-gray-500">
+                Orders will appear here when customers place them.
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
               {orders.map((order) => {
                 const StatusIcon = STATUS_CONFIG[order.status]?.icon || FiClock;
+                const invoiceKey = `${order._id}-invoice`;
+                const receiptKey = `${order._id}-receipt`;
                 return (
-                  <div key={order._id} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow">
+                  <div
+                    key={order._id}
+                    className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <span className="font-semibold text-navy">#{order._id.slice(-8).toUpperCase()}</span>
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_CONFIG[order.status]?.color}`}>
+                          <span className="font-semibold text-navy">
+                            #{order._id.slice(-8).toUpperCase()}
+                          </span>
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_CONFIG[order.status]?.color}`}>
                             <StatusIcon size={12} />
                             {STATUS_CONFIG[order.status]?.label}
                           </span>
                         </div>
                         <p className="text-sm text-gray-500">
-                          {order.customerName} • {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                          {order.customerName} • {order.items.length} item
+                          {order.items.length !== 1 ? "s" : ""}
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
                           {new Date(order.createdAt).toLocaleString()}
                         </p>
                       </div>
-                      
+
                       <div className="flex items-center gap-4">
-                        <span className="font-bold text-xl text-padi-green">₦{order.totalAmount.toLocaleString()}</span>
-                        
+                        <span className="font-bold text-xl text-padi-green">
+                          ₦{order.totalAmount.toLocaleString()}
+                        </span>
+
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setSelectedOrder(order)}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            title="View Details"
-                          >
+                            title="View Details">
                             <FiEye className="text-gray-500" />
                           </button>
-                          
+
                           {isPremium && (
                             <>
+                              {/* ✅ FIX 4: Each button checks its own key, not a global lock */}
                               <button
-                                onClick={() => generateInvoicePDF(order, vendor)}
-                                className="p-2 hover:bg-padi-green/10 rounded-lg transition-colors"
-                                title="Download Invoice"
-                              >
-                                <FiDownload className="text-padi-green" />
+                                onClick={() => downloadInvoice(order)}
+                                disabled={downloadingPdf === invoiceKey}
+                                className="p-2 hover:bg-padi-green/10 rounded-lg transition-colors disabled:opacity-50"
+                                title="Download Invoice">
+                                {downloadingPdf === invoiceKey ? (
+                                  <span className="w-4 h-4 border-2 border-padi-green border-t-transparent rounded-full animate-spin block"></span>
+                                ) : (
+                                  <FiDownload className="text-padi-green" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => downloadReceipt(order)}
+                                disabled={downloadingPdf === receiptKey}
+                                className="p-2 hover:bg-gold/10 rounded-lg transition-colors disabled:opacity-50"
+                                title="Download Receipt">
+                                {downloadingPdf === receiptKey ? (
+                                  <span className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin block"></span>
+                                ) : (
+                                  <FiDownload className="text-gold" />
+                                )}
                               </button>
                             </>
                           )}
@@ -440,104 +597,161 @@ const Orders = () => {
 
       {/* Order Detail Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedOrder(null)}>
-          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedOrder(null)}>
+          <div
+            className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}>
             <div className="p-5 border-b flex items-center justify-between sticky top-0 bg-white">
               <div>
                 <h2 className="font-sora font-bold text-lg">Order Details</h2>
-                <p className="text-sm text-gray-500">#{selectedOrder._id.slice(-8).toUpperCase()}</p>
+                <p className="text-sm text-gray-500">
+                  #{selectedOrder._id.slice(-8).toUpperCase()}
+                </p>
               </div>
-              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-gray-100 rounded-lg">
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg">
                 <FiX />
               </button>
             </div>
-            
+
             <div className="p-5">
               {(() => {
-                const StatusIcon = STATUS_CONFIG[selectedOrder.status]?.icon || FiClock;
+                const StatusIcon =
+                  STATUS_CONFIG[selectedOrder.status]?.icon || FiClock;
                 return (
                   <div className="flex items-center justify-between mb-4">
-                    <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${STATUS_CONFIG[selectedOrder.status]?.color}`}>
+                    <span
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${STATUS_CONFIG[selectedOrder.status]?.color}`}>
                       <StatusIcon size={14} />
                       {STATUS_CONFIG[selectedOrder.status]?.label}
                     </span>
-                    <span className="font-bold text-2xl text-padi-green">₦{selectedOrder.totalAmount.toLocaleString()}</span>
+                    <span className="font-bold text-2xl text-padi-green">
+                      ₦{selectedOrder.totalAmount.toLocaleString()}
+                    </span>
                   </div>
                 );
               })()}
-              
+
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
                   <p className="text-xs text-gray-500">Customer</p>
-                  <p className="font-medium">{selectedOrder.customerName || 'Anonymous'}</p>
+                  <p className="font-medium">
+                    {selectedOrder.customerName || "Anonymous"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Phone</p>
-                  <p className="font-medium">{selectedOrder.customerPhone || 'N/A'}</p>
+                  <p className="font-medium">
+                    {selectedOrder.customerPhone || "N/A"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Date</p>
-                  <p className="font-medium">{new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                  <p className="font-medium">
+                    {new Date(selectedOrder.createdAt).toLocaleString()}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Items</p>
-                  <p className="font-medium">{selectedOrder.items.length} item{selectedOrder.items.length !== 1 ? 's' : ''}</p>
+                  <p className="font-medium">
+                    {selectedOrder.items.length} item
+                    {selectedOrder.items.length !== 1 ? "s" : ""}
+                  </p>
                 </div>
               </div>
-              
+
               <h3 className="font-semibold mb-3">Items</h3>
               <div className="space-y-3 mb-6">
                 {selectedOrder.items.map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
                     <div>
                       <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-500">{item.qty} × ₦{item.price.toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">
+                        {item.qty} × ₦{item.price.toLocaleString()}
+                      </p>
                     </div>
-                    <span className="font-bold">₦{(item.price * item.qty).toLocaleString()}</span>
+                    <span className="font-bold">
+                      ₦{(item.price * item.qty).toLocaleString()}
+                    </span>
                   </div>
                 ))}
               </div>
-              
+
               {selectedOrder.note && (
                 <div className="mb-6">
                   <h3 className="font-semibold mb-2">Note</h3>
-                  <p className="text-gray-600 bg-yellow-50 p-3 rounded-xl">{selectedOrder.note}</p>
+                  <p className="text-gray-600 bg-yellow-50 p-3 rounded-xl">
+                    {selectedOrder.note}
+                  </p>
                 </div>
               )}
-              
+
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Update Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Update Status
+                </label>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(STATUS_CONFIG).map(([status, config]) => (
                     <button
                       key={status}
-                      onClick={() => handleStatusUpdate(selectedOrder._id, status)}
-                      disabled={selectedOrder.status === status}
+                      onClick={() =>
+                        handleStatusUpdate(selectedOrder._id, status)
+                      }
+                      disabled={
+                        selectedOrder.status === status ||
+                        loadingAction === selectedOrder._id
+                      }
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         selectedOrder.status === status
                           ? `${config.color} cursor-not-allowed`
-                          : 'bg-gray-100 hover:bg-gray-200'
-                      }`}
-                    >
-                      {config.label}
+                          : "bg-gray-100 hover:bg-gray-200"
+                      } ${loadingAction === selectedOrder._id && selectedOrder.status !== status ? "opacity-50 cursor-not-allowed" : ""}`}>
+                      {loadingAction === selectedOrder._id &&
+                      selectedOrder.status !== status ? (
+                        <span className="flex items-center gap-1">
+                          <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>
+                          Updating...
+                        </span>
+                      ) : (
+                        config.label
+                      )}
                     </button>
                   ))}
                 </div>
               </div>
-              
+
               {isPremium && (
                 <div className="flex gap-3">
                   <button
-                    onClick={() => { generateInvoicePDF(selectedOrder, vendor); setSelectedOrder(null); }}
-                    className="flex-1 btn-primary flex items-center justify-center gap-2"
-                  >
-                    <FiDownload /> Invoice PDF
+                    onClick={() => downloadInvoice(selectedOrder)}
+                    disabled={downloadingPdf === `${selectedOrder._id}-invoice`}
+                    className="flex-1 btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {downloadingPdf === `${selectedOrder._id}-invoice` ? (
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    ) : (
+                      <FiDownload />
+                    )}
+                    {downloadingPdf === `${selectedOrder._id}-invoice`
+                      ? "Generating..."
+                      : "Invoice PDF"}
                   </button>
                   <button
-                    onClick={() => { generateReceiptPDF(selectedOrder, vendor); setSelectedOrder(null); }}
-                    className="flex-1 bg-gold hover:bg-gold/90 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
-                  >
-                    <FiDownload /> Receipt PDF
+                    onClick={() => downloadReceipt(selectedOrder)}
+                    disabled={downloadingPdf === `${selectedOrder._id}-receipt`}
+                    className="flex-1 bg-gold hover:bg-gold/90 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {downloadingPdf === `${selectedOrder._id}-receipt` ? (
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    ) : (
+                      <FiDownload />
+                    )}
+                    {downloadingPdf === `${selectedOrder._id}-receipt`
+                      ? "Generating..."
+                      : "Receipt PDF"}
                   </button>
                 </div>
               )}
