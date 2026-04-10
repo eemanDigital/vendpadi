@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { vendorAPI } from '../api/axiosInstance';
+import { vendorAPI, authAPI } from '../api/axiosInstance';
 import { updateVendor } from '../store/authSlice';
 import PlanBadge from '../components/PlanBadge';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import toast from 'react-hot-toast';
-import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp } from 'react-icons/fi';
+import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle } from 'react-icons/fi';
 
 const CATEGORIES = ['food', 'fashion', 'phones', 'cakes', 'other'];
 
@@ -91,6 +91,50 @@ const Settings = () => {
     setCopied(true);
     toast.success('Link copied!');
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+
+  const handlePasswordChange = (e) => {
+    setPasswordData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setPasswordError('');
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError('Please fill in all fields');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await authAPI.changePassword(passwordData.currentPassword, passwordData.newPassword);
+      toast.success('Password changed successfully');
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      setPasswordError(error.response?.data?.message || 'Failed to change password');
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   return (
@@ -261,6 +305,82 @@ const Settings = () => {
                   <FiExternalLink /> Preview
                 </a>
               </div>
+            </div>
+
+            {/* Change Password */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-padi-green/10 rounded-xl flex items-center justify-center">
+                  <FiLock className="text-padi-green" />
+                </div>
+                <h2 className="font-sora font-semibold text-lg">Change Password</h2>
+              </div>
+
+              {passwordError && (
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+                  <FiAlertCircle size={16} />
+                  {passwordError}
+                </div>
+              )}
+
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
+                  <input
+                    type="password"
+                    name="currentPassword"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChange}
+                    className="input-field"
+                    placeholder="Enter current password"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
+                  <input
+                    type="password"
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    className="input-field"
+                    placeholder="Min. 6 characters"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm New Password</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    className="input-field"
+                    placeholder="Re-enter new password"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={passwordLoading}
+                  className="w-full btn-secondary flex items-center justify-center gap-2"
+                >
+                  {passwordLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-padi-green border-t-transparent rounded-full animate-spin"></div>
+                      Changing...
+                    </>
+                  ) : (
+                    <>
+                      <FiLock /> Change Password
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <p className="text-xs text-gray-400 mt-4">
+                Forgot your password?{' '}
+                <Link to="/forgot-password" className="text-padi-green hover:underline">
+                  Reset it here
+                </Link>
+              </p>
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">

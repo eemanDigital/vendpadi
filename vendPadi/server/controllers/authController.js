@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { validationResult } = require('express-validator');
 const Vendor = require('../models/Vendor');
 const generateSlug = require('../utils/generateSlug');
+const { sendPasswordResetEmail } = require('../utils/email');
 
 const catchAsync = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -108,4 +110,97 @@ exports.login = catchAsync(async (req, res) => {
       isAdmin: vendor.isAdmin
     }
   });
+});
+
+exports.forgotPassword = catchAsync(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  const vendor = await Vendor.findOne({ email: email.toLowerCase() });
+
+  if (!vendor) {
+    return res.status(200).json({ 
+      message: 'If an account exists with this email, you will receive a password reset link.' 
+    });
+  }
+
+  const resetToken = vendor.generateResetToken();
+  await vendor.save({ validateBeforeSave: false });
+
+  await sendPasswordResetEmail(vendor.email, resetToken, vendor.businessName);
+
+  res.status(200).json({ 
+    message: 'If an account exists with this email, you will receive a password reset link.' 
+  });
+});
+
+exports.resetPassword = catchAsync(async (req, res) => {
+  const { token, password } = req.body;
+
+  if (!token || !password) {
+    return res.status(400).json({ message: 'Token and new password are required' });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters' });
+  }
+
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+  const vendor = await Vendor.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: { $gt: Date.now() }
+  });
+
+  if (!vendor) {
+    return res.status(400).json({ message: 'Invalid or expired reset token' });
+  }
+
+  vendor.passwordHash = await bcrypt.hash(password, 10);
+  vendor.resetPasswordToken = null;
+  vendor.resetPasswordExpires = null;
+  await vendor.save();
+
+  res.status(200).json({ message: 'Password has been reset successfully' });
+});
+
+exports.changePassword = catchAsync(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const vendorId = req.vendor?.id || req.vendor?._id;
+
+  if (!vendorId) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Current and new passwords are required' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ message: 'New password must be at least 6 characters' });
+  }
+
+  const vendor = await Vendor.findById(vendorId);
+
+  if (!vendor) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, vendor.passwordHash);
+  if (!isMatch) {
+    return res.status(400).json({ message: 'Current password is incorrect' });
+  }
+
+  vendor.passwordHash = await bcrypt.hash(newPassword, 10);
+  vendor.resetPasswordToken = null;
+  vendor.resetPasswordExpires = null;
+  await vendor.save();
+
+  res.status(200).json({ message: 'Password changed successfully' });
 });
