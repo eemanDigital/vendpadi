@@ -72,7 +72,7 @@ const CategoryBadge = ({ category }) => {
 };
 
 // ─── IMAGE CAROUSEL ────────────────────────────────────────────────
-const ImageCarousel = ({ images, name, category, compact = false }) => {
+const ImageCarousel = ({ images = [], name, category, compact = false }) => {
   const [current, setCurrent] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const hasMany = images && images.length > 1;
@@ -89,7 +89,7 @@ const ImageCarousel = ({ images, name, category, compact = false }) => {
   };
 
   if (!images || images.length === 0) {
-    const meta = CATEGORY_META[category] || CATEGORY_META.other;
+    const meta = CATEGORY_META[category] || CATEGORY_META.other || { bg: "bg-gray-100", text: "text-gray-400" };
     return (
       <div className={`w-full h-full flex items-center justify-center ${meta.bg}`}>
         <CategoryIcon category={category} size={compact ? 32 : 48} className={meta.text} />
@@ -182,6 +182,8 @@ const GridCard = ({ product, onOpenDetail, cartItem }) => {
   const dispatch = useDispatch();
   const [justAdded, setJustAdded] = useState(false);
 
+  if (!product) return null;
+
   const handleAdd = (e) => {
     e.stopPropagation();
     dispatch(addItem(product));
@@ -251,6 +253,8 @@ const GridCard = ({ product, onOpenDetail, cartItem }) => {
 const ListCard = ({ product, onOpenDetail, cartItem }) => {
   const dispatch = useDispatch();
   const [justAdded, setJustAdded] = useState(false);
+
+  if (!product) return null;
 
   const handleAdd = (e) => {
     e.stopPropagation();
@@ -342,6 +346,8 @@ const ListCard = ({ product, onOpenDetail, cartItem }) => {
 const ShowcaseCard = ({ product, onOpenDetail, cartItem }) => {
   const dispatch = useDispatch();
   const [justAdded, setJustAdded] = useState(false);
+
+  if (!product) return null;
 
   const handleAdd = (e) => {
     e.stopPropagation();
@@ -443,6 +449,8 @@ const ShowcaseCard = ({ product, onOpenDetail, cartItem }) => {
 
 // ─── EXPORTED WRAPPER ──────────────────────────────────────────────
 const ProductCard = ({ product, onOpenDetail, view = "grid" }) => {
+  if (!product) return null;
+
   const cartItems = useSelector((state) => state.cart.items);
   const cartItem = cartItems.find((i) => i._id === product._id);
 
