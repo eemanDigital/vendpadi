@@ -8,6 +8,11 @@ const STATIC_ASSETS = [
 
 const OFFLINE_URL = '/offline.html';
 
+const isCachableRequest = (request) => {
+  const url = new URL(request.url);
+  return url.protocol === 'http:' || url.protocol === 'https:';
+};
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -33,14 +38,18 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   
+  if (!isCachableRequest(event.request)) return;
+
   if (event.request.destination === 'document') {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
           return response;
         })
         .catch(() => {
@@ -61,18 +70,24 @@ self.addEventListener('fetch', (event) => {
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {
           fetch(event.request).then((response) => {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, response);
-            });
-          });
+            if (response.ok) {
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, response);
+              });
+            }
+          }).catch(() => {});
           return cachedResponse;
         }
         return fetch(event.request).then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
           return response;
+        }).catch(() => {
+          return caches.match(event.request);
         });
       })
     );
@@ -84,10 +99,12 @@ self.addEventListener('fetch', (event) => {
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) return cachedResponse;
         return fetch(event.request).then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
           return response;
         }).catch(() => {
           return caches.match('/favicon.svg');

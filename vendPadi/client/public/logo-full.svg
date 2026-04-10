@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120">
+  <defs>
+    <linearGradient id="mainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#25C866"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1A1A2E"/>
+      <stop offset="70%" stop-color="#1A1A2E"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <filter id="glowGreen" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Icon Section -->
+  <g transform="translate(0, 10)">
+    <!-- Shopping bag outline -->
+    <rect x="10" y="30" width="70" height="60" rx="12" 
+          fill="url(#mainGrad)" 
+          filter="url(#glowGreen)"/>
+    
+    <!-- Bag handle arc -->
+    <path d="M25 30 L25 18 Q45 -5 65 18 L65 30" 
+          fill="none" 
+          stroke="url(#mainGrad)" 
+          stroke-width="6" 
+          stroke-linecap="round"/>
+    
+    <!-- V letter inside -->
+    <path d="M22 45 L45 78 L68 45" 
+          fill="none" 
+          stroke="white" 
+          stroke-width="7" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+    
+    <!-- WhatsApp-style dots -->
+    <circle cx="80" cy="55" r="5" fill="url(#mainGrad)"/>
+    <circle cx="92" cy="48" r="4" fill="url(#mainGrad)" opacity="0.7"/>
+    <circle cx="102" cy="42" r="3" fill="url(#mainGrad)" opacity="0.5"/>
+  </g>
+  
+  <!-- Text: Vend -->
+  <text x="130" y="80" 
+        font-family="'Sora', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif" 
+        font-size="56" 
+        font-weight="800" 
+        fill="#1A1A2E"
+        letter-spacing="-2">
+    Vend
+  </text>
+  
+  <!-- Text: Padi (green) -->
+  <text x="310" y="80" 
+        font-family="'Sora', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif" 
+        font-size="56" 
+        font-weight="800" 
+        fill="url(#mainGrad)"
+        letter-spacing="-2">
+    Padi
+  </text>
+  
+  <!-- Tagline -->
+  <text x="135" y="105" 
+        font-family="'Inter', -apple-system, sans-serif" 
+        font-size="14" 
+        font-weight="500" 
+        fill="#6B7280"
+        letter-spacing="2">
+    YOUR PRODUCTS • ONE LINK
+  </text>
+</svg>

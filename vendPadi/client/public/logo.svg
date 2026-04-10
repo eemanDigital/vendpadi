@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100">
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#25C866"/>
+      <stop offset="100%" stop-color="#128C7E"/>
+    </linearGradient>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#25C866"/>
+      <stop offset="100%" stop-color="#128C7E"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#25C866" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Icon -->
+  <g transform="translate(0, 10)">
+    <!-- Main V Shape - Store/Shopping bag form -->
+    <path d="M20 10 L35 60 L50 10" 
+          fill="none" 
+          stroke="url(#iconGrad)" 
+          stroke-width="8" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          filter="url(#shadow)"/>
+    
+    <!-- WhatsApp-style chat dots -->
+    <circle cx="65" cy="45" r="4" fill="url(#iconGrad)" opacity="0.6"/>
+    <circle cx="75" cy="45" r="4" fill="url(#iconGrad)" opacity="0.8"/>
+    <circle cx="85" cy="45" r="4" fill="url(#iconGrad)"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="115" y="65" 
+        font-family="'Sora', 'Inter', -apple-system, sans-serif" 
+        font-size="42" 
+        font-weight="700" 
+        fill="#1A1A2E"
+        letter-spacing="-1">
+    Vend
+  </text>
+  <text x="272" y="65" 
+        font-family="'Sora', 'Inter', -apple-system, sans-serif" 
+        font-size="42" 
+        font-weight="700" 
+        fill="url(#logoGrad)"
+        letter-spacing="-1">
+    Padi
+  </text>
+</svg>

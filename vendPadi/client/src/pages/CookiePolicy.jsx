@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FiArrowLeft, FiCookie } from 'react-icons/fi';
+import { FiArrowLeft } from 'react-icons/fi';
 
 const CookiePolicy = () => {
   return (
@@ -10,7 +10,9 @@ const CookiePolicy = () => {
             <FiArrowLeft size={20} className="text-gray-600" />
           </Link>
           <div className="flex items-center gap-2">
-            <FiCookie className="text-padi-green" />
+            <svg className="w-5 h-5 text-padi-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             <span className="font-sora font-bold text-navy">Cookie Policy</span>
           </div>
         </div>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <defs>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#25C866"/>
+      <stop offset="100%" stop-color="#128C7E"/>
+    </linearGradient>
+    <filter id="shadow2" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#25C866" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  
+  <!-- Main V Shape - Modern, bold -->
+  <g filter="url(#shadow2)">
+    <!-- V form -->
+    <path d="M15 15 L40 65 L65 15" 
+          fill="none" 
+          stroke="url(#grad3)" 
+          stroke-width="12" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+  </g>
+  
+  <!-- WhatsApp connection dots -->
+  <circle cx="62" cy="50" r="6" fill="url(#grad3)" opacity="0.3"/>
+  <circle cx="70" cy="40" r="5" fill="url(#grad3)" opacity="0.6"/>
+  <circle cx="75" cy="28" r="4" fill="url(#grad3)" opacity="0.9"/>
+  
+  <!-- Subtle grid pattern (store/arrangement) -->
+  <rect x="20" y="25" width="12" height="12" rx="2" fill="url(#grad3)" opacity="0.2"/>
+  <rect x="48" y="25" width="12" height="12" rx="2" fill="url(#grad3)" opacity="0.15"/>
+</svg>
