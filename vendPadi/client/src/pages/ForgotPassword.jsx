@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { authAPI } from "../api/axiosInstance";
 import toast from "react-hot-toast";
 import { FiMail, FiArrowLeft, FiCheck } from "react-icons/fi";
+import Logo from "../components/Logo";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -78,6 +79,9 @@ const ForgotPassword = () => {
 
         <div className="bg-white rounded-3xl shadow-2xl p-8">
           <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              <Logo variant="icon" size="lg" />
+            </div>
             <div className="w-16 h-16 bg-padi-green/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FiMail size={28} className="text-padi-green" />
             </div>

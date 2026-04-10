@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { orderAPI } from "../api/axiosInstance";
 import PlanBadge from "../components/PlanBadge";
+import Logo from "../components/Logo";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; // ✅ FIX 1: Import autoTable as standalone function
@@ -353,10 +354,7 @@ const Orders = () => {
       {/* Sidebar */}
       <div className="hidden lg:block fixed left-0 top-0 w-64 h-full bg-navy text-white p-6">
         <Link to="/" className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-padi-green rounded-xl flex items-center justify-center">
-            <span className="font-sora font-bold text-xl">V</span>
-          </div>
-          <span className="font-sora font-bold text-lg">VendPadi</span>
+          <Logo variant="icon-light" size="md" />
         </Link>
 
         <div className="mb-6">

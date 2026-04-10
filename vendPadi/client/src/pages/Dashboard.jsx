@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard';
 import ProductForm from '../components/ProductForm';
 import PlanBadge from '../components/PlanBadge';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
+import Logo from '../components/Logo';
 import { logout } from '../store/authSlice';
 import { clearCart } from '../store/cartSlice';
 import toast from 'react-hot-toast';
@@ -99,10 +100,7 @@ const Dashboard = () => {
       {/* Sidebar */}
       <aside className="hidden lg:block fixed left-0 top-0 w-64 h-screen bg-navy text-white p-6 flex flex-col overflow-y-auto">
         <Link to="/" className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-padi-green rounded-xl flex items-center justify-center">
-            <span className="font-sora font-bold text-xl">V</span>
-          </div>
-          <span className="font-sora font-bold text-lg">VendPadi</span>
+          <Logo variant="icon-light" size="md" />
         </Link>
 
         <div className="mb-4">
@@ -177,10 +175,7 @@ const Dashboard = () => {
       <header className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-padi-green rounded-lg flex items-center justify-center">
-              <span className="font-sora font-bold text-white">V</span>
-            </div>
-            <span className="font-sora font-bold text-navy">VendPadi</span>
+            <Logo variant="icon" size="sm" />
           </Link>
           <PlanBadge plan={vendor?.plan} size="sm" />
         </div>

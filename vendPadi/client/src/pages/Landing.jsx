@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
 import { clearCart } from '../store/cartSlice';
+import Logo from '../components/Logo';
 
 const Landing = () => {
   const dispatch = useDispatch();
@@ -25,10 +26,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-14 sm:h-16">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-padi-green rounded-lg flex items-center justify-center">
-                <span className="font-sora font-bold text-lg">V</span>
-              </div>
-              <span className="font-sora font-bold text-lg sm:text-xl">VendPadi</span>
+              <Logo variant="icon-light" size="sm" />
             </Link>
             
             {/* Desktop Nav - hidden on mobile */}
@@ -260,10 +258,7 @@ const Landing = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <Link to="/" className="inline-flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-padi-green rounded-lg flex items-center justify-center">
-                  <span className="font-sora font-bold text-lg text-white">V</span>
-                </div>
-                <span className="font-sora font-bold text-xl text-white">VendPadi</span>
+                <Logo variant="icon-light" size="md" />
               </Link>
               <p className="text-sm text-gray-400">Build your online store in minutes. Share on WhatsApp. Sell more.</p>
             </div>

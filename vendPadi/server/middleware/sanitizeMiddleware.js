@@ -1,3 +1,5 @@
+const FIELDS_TO_SKIP = ['images', 'logo', 'password', 'passwordHash'];
+
 const escapeHtml = (str) => {
   if (typeof str !== 'string') return str;
   const htmlEntities = {
@@ -6,11 +8,10 @@ const escapeHtml = (str) => {
     '>': '&gt;',
     '"': '&quot;',
     "'": '&#x27;',
-    '/': '&#x2F;',
     '`': '&#x60;',
     '=': '&#x3D;'
   };
-  return str.replace(/[&<>"'`=/]/g, (char) => htmlEntities[char]);
+  return str.replace(/[&<>"`=]/g, (char) => htmlEntities[char]);
 };
 
 const sanitizeBody = (req, res, next) => {
@@ -23,7 +24,9 @@ const sanitizeBody = (req, res, next) => {
 const sanitizeObject = (obj) => {
   const sanitized = {};
   for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'string') {
+    if (FIELDS_TO_SKIP.includes(key)) {
+      sanitized[key] = value;
+    } else if (typeof value === 'string') {
       sanitized[key] = escapeHtml(value.trim());
     } else if (Array.isArray(value)) {
       sanitized[key] = value.map(item => 

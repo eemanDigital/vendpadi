@@ -1,7 +1,27 @@
 const Product = require('../models/Product');
+const { cloudinary } = require('../config/cloudinary');
 
 const catchAsync = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+const deleteImagesFromCloudinary = async (images) => {
+  if (!images || !Array.isArray(images) || images.length === 0) return;
+  
+  const deletePromises = images.map(async (imageUrl) => {
+    try {
+      if (imageUrl && imageUrl.includes('cloudinary.com')) {
+        const publicIdMatch = imageUrl.match(/\/upload\/(.+)\.[a-z]+$/i);
+        if (publicIdMatch && publicIdMatch[1]) {
+          await cloudinary.uploader.destroy(publicIdMatch[1]);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to delete image from Cloudinary:', err.message);
+    }
+  });
+  
+  await Promise.allSettled(deletePromises);
 };
 
 exports.getProducts = catchAsync(async (req, res) => {
@@ -104,6 +124,7 @@ exports.deleteProduct = catchAsync(async (req, res) => {
     return res.status(403).json({ message: 'Not authorized to delete this product' });
   }
 
+  await deleteImagesFromCloudinary(product.images);
   await Product.findByIdAndDelete(id);
   res.json({ message: 'Product deleted successfully' });
 });

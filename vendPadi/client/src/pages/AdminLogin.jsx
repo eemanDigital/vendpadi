@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import toast from 'react-hot-toast';
 import { FiShield, FiMail, FiLock } from 'react-icons/fi';
+import Logo from '../components/Logo';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -54,9 +55,7 @@ const AdminLogin = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="w-12 h-12 bg-padi-green rounded-xl flex items-center justify-center">
-              <span className="font-sora font-bold text-xl text-white">V</span>
-            </div>
+            <Logo variant="icon-light" size="lg" />
           </Link>
           <div className="mt-6 w-20 h-20 bg-padi-green/20 rounded-full flex items-center justify-center mx-auto">
             <FiShield className="text-padi-green text-4xl" />

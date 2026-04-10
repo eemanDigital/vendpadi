@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/authSlice';
 import { clearCart } from '../store/cartSlice';
+import Logo from './Logo';
 import { FiLogOut, FiSettings, FiPackage } from 'react-icons/fi';
 
 const Navbar = () => {
@@ -20,10 +21,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-padi-green rounded-lg flex items-center justify-center">
-              <span className="font-sora font-bold text-lg">V</span>
-            </div>
-            <span className="font-sora font-bold text-xl">VendPadi</span>
+            <Logo variant="icon-light" size="sm" />
           </Link>
 
           <div className="flex items-center gap-4">

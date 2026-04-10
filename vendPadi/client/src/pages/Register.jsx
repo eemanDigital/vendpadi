@@ -5,6 +5,7 @@ import { setCredentials } from '../store/authSlice';
 import { authAPI } from '../api/axiosInstance';
 import toast from 'react-hot-toast';
 import { FiKey, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import Logo from '../components/Logo';
 
 const CATEGORIES = ['food', 'fashion', 'phones', 'cakes', 'other'];
 
@@ -50,10 +51,7 @@ const Register = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 bg-padi-green rounded-xl flex items-center justify-center">
-              <span className="font-sora font-bold text-xl text-white">V</span>
-            </div>
-            <span className="font-sora font-bold text-2xl text-navy">VendPadi</span>
+            <Logo variant="icon" size="md" />
           </Link>
           <h1 className="font-sora font-bold text-2xl mt-6 text-navy">Create Your Store</h1>
           <p className="text-gray-500 mt-2">Start selling on WhatsApp in minutes</p>

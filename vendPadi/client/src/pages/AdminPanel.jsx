@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { planAPI, adminAPI } from '../api/axiosInstance';
 import { logout } from '../store/authSlice';
+import Logo from '../components/Logo';
 import toast from 'react-hot-toast';
 import { 
   FiCheck, 
@@ -144,12 +145,10 @@ const AdminPanel = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-padi-green rounded-xl flex items-center justify-center">
-                <FiShield className="text-white text-lg" />
-              </div>
+              <Logo variant="icon-light" size="md" />
               <div>
-                <h1 className="font-sora font-bold text-lg">VendPadi Admin</h1>
-                <p className="text-xs text-gray-400">Admin Dashboard</p>
+                <h1 className="font-sora font-bold text-lg">Admin</h1>
+                <p className="text-xs text-gray-400">Management Dashboard</p>
               </div>
             </div>
             <button
