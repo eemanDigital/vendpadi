@@ -19,18 +19,18 @@ const ViewToggle = ({ view, setView }) => {
   ];
 
   return (
-    <div className="flex items-center bg-gray-100/80 backdrop-blur-sm rounded-xl p-1">
+    <div className="flex items-center bg-gray-100/80 backdrop-blur-sm rounded-lg sm:rounded-xl p-0.5 sm:p-1 flex-shrink-0">
       {views.map((v) => (
         <button
           key={v.key}
           onClick={() => setView(v.key)}
-          className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
+          className={`relative flex items-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs font-medium transition-all duration-200 ${
             view === v.key ? "text-navy" : "text-gray-400 hover:text-gray-600"
           }`}>
           {view === v.key && (
             <motion.div
               layoutId="viewToggle"
-              className="absolute inset-0 bg-white shadow-sm rounded-lg"
+              className="absolute inset-0 bg-white shadow-sm rounded-md sm:rounded-lg"
               transition={springTransition}
             />
           )}

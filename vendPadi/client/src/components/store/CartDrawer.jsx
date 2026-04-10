@@ -40,7 +40,6 @@ const CartDrawer = ({ isOpen, onClose, onOrder }) => {
           />
 
           <motion.div
-            ref={drawerRef}
             {...drawerSlide}
             transition={springTransition}
             className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white z-50 shadow-2xl flex flex-col">

@@ -19,7 +19,7 @@ const StoreProducts = ({ products, view, search, setSearch, onOpenDetail }) => {
   const gridClass = gridClassMap[view] || gridClassMap.grid;
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-6 pb-40">
+    <main className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-28 sm:pb-36">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="font-sora font-bold text-navy text-lg">
