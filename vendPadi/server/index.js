@@ -14,6 +14,7 @@ const productRoutes = require("./routes/productRoutes");
 const storeRoutes = require("./routes/storeRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const planRoutes = require("./routes/planRoutes");
+const { sanitizeBody } = require("./middleware/sanitizeMiddleware");
 
 const app = express();
 
@@ -78,8 +79,18 @@ app.use(
   }),
 );
 
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self';");
+  next();
+});
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(sanitizeBody);
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

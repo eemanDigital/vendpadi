@@ -23,7 +23,7 @@ const protect = catchAsync(async (req, res, next) => {
       throw new Error('JWT_SECRET not configured on server');
     }
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
     
     const vendor = await Vendor.findById(decoded.id).select('-passwordHash');
     

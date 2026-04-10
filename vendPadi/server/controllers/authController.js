@@ -14,7 +14,10 @@ const generateToken = (id) => {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET not configured');
   }
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { 
+    expiresIn: '30d',
+    algorithm: 'HS256'
+  });
 };
 
 exports.register = catchAsync(async (req, res) => {
