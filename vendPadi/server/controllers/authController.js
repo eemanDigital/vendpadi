@@ -73,6 +73,8 @@ exports.register = catchAsync(async (req, res) => {
       category: vendor.category,
       plan: vendor.plan,
       logo: vendor.logo,
+      coverImage: vendor.coverImage,
+      customLink: vendor.customLink,
       description: vendor.description,
       isAdmin: vendor.isAdmin
     }
@@ -113,6 +115,8 @@ exports.login = catchAsync(async (req, res) => {
       category: vendor.category,
       plan: vendor.plan,
       logo: vendor.logo,
+      coverImage: vendor.coverImage,
+      customLink: vendor.customLink,
       description: vendor.description,
       isAdmin: vendor.isAdmin
     }

@@ -58,6 +58,7 @@ exports.updateMe = catchAsync(async (req, res) => {
     plan: vendor.plan,
     logo: vendor.logo,
     coverImage: vendor.coverImage,
+    customLink: vendor.customLink,
     description: vendor.description,
     isAdmin: vendor.isAdmin
   });
@@ -118,5 +119,45 @@ exports.updateCoverImage = catchAsync(async (req, res) => {
   res.json({ 
     coverImage: vendor.coverImage,
     message: 'Cover image updated successfully'
+  });
+});
+
+exports.updateCustomLink = catchAsync(async (req, res) => {
+  const { customLink } = req.body;
+  const vendor = await Vendor.findById(req.vendor._id);
+  
+  if (!vendor) {
+    return res.status(404).json({ message: 'Vendor not found' });
+  }
+
+  if (!customLink || !customLink.trim()) {
+    return res.status(400).json({ message: 'Custom link is required' });
+  }
+
+  const link = customLink.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+  
+  if (link.length < 3 || link.length > 50) {
+    return res.status(400).json({ message: 'Custom link must be 3-50 characters' });
+  }
+
+  if (!/^[a-z0-9-]+$/.test(link)) {
+    return res.status(400).json({ message: 'Only letters, numbers, and hyphens allowed' });
+  }
+
+  const existing = await Vendor.findOne({ 
+    customLink: link, 
+    _id: { $ne: vendor._id } 
+  });
+  
+  if (existing) {
+    return res.status(400).json({ message: 'This custom link is already taken' });
+  }
+
+  vendor.customLink = link;
+  await vendor.save();
+
+  res.json({ 
+    customLink: vendor.customLink,
+    message: 'Custom link updated successfully'
   });
 });

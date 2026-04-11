@@ -129,3 +129,113 @@ exports.createOrder = catchAsync(async (req, res) => {
     order 
   });
 });
+
+exports.getStoreByCustomLink = catchAsync(async (req, res) => {
+  const { customLink } = req.params;
+
+  if (!customLink || customLink.trim() === '') {
+    return res.status(400).json({ message: 'Custom link is required' });
+  }
+
+  const vendor = await Vendor.findOne({ customLink: customLink.toLowerCase(), isActive: true })
+    .select('-passwordHash -email');
+
+  if (!vendor) {
+    return res.status(404).json({ message: 'Store not found' });
+  }
+
+  const products = await Product.find({ vendorId: vendor._id })
+    .sort({ createdAt: -1 });
+
+  const planType = vendor.plan?.type || 'free';
+  const defaultThreshold = LOW_STOCK_THRESHOLDS[planType] || 10;
+
+  const productsWithAlerts = products.map(p => {
+    const threshold = p.lowStockThreshold || defaultThreshold;
+    return {
+      ...p.toObject(),
+      lowStockAlert: p.stock > 0 && p.stock <= threshold
+    };
+  });
+
+  res.json({
+    vendor,
+    products: productsWithAlerts
+  });
+});
+
+exports.createOrderByCustomLink = catchAsync(async (req, res) => {
+  const { customLink } = req.params;
+  const { items, totalAmount, customerName, customerPhone, note } = req.body;
+
+  if (!customLink || customLink.trim() === '') {
+    return res.status(400).json({ message: 'Custom link is required' });
+  }
+
+  const vendor = await Vendor.findOne({ customLink: customLink.toLowerCase(), isActive: true });
+  if (!vendor) {
+    return res.status(404).json({ message: 'Store not found or unavailable' });
+  }
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ message: 'Order must contain at least one item' });
+  }
+
+  if (totalAmount === undefined || isNaN(Number(totalAmount)) || Number(totalAmount) < 0) {
+    return res.status(400).json({ message: 'Invalid total amount' });
+  }
+
+  const insufficientStock = [];
+  for (const item of items) {
+    if (item.productId) {
+      const product = await Product.findById(item.productId);
+      if (product && product.stock < item.qty) {
+        insufficientStock.push({
+          name: item.name,
+          requested: item.qty,
+          available: product.stock
+        });
+      }
+    }
+  }
+
+  if (insufficientStock.length > 0) {
+    return res.status(400).json({
+      message: 'Insufficient stock for some items',
+      insufficientStock
+    });
+  }
+
+  const order = await Order.create({
+    vendorId: vendor._id,
+    items: items.map(item => ({
+      productId: item.productId || null,
+      name: item.name,
+      price: Number(item.price),
+      qty: Math.max(1, Number(item.qty))
+    })),
+    totalAmount: Number(totalAmount),
+    customerName: customerName?.trim() || 'Anonymous',
+    customerPhone: customerPhone?.trim() || '',
+    note: note?.trim() || ''
+  });
+
+  sendOrderNotificationEmail(vendor.email, vendor.businessName, {
+    customerName: customerName || 'Anonymous',
+    items: order.items,
+    total: totalAmount,
+    orderId: order._id.toString(),
+    date: new Date(order.createdAt).toLocaleDateString('en-NG', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }).catch(err => console.error('Failed to send order email:', err));
+
+  res.status(201).json({ 
+    message: 'Order created successfully',
+    order 
+  });
+});

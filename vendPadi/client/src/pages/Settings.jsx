@@ -92,6 +92,8 @@ const Settings = () => {
   const [logoFile, setLogoFile] = useState(null);
   const [coverPreview, setCoverPreview] = useState('');
   const [coverFile, setCoverFile] = useState(null);
+  const [customLink, setCustomLink] = useState('');
+  const [customLinkLoading, setCustomLinkLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -110,6 +112,7 @@ const Settings = () => {
       });
       setLogoPreview(vendor.logo || '');
       setCoverPreview(vendor.coverImage || '');
+      setCustomLink(vendor.customLink || '');
     }
   }, [vendor]);
 
@@ -176,6 +179,23 @@ const Settings = () => {
     setCopied(true);
     toast.success('Link copied!');
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCustomLinkSubmit = async (e) => {
+    e.preventDefault();
+    if (!customLink.trim()) return;
+    
+    setCustomLinkLoading(true);
+    try {
+      const { data } = await vendorAPI.updateCustomLink(customLink.trim());
+      setCustomLink(data.customLink);
+      dispatch(updateVendor({ ...vendor, customLink: data.customLink }));
+      toast.success('Custom link updated!');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update custom link');
+    } finally {
+      setCustomLinkLoading(false);
+    }
   };
 
   const [passwordData, setPasswordData] = useState({
@@ -440,7 +460,7 @@ const Settings = () => {
             )}
 
             {/* Custom Store Link - Premium Only */}
-            {currentFeatures.customLink && (
+            {currentFeatures.customLink ? (
               <div className="bg-white rounded-2xl border border-gold/30 p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-sora font-semibold text-lg flex items-center gap-2">
@@ -448,16 +468,54 @@ const Settings = () => {
                   </h2>
                   <span className="text-xs bg-gold/20 text-gold px-2 py-1 rounded-full">Premium</span>
                 </div>
-                <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl">
-                  <span className="flex-1 text-gray-600 text-sm">yourstore.vendpadi.com</span>
-                  <span className="text-gray-400">/</span>
+                <form onSubmit={handleCustomLinkSubmit} className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl">
+                  <span className="flex-1 text-gray-600 text-sm">vendpadi.com/</span>
                   <input 
                     type="text" 
-                    placeholder={vendor?.slug}
+                    value={customLink}
+                    onChange={(e) => setCustomLink(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                    placeholder="your-store"
                     className="flex-1 bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm"
                   />
+                  <button 
+                    type="submit"
+                    disabled={customLinkLoading}
+                    className="px-4 py-2 bg-padi-green text-white text-sm rounded-lg hover:bg-padi-green-dark disabled:opacity-50"
+                  >
+                    {customLinkLoading ? 'Saving...' : 'Save'}
+                  </button>
+                </form>
+                {vendor?.customLink && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <button 
+                      onClick={() => navigator.clipboard.writeText(`https://vendpadi.com/store/custom/${vendor.customLink}`)}
+                      className="text-padi-green text-sm hover:underline flex items-center gap-1"
+                    >
+                      <FiCopy size={14} /> Copy custom link
+                    </button>
+                    <span className="text-gray-400">•</span>
+                    <a 
+                      href={`/store/custom/${vendor.customLink}`} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-padi-green text-sm hover:underline flex items-center gap-1"
+                    >
+                      <FiExternalLink size={14} /> View store
+                    </a>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-100 p-5 opacity-75">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-sora font-semibold text-lg flex items-center gap-2">
+                    <FiLink className="text-gray-400" /> Custom Store Link
+                  </h2>
+                  <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full">Premium</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">Contact support to set your custom store link.</p>
+                <div className="bg-gray-50 p-4 rounded-xl text-gray-400 text-sm">
+                  Upgrade to Premium to set your custom store link (e.g., vendpadi.com/store/mystore)
+                </div>
               </div>
             )}
 

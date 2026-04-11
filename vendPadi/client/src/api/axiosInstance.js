@@ -31,8 +31,13 @@ export const authAPI = {
 export const vendorAPI = {
   getMe: () => api.get('/vendor/me'),
   updateMe: (data) => api.put('/vendor/me', data),
-  updateLogo: (formData) => api.put('/vendor/me/logo', formData),
-  updateCover: (formData) => api.post('/vendor/me/cover', formData)
+  updateLogo: (formData) => api.put('/vendor/me/logo', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  updateCover: (formData) => api.post('/vendor/me/cover', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  updateCustomLink: (customLink) => api.put('/vendor/me/custom-link', { customLink })
 };
 
 export const productAPI = {
@@ -47,7 +52,9 @@ export const productAPI = {
 
 export const storeAPI = {
   getStore: (slug) => api.get(`/store/${slug}`),
-  createOrder: (slug, data) => api.post(`/store/${slug}/order`, data)
+  getStoreByCustomLink: (customLink) => api.get(`/store/custom/${customLink}`),
+  createOrder: (slug, data) => api.post(`/store/${slug}/order`, data),
+  createOrderByCustomLink: (customLink, data) => api.post(`/store/custom/${customLink}/order`, data)
 };
 
 export const orderAPI = {
