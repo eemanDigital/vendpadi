@@ -9,7 +9,7 @@ import Logo from '../components/Logo';
 import toast from 'react-hot-toast';
 import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiImage, FiLink } from 'react-icons/fi';
 
-const CATEGORIES = ['food', 'fashion', 'phones', 'cakes', 'other'];
+const CATEGORIES = ['food', 'fashion', 'phones', 'beauty', 'cakes', 'electronics', 'home', 'sports', 'books', 'toys', 'services', 'other'];
 
 const PLAN_FEATURES = {
   free: { 
@@ -85,7 +85,8 @@ const Settings = () => {
     businessName: '',
     description: '',
     phone: '',
-    category: 'food'
+    category: 'food',
+    customCategory: ''
   });
   const [logoPreview, setLogoPreview] = useState('');
   const [logoFile, setLogoFile] = useState(null);
@@ -96,6 +97,7 @@ const Settings = () => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const currentFeatures = PLAN_FEATURES[vendor?.plan?.type || 'free'];
+  const isCustomCategory = !CATEGORIES.includes(formData.category) && formData.category !== 'food';
 
   useEffect(() => {
     if (vendor) {
@@ -103,7 +105,8 @@ const Settings = () => {
         businessName: vendor.businessName || '',
         description: vendor.description || '',
         phone: vendor.phone || '',
-        category: vendor.category || 'other'
+        category: vendor.category || 'food',
+        customCategory: !CATEGORIES.includes(vendor.category) && vendor.category ? vendor.category : ''
       });
       setLogoPreview(vendor.logo || '');
       setCoverPreview(vendor.coverImage || '');
@@ -111,7 +114,12 @@ const Settings = () => {
   }, [vendor]);
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === 'category' && value !== 'other') {
+      setFormData(prev => ({ ...prev, [name]: value, customCategory: '' }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleLogoChange = (e) => {
@@ -132,6 +140,11 @@ const Settings = () => {
 
     try {
       let updatedData = { ...formData };
+
+      if (formData.category === 'other' && formData.customCategory?.trim()) {
+        updatedData.category = formData.customCategory.trim().toLowerCase().replace(/\s+/g, '-');
+      }
+      delete updatedData.customCategory;
 
       if (logoFile) {
         const formDataLogo = new FormData();
@@ -471,11 +484,22 @@ const Settings = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
-                  <select name="category" value={formData.category} onChange={handleChange} className="input-field">
-                    {CATEGORIES.map(cat => (
-                      <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-                    ))}
-                  </select>
+                  {formData.category === 'other' ? (
+                    <input
+                      type="text"
+                      name="customCategory"
+                      value={formData.customCategory}
+                      onChange={handleChange}
+                      className="input-field"
+                      placeholder="Enter business category"
+                    />
+                  ) : (
+                    <select name="category" value={formData.category} onChange={handleChange} className="input-field">
+                      {CATEGORIES.map(cat => (
+                        <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
             </div>

@@ -8,6 +8,10 @@ import {
   FiSmartphone,
   FiEye,
   FiTrendingUp,
+  FiStar,
+  FiHome,
+  FiGrid,
+  FiZap,
 } from "react-icons/fi";
 
 const CategoryIcon = ({ category, size = 16, className = "" }) => {
@@ -16,25 +20,40 @@ const CategoryIcon = ({ category, size = 16, className = "" }) => {
     case "food": return <FiGift {...props} />;
     case "fashion": return <FiBox {...props} />;
     case "phones": return <FiSmartphone {...props} />;
+    case "beauty": return <FiStar {...props} />;
     case "cakes": return <FiGift {...props} />;
+    case "electronics": return <FiZap {...props} />;
+    case "home": return <FiHome {...props} />;
+    case "sports": return <FiTrendingUp {...props} />;
+    case "books": return <FiGrid {...props} />;
+    case "toys": return <FiBox {...props} />;
+    case "services": return <FiStar {...props} />;
     default: return <FiBox {...props} />;
   }
 };
 
 const CATEGORY_META = {
-  food: { label: "Food", bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200" },
-  fashion: { label: "Fashion", bg: "bg-pink-50", text: "text-pink-600", border: "border-pink-200" },
-  phones: { label: "Phones", bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200" },
-  cakes: { label: "Cakes", bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
-  other: { label: "Other", bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200" },
+  food: { label: "Food & Drinks", bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200", emoji: "🍔" },
+  fashion: { label: "Fashion", bg: "bg-pink-50", text: "text-pink-600", border: "border-pink-200", emoji: "👗" },
+  phones: { label: "Phones & Gadgets", bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200", emoji: "📱" },
+  beauty: { label: "Beauty", bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-200", emoji: "💄" },
+  cakes: { label: "Cakes & Pastries", bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200", emoji: "🎂" },
+  electronics: { label: "Electronics", bg: "bg-indigo-50", text: "text-indigo-600", border: "border-indigo-200", emoji: "📺" },
+  home: { label: "Home & Living", bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-200", emoji: "🏠" },
+  sports: { label: "Sports & Fitness", bg: "bg-green-50", text: "text-green-600", border: "border-green-200", emoji: "⚽" },
+  books: { label: "Books & Stationery", bg: "bg-cyan-50", text: "text-cyan-600", border: "border-cyan-200", emoji: "📚" },
+  toys: { label: "Toys & Games", bg: "bg-red-50", text: "text-red-600", border: "border-red-200", emoji: "🎮" },
+  services: { label: "Services", bg: "bg-teal-50", text: "text-teal-600", border: "border-teal-200", emoji: "🛠️" },
+  other: { label: "Other", bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200", emoji: "🏪" },
 };
 
 const CategoryBadge = ({ category }) => {
-  const meta = CATEGORY_META[category] || CATEGORY_META.other;
+  const meta = CATEGORY_META[category] || null;
+  const label = meta ? meta.label : category;
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ${meta.bg} ${meta.text} ${meta.border}`}>
-      <CategoryIcon category={category} size={10} />
-      <span className="capitalize">{meta.label}</span>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ${meta ? `${meta.bg} ${meta.text} ${meta.border}` : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+      {meta ? <CategoryIcon category={category} size={10} /> : <span>🏷️</span>}
+      <span className="capitalize">{label}</span>
     </span>
   );
 };

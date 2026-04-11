@@ -2,12 +2,24 @@ import { FiFilter } from 'react-icons/fi';
 
 const CATEGORIES = [
   { value: '', label: 'All Categories' },
-  { value: 'food', label: 'Food & Drinks' },
-  { value: 'fashion', label: 'Fashion' },
-  { value: 'phones', label: 'Phones & Gadgets' },
-  { value: 'cakes', label: 'Cakes & Desserts' },
-  { value: 'other', label: 'Other' }
+  { value: 'food', label: 'Food & Drinks', emoji: '🍔' },
+  { value: 'fashion', label: 'Fashion & Clothing', emoji: '👗' },
+  { value: 'phones', label: 'Phones & Gadgets', emoji: '📱' },
+  { value: 'beauty', label: 'Beauty & Skincare', emoji: '💄' },
+  { value: 'cakes', label: 'Cakes & Pastries', emoji: '🎂' },
+  { value: 'electronics', label: 'Electronics & Appliances', emoji: '📺' },
+  { value: 'home', label: 'Home & Living', emoji: '🏠' },
+  { value: 'sports', label: 'Sports & Fitness', emoji: '⚽' },
+  { value: 'books', label: 'Books & Stationery', emoji: '📚' },
+  { value: 'toys', label: 'Toys & Games', emoji: '🎮' },
+  { value: 'services', label: 'Services', emoji: '🛠️' },
+  { value: 'other', label: 'Other', emoji: '🏪' }
 ];
+
+const getCategoryLabel = (value) => {
+  const cat = CATEGORIES.find(c => c.value === value);
+  return cat ? cat.label : value;
+};
 
 const FilterBar = ({ 
   filters, 
@@ -84,5 +96,5 @@ const FilterBar = ({
   );
 };
 
-export { CATEGORIES };
+export { CATEGORIES, getCategoryLabel };
 export default FilterBar;

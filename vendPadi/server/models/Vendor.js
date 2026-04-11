@@ -12,7 +12,6 @@ const vendorSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   category: {
     type: String,
-    enum: ['food', 'fashion', 'phones', 'cakes', 'other'],
     default: 'other'
   },
   plan: {

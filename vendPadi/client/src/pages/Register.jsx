@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { FiKey, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import Logo from '../components/Logo';
 
-const CATEGORIES = ['food', 'fashion', 'phones', 'cakes', 'other'];
+const CATEGORIES = ['food', 'fashion', 'phones', 'beauty', 'cakes', 'electronics', 'home', 'sports', 'books', 'toys', 'services', 'other'];
 
 const Register = () => {
   const navigate = useNavigate();
@@ -20,14 +20,17 @@ const Register = () => {
     password: '',
     phone: '',
     category: 'food',
+    customCategory: '',
     adminCode: ''
   });
 
   const handleChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    const { name, value } = e.target;
+    if (name === 'category' && value !== 'other') {
+      setFormData(prev => ({ ...prev, [name]: value, customCategory: '' }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -35,7 +38,14 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const { data } = await authAPI.register(formData);
+      let submitData = { ...formData };
+      
+      if (formData.category === 'other' && formData.customCategory?.trim()) {
+        submitData.category = formData.customCategory.trim().toLowerCase().replace(/\s+/g, '-');
+      }
+      delete submitData.customCategory;
+      
+      const { data } = await authAPI.register(submitData);
       dispatch(setCredentials(data));
       toast.success('Welcome to VendPadi! 🎉');
       navigate('/dashboard');
@@ -125,18 +135,30 @@ const Register = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Category
               </label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="input-field"
-              >
-                {CATEGORIES.map(cat => (
-                  <option key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </option>
-                ))}
-              </select>
+              {formData.category === 'other' ? (
+                <input
+                  type="text"
+                  name="customCategory"
+                  value={formData.customCategory}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Enter business category"
+                  required
+                />
+              ) : (
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="input-field"
+                >
+                  {CATEGORIES.map(cat => (
+                    <option key={cat} value={cat}>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className="pt-2">

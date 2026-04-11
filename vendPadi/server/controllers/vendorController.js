@@ -41,11 +41,9 @@ exports.updateMe = catchAsync(async (req, res) => {
   }
 
   if (category !== undefined) {
-    const validCategories = ['food', 'fashion', 'phones', 'cakes', 'other'];
-    if (!validCategories.includes(category)) {
-      return res.status(400).json({ message: 'Invalid category' });
+    if (category.trim()) {
+      vendor.category = category.toLowerCase().trim();
     }
-    vendor.category = category;
   }
 
   await vendor.save();

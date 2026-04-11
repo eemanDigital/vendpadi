@@ -3,7 +3,7 @@ import OptimizedImage from "../OptimizedImage";
 import CategoryBadge, { CATEGORY_META } from "../ProductCard";
 
 const StoreHero = ({ vendor }) => {
-  const meta = CATEGORY_META[vendor.category] || CATEGORY_META.other || { icon: "🏪", bg: "bg-gray-100" };
+  const meta = CATEGORY_META[vendor.category] || null;
 
   return (
     <div className="bg-gradient-to-b from-white to-gray-50/50 border-b border-gray-100">

@@ -23,6 +23,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
     description: product?.description || '',
     price: product?.price || '',
     category: product?.category || '',
+    customCategory: '',
     inStock: product?.inStock !== false,
     stock: product?.stock || 0,
     lowStockThreshold: product?.lowStockThreshold || 5,
@@ -40,10 +41,14 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    if (name === 'category' && value !== 'other') {
+      setFormData(prev => ({ ...prev, [name]: value, customCategory: '' }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   const handleLocalImageUpload = async (e) => {
@@ -138,10 +143,20 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
       toast.error('Valid price is required');
       return;
     }
+    if (formData.category === 'other' && !formData.customCategory?.trim()) {
+      toast.error('Please enter a category name');
+      return;
+    }
 
     setSaving(true);
     try {
       let finalData = { ...formData };
+      
+      if (formData.category === 'other') {
+        finalData.category = formData.customCategory.trim().toLowerCase().replace(/\s+/g, '-');
+      }
+      
+      delete finalData.customCategory;
 
       if (isEditing) {
         if (localImages.length > 0) {
@@ -219,18 +234,30 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Category
           </label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className="input-field"
-          >
-            {CATEGORIES.map(cat => (
-              <option key={cat.value} value={cat.value}>
-                {cat.label}
-              </option>
-            ))}
-          </select>
+          {formData.category === 'other' ? (
+            <input
+              type="text"
+              name="customCategory"
+              value={formData.customCategory || ''}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="Enter category name"
+              required
+            />
+          ) : (
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="input-field"
+            >
+              {CATEGORIES.map(cat => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
