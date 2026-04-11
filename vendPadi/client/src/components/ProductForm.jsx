@@ -7,9 +7,9 @@ import { CATEGORIES } from './ui/FilterBar';
 import StockBadge from './ui/StockBadge';
 
 const PLAN_IMAGE_LIMITS = {
-  free: 2,
-  starter: 4,
-  business: 6,
+  free: 1,
+  starter: 3,
+  business: 5,
   premium: 8
 };
 

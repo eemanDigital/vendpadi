@@ -31,12 +31,8 @@ export const authAPI = {
 export const vendorAPI = {
   getMe: () => api.get('/vendor/me'),
   updateMe: (data) => api.put('/vendor/me', data),
-  updateLogo: (formData) => api.put('/vendor/me/logo', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  updateCover: (formData) => api.post('/vendor/me/cover', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
+  updateLogo: (formData) => api.put('/vendor/me/logo', formData),
+  updateCover: (formData) => api.post('/vendor/me/cover', formData)
 };
 
 export const productAPI = {
@@ -71,8 +67,8 @@ export const planAPI = {
   }),
   getAdminRequests: () => api.get('/plans/admin/requests'),
   getAdminStats: () => api.get('/plans/admin/stats'),
-  approveRequest: (id) => api.put('/plans/admin/approve/${id}'),
-  rejectRequest: (id, reason) => api.put('/plans/admin/reject/${id}', { reason })
+  approveRequest: (id) => api.put(`/plans/admin/approve/${id}`),
+  rejectRequest: (id, reason) => api.put(`/plans/admin/reject/${id}`, { reason })
 };
 
 export const adminAPI = {

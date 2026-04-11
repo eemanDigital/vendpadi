@@ -39,11 +39,12 @@ const catchAsync = (fn) => (req, res, next) => {
 };
 
 const PLANS = {
-  basic: { price: 1500, name: 'Basic', interval: 'monthly' },
-  premium: { price: 3000, name: 'Premium', interval: 'monthly' }
+  starter: { price: 1000, name: 'Starter', interval: 'monthly', products: 30, images: 3 },
+  business: { price: 2500, name: 'Business', interval: 'monthly', products: 100, images: 5 },
+  premium: { price: 5000, name: 'Premium', interval: 'monthly', products: 'unlimited', images: 8 }
 };
 
-router.get('/plans', (req, res) => {
+router.get('/', (req, res) => {
   res.json({
     plans: PLANS,
     paymentDetails: {
@@ -57,7 +58,7 @@ router.get('/plans', (req, res) => {
 router.post('/upgrade', protect, catchAsync(async (req, res) => {
   const { requestedPlan } = req.body;
   
-  if (!['basic', 'premium'].includes(requestedPlan)) {
+  if (!['starter', 'business', 'premium'].includes(requestedPlan)) {
     return res.status(400).json({ message: 'Invalid plan' });
   }
 
@@ -150,7 +151,8 @@ router.get('/admin/stats', protect, adminOnly, catchAsync(async (req, res) => {
     total: totalVendors,
     byPlan: {
       free: 0,
-      basic: 0,
+      starter: 0,
+      business: 0,
       premium: 0
     }
   };

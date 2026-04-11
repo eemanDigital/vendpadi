@@ -5,6 +5,12 @@ import { setCredentials } from '../store/authSlice';
 import toast from 'react-hot-toast';
 import { FiShield, FiMail, FiLock } from 'react-icons/fi';
 import Logo from '../components/Logo';
+import axios from 'axios';
+
+const AUTH_API = axios.create({
+  baseURL: '/api',
+  headers: { 'Content-Type': 'application/json' }
+});
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -27,24 +33,14 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      const response = await AUTH_API.post('/admin/auth/login', formData);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      dispatch(setCredentials({ token: data.token, vendor: data.admin }));
-      localStorage.setItem('vendpadi_admin_token', data.token);
+      dispatch(setCredentials({ token: response.data.token, vendor: response.data.admin }));
+      localStorage.setItem('vendpadi_admin_token', response.data.token);
       toast.success('Welcome, Admin!');
       navigate('/admin-panel');
     } catch (error) {
-      toast.error(error.message || 'Invalid credentials');
+      toast.error(error.response?.data?.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }

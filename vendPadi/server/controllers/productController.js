@@ -291,7 +291,7 @@ exports.uploadImages = catchAsync(async (req, res) => {
     return res.status(403).json({ message: 'Not authorized' });
   }
 
-  const limits = { free: 2, starter: 4, business: 6, premium: 8 };
+  const limits = { free: 1, starter: 3, business: 5, premium: 8 };
   const plan = req.vendor.plan?.type || 'free';
   const maxImages = limits[plan] || 2;
 

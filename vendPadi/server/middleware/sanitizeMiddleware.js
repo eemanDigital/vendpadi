@@ -1,4 +1,4 @@
-const FIELDS_TO_SKIP = ['images', 'logo', 'password', 'passwordHash'];
+const FIELDS_TO_SKIP = ['images', 'logo', 'password', 'passwordHash', 'secretCode'];
 
 const escapeHtml = (str) => {
   if (typeof str !== 'string') return str;

@@ -7,6 +7,7 @@ const Vendor = require('../models/Vendor');
 router.post('/login', async (req, res) => {
   try {
     const { email, secretCode } = req.body;
+    console.log('Admin login attempt:', { email, envEmail: process.env.ADMIN_EMAIL, emailMatch: email === process.env.ADMIN_EMAIL });
 
     if (!email || !secretCode) {
       return res.status(400).json({ message: 'Email and secret code are required' });
@@ -17,8 +18,10 @@ router.post('/login', async (req, res) => {
     }
 
     const admin = await Vendor.findOne({ email: email.toLowerCase(), isAdmin: true });
+    console.log('Admin vendor found:', admin ? 'yes' : 'no');
     
     if (!admin) {
+      console.log('Creating new admin, secretCode:', secretCode, 'envSecret:', process.env.ADMIN_SECRET);
       if (secretCode !== process.env.ADMIN_SECRET) {
         return res.status(401).json({ message: 'Invalid admin credentials' });
       }
