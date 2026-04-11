@@ -474,9 +474,13 @@ const Dashboard = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="relative group"
+                    onClick={() => handleEdit(product)}
                   >
                     <ProductCard product={product} view={viewMode} />
-                    <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 sm:opacity-0 group-active:opacity-100 transition-opacity z-10">
+                    <div 
+                      className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 sm:opacity-0 group-active:opacity-100 transition-opacity z-20"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         onClick={() => handleEdit(product)}
                         className="p-2 bg-white rounded-lg shadow-lg hover:bg-navy hover:text-white transition-colors"

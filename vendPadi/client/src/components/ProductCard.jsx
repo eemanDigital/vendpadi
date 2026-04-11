@@ -93,10 +93,17 @@ const GridCard = ({ product, onOpenDetail }) => {
   const isLow = product.lowStockAlert;
   const isOut = !product.inStock;
 
+  const handleCardClick = () => {
+    if (onOpenDetail) {
+      onOpenDetail(product);
+    }
+  };
+
   return (
     <div
-      onClick={() => onOpenDetail?.(product)}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-xl active:scale-[0.98] transition-all duration-300 cursor-pointer flex flex-col">
+      onClick={handleCardClick}
+      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-xl active:scale-[0.98] transition-all duration-300 cursor-pointer flex flex-col"
+    >
       <div className="aspect-square sm:aspect-[4/3] relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
         <ImageCarousel images={product.images} name={product.name} category={product.category} />
         
@@ -118,7 +125,7 @@ const GridCard = ({ product, onOpenDetail }) => {
           <CategoryBadge category={product.category} />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 sm:opacity-0 transition-opacity flex items-end justify-center pb-4">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 sm:opacity-0 transition-opacity flex items-end justify-center pb-4 pointer-events-none">
           <span className="bg-white/95 text-navy text-xs font-semibold px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
             <FiEye size={14} />
             View Details
@@ -170,10 +177,17 @@ const ListCard = ({ product, onOpenDetail }) => {
   const isLow = product.lowStockAlert;
   const isOut = !product.inStock;
 
+  const handleCardClick = () => {
+    if (onOpenDetail) {
+      onOpenDetail(product);
+    }
+  };
+
   return (
     <div
-      onClick={() => onOpenDetail?.(product)}
-      className="group bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-lg active:scale-[0.98] transition-all duration-300 cursor-pointer flex">
+      onClick={handleCardClick}
+      className="group bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-lg active:scale-[0.98] transition-all duration-300 cursor-pointer flex"
+    >
       <div className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0 relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
         <ImageCarousel images={product.images} name={product.name} category={product.category} />
         
