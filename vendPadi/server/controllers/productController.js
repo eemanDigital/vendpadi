@@ -75,12 +75,15 @@ exports.getProducts = catchAsync(async (req, res) => {
   const products = await Product.find(query).sort(sortOption);
   
   const planType = req.vendor.plan?.type || 'free';
-  const threshold = LOW_STOCK_THRESHOLDS[planType] || 10;
+  const defaultThreshold = LOW_STOCK_THRESHOLDS[planType] || 10;
   
-  const productsWithAlerts = products.map(p => ({
-    ...p.toObject(),
-    lowStockAlert: p.stock > 0 && p.stock <= threshold
-  }));
+  const productsWithAlerts = products.map(p => {
+    const threshold = p.lowStockThreshold || defaultThreshold;
+    return {
+      ...p.toObject(),
+      lowStockAlert: p.stock > 0 && p.stock <= threshold
+    };
+  });
   
   let result = productsWithAlerts;
   
@@ -93,12 +96,17 @@ exports.getProducts = catchAsync(async (req, res) => {
 
 exports.getLowStockProducts = catchAsync(async (req, res) => {
   const planType = req.vendor.plan?.type || 'free';
-  const threshold = LOW_STOCK_THRESHOLDS[planType] || 10;
+  const defaultThreshold = LOW_STOCK_THRESHOLDS[planType] || 10;
   
   const products = await Product.find({
     vendorId: req.vendor._id,
-    stock: { $gt: 0, $lte: threshold },
-    inStock: true
+    inStock: true,
+    $expr: {
+      $and: [
+        { $gt: ['$stock', 0] },
+        { $lte: ['$stock', { $ifNull: ['$lowStockThreshold', defaultThreshold] }] }
+      ]
+    }
   }).sort({ stock: 1 });
   
   res.json(products);

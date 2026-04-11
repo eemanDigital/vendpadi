@@ -32,12 +32,15 @@ exports.getStore = catchAsync(async (req, res) => {
     .sort({ createdAt: -1 });
 
   const planType = vendor.plan?.type || 'free';
-  const threshold = LOW_STOCK_THRESHOLDS[planType] || 10;
+  const defaultThreshold = LOW_STOCK_THRESHOLDS[planType] || 10;
 
-  const productsWithAlerts = products.map(p => ({
-    ...p.toObject(),
-    lowStockAlert: p.stock > 0 && p.stock <= threshold
-  }));
+  const productsWithAlerts = products.map(p => {
+    const threshold = p.lowStockThreshold || defaultThreshold;
+    return {
+      ...p.toObject(),
+      lowStockAlert: p.stock > 0 && p.stock <= threshold
+    };
+  });
 
   res.json({
     vendor,
