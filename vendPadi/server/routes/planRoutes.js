@@ -175,6 +175,23 @@ router.get('/admin/stats', protect, adminOnly, catchAsync(async (req, res) => {
   res.json(stats);
 }));
 
+router.get('/admin/subscribers', protect, adminOnly, catchAsync(async (req, res) => {
+  const { plan } = req.query;
+  
+  const query = {};
+  if (plan && plan !== 'all') {
+    query['plan.type'] = plan;
+  } else {
+    query['plan.type'] = { $ne: 'free' };
+  }
+
+  const subscribers = await Vendor.find(query)
+    .select('businessName email phone plan.type plan.expiresAt createdAt')
+    .sort({ createdAt: -1 });
+
+  res.json(subscribers);
+}));
+
 router.put('/admin/approve/:id', protect, adminOnly, catchAsync(async (req, res) => {
   const request = await PlanRequest.findById(req.params.id);
   if (!request) {

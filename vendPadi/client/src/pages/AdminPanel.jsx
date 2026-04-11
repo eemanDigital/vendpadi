@@ -42,6 +42,7 @@ const AdminPanel = () => {
     pendingRequests: 0, 
     approvedThisMonth: 0 
   });
+  const [subscribers, setSubscribers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
@@ -52,26 +53,29 @@ const AdminPanel = () => {
   const [selectedGreeting, setSelectedGreeting] = useState(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailResult, setEmailResult] = useState(null);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const [subscriberFilter, setSubscriberFilter] = useState('all');
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [requestsRes, statsRes] = await Promise.all([
+      const [requestsRes, statsRes, subscribersRes] = await Promise.all([
         planAPI.getAdminRequests(),
-        planAPI.getAdminStats()
+        planAPI.getAdminStats(),
+        planAPI.getSubscribers(subscriberFilter)
       ]);
       setRequests(requestsRes.data);
       setStats(statsRes.data);
+      setSubscribers(subscribersRes.data);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to load data');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [subscriberFilter]);
 
   const handleApprove = async (id) => {
     if (!confirm('Approve this upgrade request?')) return;
@@ -201,6 +205,22 @@ const AdminPanel = () => {
           >
             <FiMail size={16} />
             <span className="hidden sm:inline">Send Email</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('subscribers')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+              activeTab === 'subscribers' 
+                ? 'bg-padi-green text-white' 
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <FiUsers size={16} />
+            <span className="hidden sm:inline">Subscribers</span>
+            {stats.total - (stats.byPlan.free || 0) > 0 && (
+              <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {stats.total - (stats.byPlan.free || 0)}
+              </span>
+            )}
           </button>
         </div>
 
@@ -456,6 +476,73 @@ const AdminPanel = () => {
                 <p className="text-padi-green font-medium">
                   ✓ Sent {emailResult.sent} emails successfully ({emailResult.failed} failed)
                 </p>
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'subscribers' ? (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-navy">Subscribers</h2>
+              <select
+                value={subscriberFilter}
+                onChange={(e) => setSubscriberFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-padi-green"
+              >
+                <option value="all">All Plans</option>
+                <option value="starter">Starter</option>
+                <option value="business">Business</option>
+                <option value="premium">Premium</option>
+              </select>
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="w-12 h-12 border-4 border-padi-green border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : subscribers.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FiUsers className="text-gray-400 text-4xl" />
+                </div>
+                <h3 className="font-sora font-bold text-xl text-navy mb-2">No Subscribers</h3>
+                <p className="text-gray-500">No paid subscribers found for this filter.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Business</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {subscribers.map((sub) => (
+                      <tr key={sub._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-navy">{sub.businessName}</div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-600">{sub.email}</td>
+                        <td className="px-6 py-4 text-gray-600">{sub.phone}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            sub.plan?.type === 'premium' ? 'bg-amber-100 text-amber-700' :
+                            sub.plan?.type === 'business' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {sub.plan?.type || 'N/A'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-gray-600 text-sm">
+                          {sub.plan?.expiresAt ? new Date(sub.plan.expiresAt).toLocaleDateString() : 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

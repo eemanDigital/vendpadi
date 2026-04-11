@@ -61,12 +61,13 @@ export const planAPI = {
   getPlans: () => api.get('/plans'),
   requestUpgrade: (requestedPlan) => api.post('/plans/upgrade', { requestedPlan }),
   getMyRequests: () => api.get('/plans/my-requests'),
-  cancelRequest: (id) => api.delete(`/plans/request/${id}`),
+  cancelRequest: (id) => api.delete('/plans/request/${id}'),
   uploadProof: (id, formData) => api.post(`/plans/upload-proof/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   getAdminRequests: () => api.get('/plans/admin/requests'),
   getAdminStats: () => api.get('/plans/admin/stats'),
+  getSubscribers: (plan) => api.get('/plans/admin/subscribers', { params: { plan } }),
   approveRequest: (id) => api.put(`/plans/admin/approve/${id}`),
   rejectRequest: (id, reason) => api.put(`/plans/admin/reject/${id}`, { reason })
 };
