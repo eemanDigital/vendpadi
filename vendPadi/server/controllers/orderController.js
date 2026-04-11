@@ -1,5 +1,6 @@
 const Order = require('../models/Order');
 const Vendor = require('../models/Vendor');
+const Product = require('../models/Product');
 
 const catchAsync = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -47,8 +48,43 @@ exports.updateOrderStatus = catchAsync(async (req, res) => {
     return res.status(404).json({ message: 'Order not found' });
   }
 
+  const previousStatus = order.status;
   order.status = status;
   await order.save();
+
+  if ((status === 'confirmed' || status === 'delivered') && previousStatus !== 'confirmed' && previousStatus !== 'delivered') {
+    for (const item of order.items) {
+      if (item.productId) {
+        const product = await Product.findById(item.productId);
+        if (product && product.stock >= item.qty) {
+          const newStock = product.stock - item.qty;
+          await Product.findByIdAndUpdate(item.productId, {
+            stock: newStock,
+            inStock: newStock > 0
+          });
+        }
+      }
+    }
+    order.stockReduced = true;
+    await order.save();
+  }
+
+  if (status === 'cancelled' && order.stockReduced) {
+    for (const item of order.items) {
+      if (item.productId) {
+        const product = await Product.findById(item.productId);
+        if (product) {
+          const newStock = product.stock + item.qty;
+          await Product.findByIdAndUpdate(item.productId, {
+            stock: newStock,
+            inStock: true
+          });
+        }
+      }
+    }
+    order.stockReduced = false;
+    await order.save();
+  }
   
   res.json(order);
 });

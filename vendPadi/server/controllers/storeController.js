@@ -72,6 +72,27 @@ exports.createOrder = catchAsync(async (req, res) => {
     }
   }
 
+  const insufficientStock = [];
+  for (const item of items) {
+    if (item.productId) {
+      const product = await Product.findById(item.productId);
+      if (product && product.stock < item.qty) {
+        insufficientStock.push({
+          name: item.name,
+          requested: item.qty,
+          available: product.stock
+        });
+      }
+    }
+  }
+
+  if (insufficientStock.length > 0) {
+    return res.status(400).json({
+      message: 'Insufficient stock for some items',
+      insufficientStock
+    });
+  }
+
   const order = await Order.create({
     vendorId: vendor._id,
     items: items.map(item => ({

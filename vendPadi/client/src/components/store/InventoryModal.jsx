@@ -19,7 +19,10 @@ const InventoryModal = ({ isOpen, onClose, products, onUpdate }) => {
   const handleSave = async (productId) => {
     setSaving(productId);
     try {
-      await productAPI.update(productId, { stock: editValue });
+      await productAPI.update(productId, { 
+        operation: 'adjust',
+        stock: editValue 
+      });
       toast.success('Stock updated!');
       setEditingId(null);
       onUpdate();
@@ -37,6 +40,7 @@ const InventoryModal = ({ isOpen, onClose, products, onUpdate }) => {
         amount,
         stock: operation === 'adjust' ? amount : undefined 
       });
+      toast.success('Stock updated');
       onUpdate();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update stock');
@@ -59,7 +63,7 @@ const InventoryModal = ({ isOpen, onClose, products, onUpdate }) => {
         <div className="flex-1 overflow-y-auto">
           {products.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
-              No products to manage
+              No products with stock to manage
             </div>
           ) : (
             <div className="divide-y">
