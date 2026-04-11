@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { clearCart } from "../store/cartSlice";
-import { storeAPI } from "../api/axiosInstance";
+import { storeAPI, trackingAPI } from "../api/axiosInstance";
 import { buildWhatsAppOrderLink } from "../utils/whatsapp";
 import toast from "react-hot-toast";
 import { FiPackage, FiHome, FiChevronRight, FiHeart } from "react-icons/fi";
@@ -88,6 +88,7 @@ const Storefront = () => {
         setLoading(true);
         const { data } = await storeAPI.getStore(slug);
         setStore(data);
+        trackingAPI.trackView(slug).catch(() => {});
       } catch {
         toast.error("Store not found");
       } finally {
@@ -119,6 +120,8 @@ const Storefront = () => {
       store.vendor.businessName,
       cartItems,
     );
+
+    trackingAPI.trackWhatsAppClick(slug, cartItems[0]?._id).catch(() => {});
 
     if (waLink) {
       window.open(waLink, "_blank");

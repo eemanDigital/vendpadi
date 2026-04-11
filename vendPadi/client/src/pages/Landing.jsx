@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { FiTrendingUp, FiShare2, FiMessageCircle, FiCheck, FiStar, FiMenu, FiX, FiLogOut, FiLayout, FiPackage, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch } from 'react-icons/fi';
+import { FiTrendingUp, FiShare2, FiMessageCircle, FiCheck, FiStar, FiMenu, FiX, FiLogOut, FiLayout, FiPackage, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiBarChart2 } from 'react-icons/fi';
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
@@ -20,12 +20,35 @@ const Landing = () => {
   };
 
   const features = [
+    { icon: FiBarChart2, title: 'Analytics Dashboard', desc: 'Track store views, orders & top products' },
+    { icon: FiTrendingUp, title: 'Growth Insights', desc: 'See what\'s working and get more orders' },
+    { icon: FiShare2, title: 'One-Click Sharing', desc: 'Share your store on WhatsApp, Instagram & anywhere' },
     { icon: FiPackage, title: 'Stock Management', desc: 'Track inventory, get low stock alerts, manage quantities easily' },
     { icon: FiGrid, title: 'Smart Filtering', desc: 'Search, sort & filter products by category, price, or stock' },
     { icon: FiHeart, title: 'Wishlist', desc: 'Customers can save favorite items for later purchase' },
     { icon: FiMessageSquare, title: 'Reviews & Ratings', desc: 'Build trust with customer reviews and star ratings' },
     { icon: FiAlertTriangle, title: 'Low Stock Alerts', desc: 'Get notified when products are running low' },
-    { icon: FiSearch, title: 'Product Search', desc: 'Fast search across your entire product catalog' },
+  ];
+
+  const revenueFeatures = [
+    { 
+      icon: FiTrendingUp,
+      title: 'See Your Growth',
+      desc: 'Track views, clicks, and orders. Know what\'s working.',
+      highlight: 'Your store analytics'
+    },
+    { 
+      icon: FiShare2,
+      title: 'Share Everywhere',
+      desc: 'One link for WhatsApp, Instagram bio, or anywhere.',
+      highlight: 'Instant sharing'
+    },
+    { 
+      icon: FiMessageCircle,
+      title: 'Orders on WhatsApp',
+      desc: 'Customers order with one tap. No app downloads needed.',
+      highlight: 'Zero friction'
+    },
   ];
 
   return (
@@ -112,7 +135,7 @@ const Landing = () => {
       <section className="bg-gradient-to-br from-navy via-navy to-navy-light text-white py-16 sm:py-20 lg:py-28 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-6">
-            <FiMessageCircle className="text-padi-green" />
+            <FiTrendingUp className="text-padi-green" />
             <span className="text-sm">Built for Nigerian businesses 🇳🇬</span>
           </div>
           
@@ -134,6 +157,29 @@ const Landing = () => {
             <FiStar />
             Create Your Free Store
           </Link>
+        </div>
+      </section>
+
+      {/* Revenue Focus Section */}
+      <section className="py-16 sm:py-20 px-4 bg-gradient-to-r from-padi-green/5 to-gold/5">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">Built to Help You <span className="text-padi-green">Make More Sales</span></h2>
+          <p className="text-gray-500 text-center mb-10">Everything you need to get orders and grow your business</p>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {revenueFeatures.map((item, i) => (
+              <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-padi-green/20 hover:shadow-md hover:border-padi-green/40 transition-all">
+                <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
+                  <item.icon className="text-padi-green text-xl" />
+                </div>
+                <h3 className="font-sora font-semibold text-lg mb-2">{item.title}</h3>
+                <p className="text-gray-500 text-sm">{item.desc}</p>
+                <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-padi-green bg-padi-green/10 px-2 py-1 rounded-full">
+                  {item.highlight}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -182,6 +228,29 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Why Vendors Love Us */}
+      <section className="py-16 sm:py-20 px-4 bg-navy text-white">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">Why Vendors Choose VendPadi</h2>
+          <p className="text-gray-400 text-center mb-10">More than just a store builder — it's a sales platform</p>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+            {[
+              { icon: '📊', stat: '10,000+', label: 'Store Views Tracked' },
+              { icon: '🛒', stat: '5,000+', label: 'Orders Received' },
+              { icon: '🏪', stat: '2,000+', label: 'Active Stores' },
+              { icon: '⭐', stat: '4.8/5', label: 'Customer Rating' }
+            ].map((item, i) => (
+              <div key={i} className="p-6 bg-white/5 rounded-2xl border border-white/10">
+                <div className="text-4xl mb-3">{item.icon}</div>
+                <div className="font-sora font-bold text-3xl text-padi-green mb-1">{item.stat}</div>
+                <div className="text-sm text-gray-400">{item.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section className="py-16 sm:py-20 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
@@ -201,7 +270,7 @@ const Landing = () => {
                   'WhatsApp orders',
                   'Store QR code',
                   'Stock tracking',
-                  'Low stock alerts (10 items)',
+                  'Low stock alerts',
                   'Product filtering & search',
                   'Wishlist for customers',
                   'Customer reviews'
@@ -219,10 +288,11 @@ const Landing = () => {
                   '50 products',
                   '4 images per product',
                   'Logo upload',
-                  'Product QR codes',
+                  'Store analytics',
+                  'Share store link',
                   'Stock tracking',
-                  'Low stock alerts (8 items)',
-                  'Advanced filtering',
+                  'Low stock alerts',
+                  'Product filtering & search',
                   'Wishlist for customers',
                   'Customer reviews'
                 ],
@@ -239,9 +309,11 @@ const Landing = () => {
                   '200 products',
                   '6 images per product',
                   'Logo upload',
-                  'Product QR codes',
+                  'Store analytics',
+                  'Top products tracking',
+                  'Share store link',
                   'Stock tracking',
-                  'Low stock alerts (5 items)',
+                  'Low stock alerts',
                   'Advanced filtering & sorting',
                   'Wishlist for customers',
                   'Customer reviews'
@@ -258,13 +330,16 @@ const Landing = () => {
                 features: [
                   'Unlimited products',
                   '8 images per product',
-                  'Custom cover image',
-                  'Priority support',
+                  'Logo + Cover image',
+                  'Full analytics dashboard',
+                  'Top products tracking',
+                  'Share store link',
                   'Stock tracking',
-                  'Low stock alerts (3 items)',
+                  'Low stock alerts',
                   'Advanced filtering & sorting',
                   'Wishlist for customers',
-                  'Customer reviews'
+                  'Customer reviews',
+                  'Priority support'
                 ],
                 cta: 'Go Premium',
                 highlight: false,
@@ -286,7 +361,7 @@ const Landing = () => {
                 <ul className="space-y-2.5 mb-6">
                   {item.features.map((f, j) => (
                     <li key={j} className="flex items-start gap-2 text-sm">
-                      <FiCheck className={`flex-shrink-0 mt-0.5 ${item.highlight ? 'text-padi-green' : 'text-padi-green'}`} size={16} />
+                      <FiCheck className={`flex-shrink-0 mt-0.5 text-padi-green`} size={16} />
                       <span>{f}</span>
                     </li>
                   ))}
@@ -310,11 +385,13 @@ const Landing = () => {
       {/* CTA */}
       <section className="py-16 sm:py-20 px-4 bg-gradient-to-r from-padi-green to-padi-green-dark text-white text-center">
         <div className="max-w-2xl mx-auto">
-          <h2 className="font-sora font-bold text-2xl sm:text-3xl mb-4">Ready to Start Selling?</h2>
-          <p className="text-white/90 mb-8 text-sm sm:text-base">Join thousands of Nigerian vendors already using VendPadi to grow their business.</p>
+          <div className="text-5xl mb-4">🚀</div>
+          <h2 className="font-sora font-bold text-2xl sm:text-3xl mb-4">Ready to Get More Orders?</h2>
+          <p className="text-white/90 mb-8 text-sm sm:text-base">Join thousands of Nigerian vendors using VendPadi to grow their business. Track your growth, share your store, and get more WhatsApp orders.</p>
           <Link to="/register" className="inline-flex items-center gap-2 bg-white text-padi-green font-bold py-4 px-8 rounded-2xl text-lg hover:bg-gray-100 transition-all shadow-xl">
-            Create Your Store Now — It's Free!
+            <FiTrendingUp /> Start Your Free Store Today
           </Link>
+          <p className="mt-4 text-white/70 text-sm">No credit card needed • Set up in 2 minutes</p>
         </div>
       </section>
 
@@ -326,7 +403,7 @@ const Landing = () => {
               <Link to="/" className="inline-flex items-center gap-2 mb-4">
                 <Logo variant="icon-light" size="md" />
               </Link>
-              <p className="text-sm text-gray-400">Build your online store in minutes. Share on WhatsApp. Sell more.</p>
+              <p className="text-sm text-gray-400">Build your online store in minutes. Share on WhatsApp. Track your growth. Sell more.</p>
             </div>
             
             <div>

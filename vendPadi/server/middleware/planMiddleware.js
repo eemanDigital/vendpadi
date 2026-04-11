@@ -3,7 +3,7 @@ const catchAsync = (fn) => (req, res, next) => {
 };
 
 const requirePlan = (minPlan) => catchAsync(async (req, res, next) => {
-  const plans = { free: 0, basic: 1, premium: 2 };
+  const plans = { free: 0, starter: 1, business: 2, premium: 3 };
   const vendorPlan = req.vendor.plan?.type || 'free';
   
   if (plans[vendorPlan] === undefined) {
@@ -28,7 +28,7 @@ const requirePlan = (minPlan) => catchAsync(async (req, res, next) => {
 });
 
 const checkProductLimit = catchAsync(async (req, res, next) => {
-  const limits = { free: 5, basic: 20, premium: Infinity };
+  const limits = { free: 5, starter: 30, business: 100, premium: Infinity };
   const plan = req.vendor.plan?.type || 'free';
   const limit = limits[plan] ?? 5;
 
@@ -47,7 +47,7 @@ const checkProductLimit = catchAsync(async (req, res, next) => {
 });
 
 const checkImageLimit = catchAsync(async (req, res, next) => {
-  const limits = { free: 1, basic: 3, premium: 3 };
+  const limits = { free: 1, starter: 3, business: 5, premium: 8 };
   const plan = req.vendor.plan?.type || 'free';
   const maxAllowed = limits[plan] || 1;
 

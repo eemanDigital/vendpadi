@@ -18,6 +18,11 @@ const vendorSchema = new mongoose.Schema({
     type: { type: String, enum: ['free', 'starter', 'business', 'premium'], default: 'free' },
     expiresAt: { type: Date, default: null }
   },
+  analytics: {
+    viewsCount: { type: Number, default: 0 },
+    whatsappClicks: { type: Number, default: 0 },
+    lastViewedAt: { type: Date, default: null }
+  },
   isActive: { type: Boolean, default: true },
   isAdmin: { type: Boolean, default: false },
   resetPasswordToken: { type: String, default: null },

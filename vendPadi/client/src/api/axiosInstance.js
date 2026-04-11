@@ -81,4 +81,18 @@ export const adminAPI = {
   sendGreeting: (greetingType, vendorIds) => api.post('/admin/send-greeting', { greetingType, vendorIds })
 };
 
+export const analyticsAPI = {
+  getAnalytics: () => api.get('/analytics')
+};
+
+const publicAPI = axios.create({
+  baseURL: API_BASE_URL,
+  headers: { 'Content-Type': 'application/json' }
+});
+
+export const trackingAPI = {
+  trackView: (slug) => publicAPI.post(`/track/view/${slug}`),
+  trackWhatsAppClick: (slug, productId) => publicAPI.post(`/track/whatsapp-click/${slug}`, { productId })
+};
+
 export default api;

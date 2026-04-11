@@ -2,23 +2,27 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { productAPI } from '../api/axiosInstance';
+import { productAPI, analyticsAPI } from '../api/axiosInstance';
 import ProductCard from '../components/ProductCard';
 import ProductForm from '../components/ProductForm';
 import PlanBadge from '../components/PlanBadge';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import Logo from '../components/Logo';
+import ShareStoreModal from '../components/ShareStoreModal';
 import SearchInput from '../components/ui/SearchInput';
 import SortDropdown from '../components/ui/SortDropdown';
 import FilterBar from '../components/ui/FilterBar';
 import EmptyState from '../components/ui/EmptyState';
 import LowStockAlert from '../components/ui/LowStockAlert';
+import AnalyticsCard from '../components/ui/AnalyticsCard';
+import TopProductsList from '../components/ui/TopProductsList';
+import GrowthInsights from '../components/ui/GrowthInsights';
 import InventoryModal from '../components/store/InventoryModal';
 import Loading from '../components/Loading';
 import { logout } from '../store/authSlice';
 import { clearCart } from '../store/cartSlice';
 import toast from 'react-hot-toast';
-import { FiPlus, FiCopy, FiEdit2, FiTrash2, FiExternalLink, FiX, FiPackage, FiSettings, FiShoppingBag, FiLogOut, FiGrid, FiList, FiAlertTriangle, FiPackage as FiBox } from 'react-icons/fi';
+import { FiPlus, FiCopy, FiEdit2, FiTrash2, FiExternalLink, FiX, FiPackage, FiSettings, FiShoppingBag, FiLogOut, FiGrid, FiList, FiAlertTriangle, FiPackage as FiBox, FiEye, FiMessageCircle, FiShare2, FiTrendingUp, FiPercent } from 'react-icons/fi';
 
 const PLAN_LIMITS = {
   free: { products: 10, images: 2 },
@@ -38,7 +42,10 @@ const Dashboard = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [copied, setCopied] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
+  const [analytics, setAnalytics] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [filters, setFilters] = useState({
@@ -104,9 +111,23 @@ const Dashboard = () => {
     }
   }, []);
 
+  const fetchAnalytics = useCallback(async () => {
+    try {
+      const { data } = await analyticsAPI.getAnalytics();
+      setAnalytics(data);
+    } catch (error) {
+      console.error('Failed to load analytics');
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+    fetchAnalytics();
+  }, [fetchProducts, fetchAnalytics]);
+
+  const storeUrl = `${window.location.origin}/store/${vendor?.slug}`;
 
   const handleLogout = () => {
     dispatch(logout());
@@ -265,6 +286,68 @@ const Dashboard = () => {
 
       <div className="lg:ml-64 pb-20 lg:pb-6">
         <div className="max-w-7xl mx-auto p-4 lg:p-6">
+          {vendor?.plan?.type !== 'free' && (
+            <div className="mb-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                <AnalyticsCard
+                  title="Store Views"
+                  value={analyticsLoading ? '...' : (analytics?.viewsCount || 0)}
+                  icon={FiEye}
+                  color="blue"
+                />
+                <AnalyticsCard
+                  title="Orders Received"
+                  value={analyticsLoading ? '...' : (analytics?.whatsappClicks || 0)}
+                  subtitle="via WhatsApp"
+                  icon={FiMessageCircle}
+                  color="green"
+                />
+                <AnalyticsCard
+                  title="Conversion Rate"
+                  value={analyticsLoading ? '...' : `${analytics?.conversionRate || 0}%`}
+                  subtitle="views to orders"
+                  icon={FiPercent}
+                  color="gold"
+                />
+                <AnalyticsCard
+                  title="Total Products"
+                  value={analyticsLoading ? '...' : (analytics?.totalProducts || 0)}
+                  icon={FiPackage}
+                  color="purple"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2">
+                  <GrowthInsights
+                    topProduct={analytics?.topProduct}
+                    viewsCount={analytics?.viewsCount}
+                    whatsappClicks={analytics?.whatsappClicks}
+                    conversionRate={analytics?.conversionRate}
+                  />
+                </div>
+                <div>
+                  <button
+                    onClick={() => setShowShareModal(true)}
+                    className="w-full bg-padi-green hover:bg-padi-green-dark text-white p-4 rounded-xl flex items-center justify-center gap-3 transition-colors"
+                  >
+                    <FiShare2 size={20} />
+                    <div className="text-left">
+                      <p className="font-semibold">Share Your Store</p>
+                      <p className="text-xs text-white/80">Get more customers</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+              
+              {!analyticsLoading && analytics?.topProducts?.length > 0 && (
+                <div className="mt-4">
+                  <TopProductsList products={analytics.topProducts} />
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="font-sora font-bold text-2xl text-navy">Products</h1>
@@ -490,6 +573,13 @@ const Dashboard = () => {
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
         onSuccess={() => setShowUpgradeModal(false)}
+      />
+
+      <ShareStoreModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        storeUrl={storeUrl}
+        storeName={vendor?.businessName}
       />
     </div>
   );

@@ -15,6 +15,8 @@ const storeRoutes = require("./routes/storeRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const planRoutes = require("./routes/planRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
+const trackingRoutes = require("./routes/trackingRoutes");
 const { sanitizeBody } = require("./middleware/sanitizeMiddleware");
 
 const app = express();
@@ -128,6 +130,8 @@ app.use("/api/store", storeRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/plans", planRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/track", trackingRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
