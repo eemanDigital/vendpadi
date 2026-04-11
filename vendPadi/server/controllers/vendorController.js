@@ -92,3 +92,32 @@ exports.updateLogo = catchAsync(async (req, res) => {
     message: 'Logo updated successfully'
   });
 });
+
+exports.updateCoverImage = catchAsync(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image file uploaded' });
+  }
+
+  const vendor = await Vendor.findById(req.vendor._id);
+  if (!vendor) {
+    return res.status(404).json({ message: 'Vendor not found' });
+  }
+
+  const allowedFormats = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!allowedFormats.includes(req.file.mimetype)) {
+    return res.status(400).json({ message: 'Only JPG, PNG, and WebP images are allowed' });
+  }
+
+  const maxSize = 5 * 1024 * 1024;
+  if (req.file.size > maxSize) {
+    return res.status(400).json({ message: 'Image size must be less than 5MB' });
+  }
+
+  vendor.coverImage = req.file.path;
+  await vendor.save();
+
+  res.json({ 
+    coverImage: vendor.coverImage,
+    message: 'Cover image updated successfully'
+  });
+});

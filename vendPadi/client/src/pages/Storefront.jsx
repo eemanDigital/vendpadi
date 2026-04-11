@@ -14,6 +14,7 @@ import StoreToolbar from "../components/store/StoreToolbar";
 import StoreProducts from "../components/store/StoreProducts";
 import StoreBottomBar from "../components/store/StoreBottomBar";
 import StoreSkeleton from "../components/store/StoreSkeleton";
+import StoreBranding from "../components/store/StoreBranding";
 import ProductDetailModal from "../components/store/ProductDetailModal";
 import CartDrawer from "../components/store/CartDrawer";
 import WhatsAppQRModal from "../components/WhatsAppQRModal";
@@ -233,6 +234,8 @@ const Storefront = () => {
         onOrderClick={handleOrder}
         onQRClick={() => setShowQRModal(true)}
       />
+
+      <StoreBranding plan={store?.vendor?.plan} />
 
       <WhatsAppQRModal
         isOpen={showQRModal}

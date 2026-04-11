@@ -1,64 +1,81 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { vendorAPI, authAPI } from '../api/axiosInstance';
 import { updateVendor } from '../store/authSlice';
 import PlanBadge from '../components/PlanBadge';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import Logo from '../components/Logo';
 import toast from 'react-hot-toast';
-import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch } from 'react-icons/fi';
+import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiImage, FiLink } from 'react-icons/fi';
 
 const CATEGORIES = ['food', 'fashion', 'phones', 'cakes', 'other'];
 
 const PLAN_FEATURES = {
   free: { 
-    products: 10, 
-    images: 2, 
+    products: 5, 
+    images: 1, 
     logo: false, 
+    coverImage: false,
+    customLink: false,
     pdf: false,
     stockTracking: true,
     lowStockAlert: '10 items',
     filtering: true,
     sorting: false,
     wishlist: true,
-    reviews: true
+    reviews: true,
+    analytics: false,
+    shareTools: false
   },
   starter: { 
-    products: 50, 
-    images: 4, 
+    products: 30, 
+    images: 3, 
     logo: true, 
+    coverImage: false,
+    customLink: false,
     pdf: false,
     stockTracking: true,
     lowStockAlert: '8 items',
     filtering: true,
     sorting: false,
     wishlist: true,
-    reviews: true
+    reviews: true,
+    analytics: true,
+    shareTools: true
   },
   business: { 
-    products: 200, 
-    images: 6, 
+    products: 100, 
+    images: 5, 
     logo: true, 
+    coverImage: false,
+    customLink: false,
     pdf: true,
     stockTracking: true,
     lowStockAlert: '5 items',
     filtering: true,
     sorting: true,
     wishlist: true,
-    reviews: true
+    reviews: true,
+    analytics: true,
+    shareTools: true
   },
   premium: { 
     products: '∞', 
     images: 8, 
     logo: true, 
+    coverImage: true,
+    customLink: true,
     pdf: true,
     stockTracking: true,
     lowStockAlert: '3 items',
     filtering: true,
     sorting: true,
     wishlist: true,
-    reviews: true
+    reviews: true,
+    analytics: true,
+    shareTools: true
   }
 };
 
@@ -73,6 +90,8 @@ const Settings = () => {
   });
   const [logoPreview, setLogoPreview] = useState('');
   const [logoFile, setLogoFile] = useState(null);
+  const [coverPreview, setCoverPreview] = useState('');
+  const [coverFile, setCoverFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -119,6 +138,15 @@ const Settings = () => {
         formDataLogo.append('logo', logoFile);
         const { data: logoData } = await vendorAPI.updateLogo(formDataLogo);
         updatedData.logo = logoData.logo;
+      }
+
+      if (coverFile && currentFeatures.coverImage) {
+        const formDataCover = new FormData();
+        formDataCover.append('coverImage', coverFile);
+        const { data: coverData } = await axios.post('/api/vendor/cover', formDataCover, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        updatedData.coverImage = coverData.coverImage;
       }
 
       const { data } = await vendorAPI.updateMe(updatedData);
@@ -303,6 +331,26 @@ const Settings = () => {
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-medium">
                   <FiMessageSquare size={12} /> Reviews
                 </span>
+                {currentFeatures.analytics && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-medium">
+                    📊 Analytics Dashboard
+                  </span>
+                )}
+                {currentFeatures.shareTools && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium">
+                    🔗 Share Tools
+                  </span>
+                )}
+                {currentFeatures.coverImage && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gold/20 text-gold rounded-lg text-xs font-medium">
+                    🖼️ Cover Image
+                  </span>
+                )}
+                {currentFeatures.customLink && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gold/20 text-gold rounded-lg text-xs font-medium">
+                    🔗 Custom Link
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -310,7 +358,14 @@ const Settings = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Logo Upload */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
-              <h2 className="font-sora font-semibold text-lg mb-4">Store Logo</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-sora font-semibold text-lg">Store Logo</h2>
+                {!currentFeatures.logo && (
+                  <button onClick={() => setShowUpgradeModal(true)} className="text-xs text-gold hover:text-gold/80 flex items-center gap-1">
+                    <FiTrendingUp size={12} /> Upgrade to unlock
+                  </button>
+                )}
+              </div>
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center overflow-hidden">
                   {logoPreview ? (
@@ -320,14 +375,80 @@ const Settings = () => {
                   )}
                 </div>
                 <div>
-                  <label className="btn-secondary cursor-pointer inline-flex items-center gap-2">
-                    <FiUpload /> Upload Logo
-                    <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
-                  </label>
-                  <p className="text-xs text-gray-400 mt-2">JPG, PNG or WebP. Max 2MB.</p>
+                  {currentFeatures.logo ? (
+                    <>
+                      <label className="btn-secondary cursor-pointer inline-flex items-center gap-2">
+                        <FiUpload /> Upload Logo
+                        <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+                      </label>
+                      <p className="text-xs text-gray-400 mt-2">JPG, PNG or WebP. Max 2MB.</p>
+                    </>
+                  ) : (
+                    <div className="bg-gray-100 px-4 py-3 rounded-xl text-gray-400 text-sm flex items-center gap-2">
+                      <FiLock size={16} /> Logo upload requires Starter plan
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
+
+            {/* Cover Image - Premium Only */}
+            {currentFeatures.coverImage && (
+              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-sora font-semibold text-lg">Store Cover Image</h2>
+                  <span className="text-xs bg-gold/20 text-gold px-2 py-1 rounded-full">Premium</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-32 h-16 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {coverPreview ? (
+                      <img src={coverPreview} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <FiImage className="text-gray-300 text-2xl" />
+                    )}
+                  </div>
+                  <div>
+                    <label className="btn-secondary cursor-pointer inline-flex items-center gap-2">
+                      <FiUpload /> Upload Cover
+                      <input type="file" accept="image/*" onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          if (file.size > 5 * 1024 * 1024) {
+                            toast.error('Cover image must be less than 5MB');
+                            return;
+                          }
+                          setCoverFile(file);
+                          setCoverPreview(URL.createObjectURL(file));
+                        }
+                      }} className="hidden" />
+                    </label>
+                    <p className="text-xs text-gray-400 mt-2">Recommended: 1200x400px. Max 5MB.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Custom Store Link - Premium Only */}
+            {currentFeatures.customLink && (
+              <div className="bg-white rounded-2xl border border-gold/30 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-sora font-semibold text-lg flex items-center gap-2">
+                    <FiLink className="text-gold" /> Custom Store Link
+                  </h2>
+                  <span className="text-xs bg-gold/20 text-gold px-2 py-1 rounded-full">Premium</span>
+                </div>
+                <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl">
+                  <span className="flex-1 text-gray-600 text-sm">yourstore.vendpadi.com</span>
+                  <span className="text-gray-400">/</span>
+                  <input 
+                    type="text" 
+                    placeholder={vendor?.slug}
+                    className="flex-1 bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-2">Contact support to set your custom store link.</p>
+              </div>
+            )}
 
             {/* Store Info */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">

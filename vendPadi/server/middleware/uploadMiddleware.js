@@ -57,8 +57,10 @@ const handleUpload = (uploadFn) => catchAsync(async (req, res, next) => {
 
 const uploadProductImages = handleUpload(uploadProduct.array('images', 8));
 const uploadVendorLogo = handleUpload(uploadLogo.single('logo'));
+const uploadCoverImage = handleUpload(uploadLogo.single('coverImage'));
 
 module.exports = {
   uploadProductImages,
-  uploadVendorLogo
+  uploadVendorLogo,
+  uploadCoverImage
 };

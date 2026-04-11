@@ -8,6 +8,7 @@ const vendorSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true },
   phone: { type: String, required: true },
   logo: { type: String, default: '' },
+  coverImage: { type: String, default: '' },
   description: { type: String, default: '' },
   category: {
     type: String,
