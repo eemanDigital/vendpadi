@@ -1,5 +1,5 @@
 import { FiEye, FiTrendingUp } from 'react-icons/fi';
-import OptimizedImage from './OptimizedImage';
+import OptimizedImage from '../OptimizedImage';
 
 const TopProductsList = ({ products }) => {
   if (!products || products.length === 0) return null;

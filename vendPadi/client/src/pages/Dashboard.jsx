@@ -25,9 +25,9 @@ import toast from 'react-hot-toast';
 import { FiPlus, FiCopy, FiEdit2, FiTrash2, FiExternalLink, FiX, FiPackage, FiSettings, FiShoppingBag, FiLogOut, FiGrid, FiList, FiAlertTriangle, FiPackage as FiBox, FiEye, FiMessageCircle, FiShare2, FiTrendingUp, FiPercent } from 'react-icons/fi';
 
 const PLAN_LIMITS = {
-  free: { products: 10, images: 2 },
-  starter: { products: 50, images: 4 },
-  business: { products: 200, images: 6 },
+  free: { products: 5, images: 1 },
+  starter: { products: 30, images: 3 },
+  business: { products: 100, images: 5 },
   premium: { products: Infinity, images: 8 }
 };
 

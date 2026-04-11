@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { planAPI } from '../api/axiosInstance';
 import toast from 'react-hot-toast';
-import { FiX, FiCheck, FiUpload, FiClock, FiAlertCircle, FiCreditCard, FiSmartphone, FiRefreshCw, FiTrendingUp, FiZap, FiStar, FiMail, FiBarChart2, FiGrid, FiMaximize, FiPackage, FiSearch, FiHeart, FiMessageSquare, FiAlertTriangle, FiShare2, FiEye } from 'react-icons/fi';
+import { FiX, FiCheck, FiUpload, FiClock, FiAlertCircle, FiCreditCard, FiSmartphone, FiRefreshCw, FiTrendingUp, FiZap, FiStar, FiMail, FiBarChart2, FiGrid, FiMaximize, FiPackage, FiSearch, FiHeart, FiMessageSquare, FiAlertTriangle, FiShare2, FiEye, FiLink } from 'react-icons/fi';
 
 const PLAN_DETAILS = {
   free: {
@@ -12,8 +12,8 @@ const PLAN_DETAILS = {
     color: 'gray',
     tagline: 'Perfect to get started',
     features: [
-      { text: '10 products', included: true, icon: FiGrid },
-      { text: '2 images per product', included: true, icon: FiMaximize },
+      { text: '5 products', included: true, icon: FiGrid },
+      { text: '1 image per product', included: true, icon: FiMaximize },
       { text: 'Stock tracking', included: true, icon: FiPackage },
       { text: 'Low stock alerts', included: true, icon: FiAlertTriangle },
       { text: 'Product search & filter', included: true, icon: FiSearch },
@@ -21,72 +21,72 @@ const PLAN_DETAILS = {
       { text: 'Customer reviews', included: true, icon: FiMessageSquare },
       { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
       { text: 'Store QR code', included: true, icon: FiZap },
-      { text: 'Store analytics', included: false, icon: FiBarChart2 },
+      { text: 'VendPadi branding', included: true, icon: FiStar },
       { text: 'Logo upload', included: false, icon: FiStar },
-      { text: 'Priority support', included: false, icon: FiMail }
+      { text: 'Analytics & sharing', included: false, icon: FiBarChart2 }
     ]
   },
   starter: {
     name: 'Starter',
     icon: '💡',
-    price: 999,
+    price: 1000,
     color: 'blue',
-    tagline: 'For growing small businesses',
+    tagline: 'Look professional and get more orders',
     features: [
-      { text: '50 products', included: true, icon: FiGrid },
-      { text: '4 images per product', included: true, icon: FiMaximize },
+      { text: '30 products', included: true, icon: FiGrid },
+      { text: '3 images per product', included: true, icon: FiMaximize },
+      { text: 'Remove VendPadi branding', included: true, icon: FiStar },
+      { text: 'Logo upload', included: true, icon: FiStar },
+      { text: 'Store analytics', included: true, icon: FiBarChart2 },
+      { text: 'Share store link', included: true, icon: FiShare2 },
       { text: 'Stock tracking', included: true, icon: FiPackage },
       { text: 'Low stock alerts', included: true, icon: FiAlertTriangle },
       { text: 'Product search & filter', included: true, icon: FiSearch },
       { text: 'Wishlist for customers', included: true, icon: FiHeart },
       { text: 'Customer reviews', included: true, icon: FiMessageSquare },
-      { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
-      { text: 'Logo upload', included: true, icon: FiStar },
-      { text: 'Store analytics', included: true, icon: FiBarChart2 },
-      { text: 'Share store link', included: true, icon: FiShare2 },
       { text: 'Priority support', included: false, icon: FiMail }
     ]
   },
   business: {
     name: 'Business',
     icon: '🚀',
-    price: 2499,
+    price: 2500,
     color: 'green',
-    tagline: 'For established businesses',
+    tagline: 'Grow faster and track what sells best',
     popular: true,
     features: [
-      { text: '200 products', included: true, icon: FiGrid },
-      { text: '6 images per product', included: true, icon: FiMaximize },
+      { text: '100 products', included: true, icon: FiGrid },
+      { text: '5 images per product', included: true, icon: FiMaximize },
+      { text: 'Logo upload', included: true, icon: FiStar },
+      { text: 'Store analytics (views, orders)', included: true, icon: FiBarChart2 },
+      { text: 'Top products tracking', included: true, icon: FiTrendingUp },
+      { text: 'Share store link', included: true, icon: FiShare2 },
+      { text: 'Product QR codes', included: true, icon: FiZap },
       { text: 'Stock tracking', included: true, icon: FiPackage },
       { text: 'Low stock alerts', included: true, icon: FiAlertTriangle },
-      { text: 'Product search & filter', included: true, icon: FiSearch },
-      { text: 'Advanced sorting', included: true, icon: FiGrid },
+      { text: 'Advanced filtering & sorting', included: true, icon: FiGrid },
       { text: 'Wishlist for customers', included: true, icon: FiHeart },
-      { text: 'Customer reviews', included: true, icon: FiMessageSquare },
-      { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
-      { text: 'Logo upload', included: true, icon: FiStar },
-      { text: 'Store analytics', included: true, icon: FiBarChart2 },
-      { text: 'Top products tracking', included: true, icon: FiTrendingUp }
+      { text: 'Customer reviews', included: true, icon: FiMessageSquare }
     ]
   },
   premium: {
     name: 'Premium',
     icon: '👑',
-    price: 4999,
+    price: 5000,
     color: 'gold',
-    tagline: 'Ultimate power & support',
+    tagline: 'Run your business like a brand',
     features: [
       { text: 'Unlimited products', included: true, icon: FiGrid },
       { text: '8 images per product', included: true, icon: FiMaximize },
+      { text: 'Logo + cover image', included: true, icon: FiStar },
+      { text: 'Full analytics dashboard', included: true, icon: FiBarChart2 },
+      { text: 'Top products tracking', included: true, icon: FiTrendingUp },
+      { text: 'Custom store link', included: true, icon: FiLink },
+      { text: 'Share store link', included: true, icon: FiShare2 },
       { text: 'Stock tracking', included: true, icon: FiPackage },
       { text: 'Low stock alerts', included: true, icon: FiAlertTriangle },
-      { text: 'Product search & filter', included: true, icon: FiSearch },
-      { text: 'Advanced sorting', included: true, icon: FiGrid },
+      { text: 'Advanced filtering & sorting', included: true, icon: FiGrid },
       { text: 'Wishlist for customers', included: true, icon: FiHeart },
-      { text: 'Customer reviews', included: true, icon: FiMessageSquare },
-      { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
-      { text: 'Logo + Cover image', included: true, icon: FiStar },
-      { text: 'Full analytics dashboard', included: true, icon: FiBarChart2 },
       { text: 'Priority support', included: true, icon: FiMail }
     ]
   }

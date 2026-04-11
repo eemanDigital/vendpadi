@@ -255,7 +255,7 @@ const Landing = () => {
       <section className="py-16 sm:py-20 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">Simple Pricing</h2>
-          <p className="text-gray-500 text-center mb-10">Start free, upgrade when you grow</p>
+          <p className="text-gray-500 text-center mb-8">Start free. Upgrade when you start getting orders.</p>
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
             {[
@@ -264,16 +264,19 @@ const Landing = () => {
                 icon: '🆓',
                 price: '₦0', 
                 period: 'forever',
+                tagline: 'Perfect to get started',
                 features: [
-                  '10 products',
-                  '2 images per product',
+                  '5 products',
+                  '1 image per product',
                   'WhatsApp orders',
+                  'Basic store link',
                   'Store QR code',
                   'Stock tracking',
                   'Low stock alerts',
                   'Product filtering & search',
                   'Wishlist for customers',
-                  'Customer reviews'
+                  'Customer reviews',
+                  'VendPadi branding'
                 ],
                 cta: 'Get Started',
                 highlight: false,
@@ -282,13 +285,15 @@ const Landing = () => {
               { 
                 plan: 'Starter', 
                 icon: '💡',
-                price: '₦999', 
+                price: '₦1,000', 
                 period: '/month',
+                tagline: 'Look professional and get more orders',
                 features: [
-                  '50 products',
-                  '4 images per product',
+                  '30 products',
+                  '3 images per product',
+                  'Remove branding',
                   'Logo upload',
-                  'Store analytics',
+                  'Store analytics (views & orders)',
                   'Share store link',
                   'Stock tracking',
                   'Low stock alerts',
@@ -303,15 +308,17 @@ const Landing = () => {
               { 
                 plan: 'Business', 
                 icon: '🚀',
-                price: '₦2,499', 
+                price: '₦2,500', 
                 period: '/month',
+                tagline: 'Grow faster and track what sells best',
                 features: [
-                  '200 products',
-                  '6 images per product',
+                  '100 products',
+                  '5 images per product',
                   'Logo upload',
-                  'Store analytics',
+                  'Store analytics (views, orders & conversion)',
                   'Top products tracking',
                   'Share store link',
+                  'Product QR codes',
                   'Stock tracking',
                   'Low stock alerts',
                   'Advanced filtering & sorting',
@@ -325,15 +332,17 @@ const Landing = () => {
               { 
                 plan: 'Premium', 
                 icon: '👑',
-                price: '₦4,999', 
+                price: '₦5,000', 
                 period: '/month',
+                tagline: 'Run your business like a brand',
                 features: [
                   'Unlimited products',
                   '8 images per product',
-                  'Logo + Cover image',
+                  'Logo + cover image',
                   'Full analytics dashboard',
                   'Top products tracking',
                   'Share store link',
+                  'Custom store link',
                   'Stock tracking',
                   'Low stock alerts',
                   'Advanced filtering & sorting',
@@ -346,7 +355,7 @@ const Landing = () => {
                 badge: null
               }
             ].map((item, i) => (
-              <div key={i} className={`relative p-5 sm:p-6 rounded-2xl transition-transform hover:scale-[1.02] ${item.highlight ? 'bg-navy text-white ring-2 ring-padi-green shadow-xl' : 'bg-white border border-gray-200 hover:border-padi-green/30'}`}>
+              <div key={i} className={`relative flex flex-col p-5 sm:p-6 rounded-2xl transition-all ${item.highlight ? 'bg-navy text-white ring-2 ring-padi-green shadow-xl scale-[1.02]' : 'bg-white border border-gray-200 hover:border-padi-green/30'}`}>
                 {item.badge && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-padi-green text-white px-4 py-1 rounded-full text-sm font-bold">
                     {item.badge}
@@ -354,11 +363,12 @@ const Landing = () => {
                 )}
                 <div className="text-4xl mb-2">{item.icon}</div>
                 <h3 className="font-sora font-bold text-xl sm:text-2xl">{item.plan}</h3>
-                <div className="mt-4 mb-6">
+                <div className="mt-4 mb-1">
                   <span className="text-4xl sm:text-5xl font-bold">{item.price}</span>
                   <span className={`text-sm ${item.highlight ? 'text-gray-300' : 'text-gray-500'}`}>{item.period}</span>
                 </div>
-                <ul className="space-y-2.5 mb-6">
+                <p className={`text-xs mb-4 ${item.highlight ? 'text-gray-300' : 'text-gray-500'}`}>{item.tagline}</p>
+                <ul className="space-y-2 mb-4 flex-1">
                   {item.features.map((f, j) => (
                     <li key={j} className="flex items-start gap-2 text-sm">
                       <FiCheck className={`flex-shrink-0 mt-0.5 text-padi-green`} size={16} />
@@ -368,7 +378,7 @@ const Landing = () => {
                 </ul>
                 <Link 
                   to="/register" 
-                  className={`block text-center py-3 px-6 rounded-xl font-semibold transition-all ${
+                  className={`block text-center py-3 px-6 rounded-xl font-semibold transition-all mt-auto ${
                     item.highlight 
                       ? 'bg-padi-green text-white hover:bg-padi-green-dark shadow-lg shadow-padi-green/30' 
                       : 'bg-navy text-white hover:bg-navy-light'
@@ -384,14 +394,46 @@ const Landing = () => {
 
       {/* CTA */}
       <section className="py-16 sm:py-20 px-4 bg-gradient-to-r from-padi-green to-padi-green-dark text-white text-center">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <div className="text-5xl mb-4">🚀</div>
-          <h2 className="font-sora font-bold text-2xl sm:text-3xl mb-4">Ready to Get More Orders?</h2>
-          <p className="text-white/90 mb-8 text-sm sm:text-base">Join thousands of Nigerian vendors using VendPadi to grow their business. Track your growth, share your store, and get more WhatsApp orders.</p>
-          <Link to="/register" className="inline-flex items-center gap-2 bg-white text-padi-green font-bold py-4 px-8 rounded-2xl text-lg hover:bg-gray-100 transition-all shadow-xl">
-            <FiTrendingUp /> Start Your Free Store Today
+          <h2 className="font-sora font-bold text-2xl sm:text-4xl mb-4">Ready to Get More Orders?</h2>
+          <p className="text-white/90 mb-6 text-base sm:text-lg">
+            Stop sending price lists manually.<br />
+            Let customers browse your store and order instantly on WhatsApp.
+          </p>
+          <p className="text-white font-medium mb-8">
+            Track your growth. Share your store. Sell faster.
+          </p>
+          <Link to="/register" className="inline-flex items-center gap-2 bg-white text-padi-green font-bold py-4 px-10 rounded-2xl text-lg hover:bg-gray-100 transition-all shadow-xl mb-4">
+            <FiTrendingUp /> Start Your Free Store
           </Link>
-          <p className="mt-4 text-white/70 text-sm">No credit card needed • Set up in 2 minutes</p>
+          <p className="text-white/70 text-sm">No credit card needed • Set up in 2 minutes</p>
+          <p className="mt-4 text-white/80 text-sm font-medium">
+            Join Nigerian vendors already growing with VendPadi.
+          </p>
+        </div>
+      </section>
+
+      {/* One-Time Setup Option */}
+      <section className="py-12 px-4 bg-gold/10">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="text-3xl mb-3">💡</div>
+          <h3 className="font-sora font-bold text-xl mb-2">One-Time Setup Option</h3>
+          <p className="text-gray-600 text-sm mb-4">
+            Don't want to set it up yourself?<br />
+            We'll create your store for you in 24 hours.
+          </p>
+          <div className="inline-flex items-center gap-2 bg-white px-6 py-3 rounded-xl shadow-sm mb-4">
+            <span className="text-2xl font-bold text-gold">₦5,000</span>
+            <span className="text-gray-500 text-sm">one-time</span>
+          </div>
+          <p className="text-sm text-gray-500">Contact us to get started</p>
+          <a 
+            href="mailto:support@vendpadi.com?subject=Store Setup Service" 
+            className="inline-flex items-center gap-2 mt-4 text-gold hover:text-gold-dark font-medium transition-colors"
+          >
+            👉 Request Setup Service
+          </a>
         </div>
       </section>
 
