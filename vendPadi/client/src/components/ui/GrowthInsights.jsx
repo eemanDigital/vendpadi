@@ -46,20 +46,20 @@ const GrowthInsights = ({ topProduct, viewsCount, whatsappClicks, conversionRate
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-r from-padi-green/5 to-gold/5 rounded-xl p-4 border border-padi-green/20"
+      className="bg-gradient-to-r from-padi-green/5 to-gold/5 rounded-xl p-3 sm:p-4 border border-padi-green/20"
     >
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-lg">💡</span>
-        <h3 className="font-sora font-semibold text-navy text-sm">Growth Insights</h3>
+      <div className="flex items-center gap-2 mb-2 sm:mb-3">
+        <span className="text-base sm:text-lg">💡</span>
+        <h3 className="font-sora font-semibold text-navy text-xs sm:text-sm">Growth Insights</h3>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5 sm:space-y-2">
         {messages.map((msg, i) => (
           <div
             key={i}
-            className={`flex items-center gap-2 ${msg.bg} p-2 rounded-lg`}
+            className={`flex items-center gap-2 ${msg.bg} p-1.5 sm:p-2 rounded-lg`}
           >
-            <msg.icon className={msg.color} size={16} />
-            <span className={`text-sm font-medium ${msg.color}`}>{msg.text}</span>
+            <msg.icon className={`${msg.color} w-3.5 h-3.5 sm:w-4 sm:h-4`} />
+            <span className={`text-xs sm:text-sm font-medium ${msg.color}`}>{msg.text}</span>
           </div>
         ))}
       </div>

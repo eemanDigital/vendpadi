@@ -187,6 +187,8 @@ const Dashboard = () => {
   const gridCols = viewMode === 'grid' 
     ? 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' 
     : 'grid-cols-1';
+  
+  const gridGap = viewMode === 'grid' ? 'gap-2 sm:gap-4' : 'gap-3';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -285,10 +287,10 @@ const Dashboard = () => {
       </header>
 
       <div className="lg:ml-64 pb-20 lg:pb-6">
-        <div className="max-w-7xl mx-auto p-4 lg:p-6">
+        <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
           {vendor?.plan?.type !== 'free' && (
-            <div className="mb-6">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+            <div className="mb-4 sm:mb-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4">
                 <AnalyticsCard
                   title="Store Views"
                   value={analyticsLoading ? '...' : (analytics?.viewsCount || 0)}
@@ -317,8 +319,8 @@ const Dashboard = () => {
                 />
               </div>
               
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="lg:col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+                <div className="sm:col-span-2 lg:col-span-2">
                   <GrowthInsights
                     topProduct={analytics?.topProduct}
                     viewsCount={analytics?.viewsCount}
@@ -329,7 +331,7 @@ const Dashboard = () => {
                 <div>
                   <button
                     onClick={() => setShowShareModal(true)}
-                    className="w-full bg-padi-green hover:bg-padi-green-dark text-white p-4 rounded-xl flex items-center justify-center gap-3 transition-colors"
+                    className="w-full bg-padi-green hover:bg-padi-green-dark text-white p-3 sm:p-4 rounded-xl flex items-center justify-center gap-2 sm:gap-3 transition-colors"
                   >
                     <FiShare2 size={20} />
                     <div className="text-left">
@@ -461,7 +463,7 @@ const Dashboard = () => {
           ) : (
             <motion.div 
               layout
-              className={`grid ${gridCols} gap-4`}
+              className={`grid ${gridCols} ${gridGap}`}
             >
               <AnimatePresence mode="popLayout">
                 {filteredProducts.map((product) => (
@@ -474,7 +476,7 @@ const Dashboard = () => {
                     className="relative group"
                   >
                     <ProductCard product={product} view={viewMode} />
-                    <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 sm:opacity-0 group-active:opacity-100 transition-opacity z-10">
                       <button
                         onClick={() => handleEdit(product)}
                         className="p-2 bg-white rounded-lg shadow-lg hover:bg-navy hover:text-white transition-colors"

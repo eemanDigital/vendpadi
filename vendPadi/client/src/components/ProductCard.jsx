@@ -96,8 +96,8 @@ const GridCard = ({ product, onOpenDetail }) => {
   return (
     <div
       onClick={() => onOpenDetail?.(product)}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col">
-      <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-xl active:scale-[0.98] transition-all duration-300 cursor-pointer flex flex-col">
+      <div className="aspect-square sm:aspect-[4/3] relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
         <ImageCarousel images={product.images} name={product.name} category={product.category} />
         
         <div className="absolute top-2 left-2 z-10 flex gap-1.5">
@@ -118,21 +118,23 @@ const GridCard = ({ product, onOpenDetail }) => {
           <CategoryBadge category={product.category} />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 sm:opacity-0 transition-opacity flex items-end justify-center pb-4">
           <span className="bg-white/95 text-navy text-xs font-semibold px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
             <FiEye size={14} />
             View Details
           </span>
         </div>
+        
+        <div className="absolute inset-0 bg-black/5 opacity-0 group-active:opacity-100 transition-opacity sm:hidden" />
       </div>
 
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-sora font-bold text-navy text-sm leading-tight line-clamp-2 mb-3">
+      <div className="p-3 sm:p-4 flex flex-col flex-1">
+        <h3 className="font-sora font-bold text-navy text-xs sm:text-sm leading-tight line-clamp-2 mb-2 sm:mb-3">
           {product.name}
         </h3>
 
-        <div className="flex items-center justify-between mb-3">
-          <span className="font-bold text-lg text-padi-green">
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
+          <span className="font-bold text-base sm:text-lg text-padi-green">
             ₦{product.price.toLocaleString()}
           </span>
           {product.stock > 0 && (
@@ -141,7 +143,7 @@ const GridCard = ({ product, onOpenDetail }) => {
         </div>
 
         {product.stock > 0 && (
-          <div className="mt-auto">
+          <div className="mt-auto hidden sm:block">
             <div className="flex items-center justify-between text-xs mb-1.5">
               <span className="text-gray-500 font-medium">Stock Level</span>
               <span className={`font-bold ${isLow ? 'text-amber-600' : 'text-gray-700'}`}>
@@ -171,8 +173,8 @@ const ListCard = ({ product, onOpenDetail }) => {
   return (
     <div
       onClick={() => onOpenDetail?.(product)}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer flex">
-      <div className="w-28 h-28 sm:w-36 sm:h-36 flex-shrink-0 relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+      className="group bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-lg active:scale-[0.98] transition-all duration-300 cursor-pointer flex">
+      <div className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0 relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
         <ImageCarousel images={product.images} name={product.name} category={product.category} />
         
         {isLow && !isOut && (
@@ -187,17 +189,17 @@ const ListCard = ({ product, onOpenDetail }) => {
         )}
       </div>
 
-      <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between min-w-0">
+      <div className="flex-1 p-2.5 sm:p-4 flex flex-col justify-between min-w-0">
         <div>
           <div className="flex items-start justify-between gap-2 mb-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <CategoryBadge category={product.category} />
               {isLow && !isOut && (
-                <span className="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-semibold">Low Stock</span>
+                <span className="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-semibold">Low</span>
               )}
             </div>
           </div>
-          <h3 className="font-sora font-bold text-navy text-sm sm:text-base line-clamp-2 mb-1">
+          <h3 className="font-sora font-bold text-navy text-xs sm:text-base line-clamp-2 mb-1">
             {product.name}
           </h3>
           {product.description && (
@@ -205,19 +207,19 @@ const ListCard = ({ product, onOpenDetail }) => {
           )}
         </div>
 
-        <div className="flex items-end justify-between gap-2 mt-2">
+        <div className="flex items-end justify-between gap-2 mt-1 sm:mt-2">
           <div>
-            <p className="font-bold text-padi-green text-base sm:text-lg">
+            <p className="font-bold text-padi-green text-sm sm:text-lg">
               ₦{product.price.toLocaleString()}
             </p>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-1 sm:gap-2 mt-0.5 sm:mt-1">
               <StockBadge stock={product.stock} threshold={product.lowStockThreshold || 5} size="sm" />
-              <span className="text-xs text-gray-400">{product.stock} in stock</span>
+              <span className="text-[10px] sm:text-xs text-gray-400 hidden sm:inline">{product.stock} in stock</span>
             </div>
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
-            <FiEye size={12} />
-            <span>View</span>
+          <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-400 bg-gray-50 px-1.5 sm:px-2 py-1 rounded-lg">
+            <FiEye size={10} className="sm:w-3 sm:h-3" />
+            <span className="hidden sm:inline">View</span>
           </div>
         </div>
       </div>
