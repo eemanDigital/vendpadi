@@ -1,21 +1,13 @@
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { addItem, incrementQty, decrementQty } from "../store/cartSlice";
-import WishlistButton from "./store/WishlistButton";
 import StockBadge from "./ui/StockBadge";
 import {
-  FiShoppingCart,
   FiChevronLeft,
   FiChevronRight,
-  FiCheck,
-  FiPlus,
-  FiMinus,
-  FiEye,
-  FiZap,
   FiBox,
-  FiHeadphones,
   FiGift,
   FiSmartphone,
+  FiEye,
+  FiTrendingUp,
 } from "react-icons/fi";
 
 const CategoryIcon = ({ category, size = 16, className = "" }) => {
@@ -30,116 +22,61 @@ const CategoryIcon = ({ category, size = 16, className = "" }) => {
 };
 
 const CATEGORY_META = {
-  food: {
-    label: "Food",
-    bg: "bg-orange-50",
-    text: "text-orange-600",
-    border: "border-orange-200",
-  },
-  fashion: {
-    label: "Fashion",
-    bg: "bg-pink-50",
-    text: "text-pink-600",
-    border: "border-pink-200",
-  },
-  phones: {
-    label: "Phones",
-    bg: "bg-blue-50",
-    text: "text-blue-600",
-    border: "border-blue-200",
-  },
-  cakes: {
-    label: "Cakes",
-    bg: "bg-purple-50",
-    text: "text-purple-600",
-    border: "border-purple-200",
-  },
-  other: {
-    label: "Other",
-    bg: "bg-gray-50",
-    text: "text-gray-600",
-    border: "border-gray-200",
-  },
+  food: { label: "Food", bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200" },
+  fashion: { label: "Fashion", bg: "bg-pink-50", text: "text-pink-600", border: "border-pink-200" },
+  phones: { label: "Phones", bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200" },
+  cakes: { label: "Cakes", bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
+  other: { label: "Other", bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200" },
 };
 
 const CategoryBadge = ({ category }) => {
   const meta = CATEGORY_META[category] || CATEGORY_META.other;
   return (
-    <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium ${meta.bg} ${meta.text} ${meta.border}`}>
-      <CategoryIcon category={category} size={12} />
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ${meta.bg} ${meta.text} ${meta.border}`}>
+      <CategoryIcon category={category} size={10} />
       <span className="capitalize">{meta.label}</span>
     </span>
   );
 };
 
-// ─── IMAGE CAROUSEL ────────────────────────────────────────────────
-const ImageCarousel = ({ images = [], name, category, compact = false }) => {
+const ImageCarousel = ({ images = [], name, category }) => {
   const [current, setCurrent] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const hasMany = images && images.length > 1;
 
-  const prev = (e) => {
-    e.stopPropagation();
-    setCurrent((i) => (i - 1 + images.length) % images.length);
-    setLoaded(false);
-  };
-  const next = (e) => {
-    e.stopPropagation();
-    setCurrent((i) => (i + 1) % images.length);
-    setLoaded(false);
-  };
-
   if (!images || images.length === 0) {
-    const meta = CATEGORY_META[category] || CATEGORY_META.other || { bg: "bg-gray-100", text: "text-gray-400" };
+    const meta = CATEGORY_META[category] || CATEGORY_META.other;
     return (
       <div className={`w-full h-full flex items-center justify-center ${meta.bg}`}>
-        <CategoryIcon category={category} size={compact ? 32 : 48} className={meta.text} />
+        <CategoryIcon category={category} size={48} className={meta.text} />
       </div>
     );
   }
 
   return (
     <div className="relative w-full h-full group/img">
-      {!loaded && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-      )}
-      
+      {!loaded && <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse" />}
       <img
         src={images[current]}
         alt={name}
         loading="lazy"
         decoding="async"
         onLoad={() => setLoaded(true)}
-        className={`w-full h-full object-cover transition-all duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} group-hover:scale-105`}
+        className={`w-full h-full object-cover transition-all duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
-      
       {hasMany && (
         <>
-          <button
-            onClick={prev}
-            aria-label="Previous image"
-            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110 z-10 touch-manipulation">
-            <FiChevronLeft size={14} className="text-gray-700" />
+          <button onClick={(e) => { e.stopPropagation(); setCurrent((i) => (i - 1 + images.length) % images.length); }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/95 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover/img:opacity-100 transition-all z-10">
+            <FiChevronLeft size={16} className="text-gray-700" />
           </button>
-          <button
-            onClick={next}
-            aria-label="Next image"
-            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover/img:opacity-100 transition-all hover:scale-110 z-10 touch-manipulation">
-            <FiChevronRight size={14} className="text-gray-700" />
+          <button onClick={(e) => { e.stopPropagation(); setCurrent((i) => (i + 1) % images.length); }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/95 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover/img:opacity-100 transition-all z-10">
+            <FiChevronRight size={16} className="text-gray-700" />
           </button>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 hidden sm:flex">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
             {images.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCurrent(idx);
-                  setLoaded(false);
-                }}
-                aria-label={`View image ${idx + 1}`}
-                className={`h-1.5 rounded-full transition-all duration-300 ${idx === current ? "w-5 bg-padi-green" : "w-1.5 bg-white/80 hover:bg-white"}`}
-              />
+              <div key={idx} className={`w-2 h-2 rounded-full transition-all ${idx === current ? "bg-white w-4" : "bg-white/60"}`} />
             ))}
           </div>
         </>
@@ -148,375 +85,156 @@ const ImageCarousel = ({ images = [], name, category, compact = false }) => {
   );
 };
 
-// ─── CART QUANTITY CONTROL ─────────────────────────────────────────
-const QtyControl = ({ qty, productId, onAdd, compact = false }) => {
-  const dispatch = useDispatch();
-  const size = compact ? "w-7 h-7 text-xs" : "w-8 h-8 text-sm";
-
-  return (
-    <div className="flex items-center bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          dispatch(decrementQty(productId));
-        }}
-        className={`${size} flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors`}>
-        <FiMinus size={12} />
-      </button>
-      <span
-        className={`${compact ? "w-7" : "w-8"} text-center font-bold text-navy text-sm`}>
-        {qty}
-      </span>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          dispatch(incrementQty(productId));
-        }}
-        className={`${size} flex items-center justify-center text-gray-500 hover:text-padi-green hover:bg-padi-green/10 transition-colors`}>
-        <FiPlus size={12} />
-      </button>
-    </div>
-  );
-};
-
-// ─── GRID CARD (default) ───────────────────────────────────────────
-const GridCard = ({ product, onOpenDetail, cartItem }) => {
-  const dispatch = useDispatch();
-  const [justAdded, setJustAdded] = useState(false);
-
+// ─── GRID CARD ───────────────────────────────────────────────
+const GridCard = ({ product, onOpenDetail }) => {
   if (!product) return null;
 
-  const handleAdd = (e) => {
-    e.stopPropagation();
-    dispatch(addItem(product));
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1000);
-  };
-
-  const handleCardClick = () => {
-    if (onOpenDetail) {
-      onOpenDetail(product);
-    }
-  };
+  const stockPercent = product.stock > 0 ? Math.min(100, (product.stock / (product.lowStockThreshold || 5) * 100)) : 0;
+  const isLow = product.lowStockAlert;
+  const isOut = !product.inStock;
 
   return (
     <div
-      onClick={handleCardClick}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-padi-green/30 hover:shadow-xl hover:shadow-padi-green/10 transition-all duration-300 cursor-pointer flex flex-col">
-      <div className="aspect-square relative overflow-hidden bg-gray-50">
-        <ImageCarousel
-          images={product.images}
-          name={product.name}
-          category={product.category}
-        />
+      onClick={() => onOpenDetail?.(product)}
+      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col">
+      <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+        <ImageCarousel images={product.images} name={product.name} category={product.category} />
         
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <WishlistButton product={product} size="sm" />
-        </div>
-
-        {product.lowStockAlert && (
-          <div className="absolute top-2 left-2 z-10">
-            <span className="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+        <div className="absolute top-2 left-2 z-10 flex gap-1.5">
+          {isLow && !isOut && (
+            <span className="bg-amber-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-lg flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
               Low Stock
             </span>
-          </div>
-        )}
-
-        {!product.inStock && (
-          <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center z-10">
-            <span className="bg-white text-gray-700 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide">
+          )}
+          {isOut && (
+            <span className="bg-red-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-lg">
               Out of Stock
             </span>
-          </div>
-        )}
+          )}
+        </div>
+
+        <div className="absolute top-2 right-2 z-10">
+          <CategoryBadge category={product.category} />
+        </div>
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
+          <span className="bg-white/95 text-navy text-xs font-semibold px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+            <FiEye size={14} />
+            View Details
+          </span>
+        </div>
       </div>
 
-      <div className="p-3 flex flex-col flex-1">
-        <CategoryBadge category={product.category} />
-        <h3 className="font-sora font-semibold text-navy text-sm leading-snug mt-2 line-clamp-2 flex-1">
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="font-sora font-bold text-navy text-sm leading-tight line-clamp-2 mb-3">
           {product.name}
         </h3>
 
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="font-bold text-padi-green text-base">
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-bold text-lg text-padi-green">
             ₦{product.price.toLocaleString()}
           </span>
-
-          {product.inStock &&
-            (cartItem ? (
-              <QtyControl qty={cartItem.qty} productId={product._id} compact />
-            ) : (
-              <button
-                onClick={handleAdd}
-                aria-label="Add to cart"
-                className={`p-2 rounded-xl transition-all duration-300 shadow-sm touch-manipulation ${
-                  justAdded
-                    ? "bg-emerald-500 text-white scale-90"
-                    : "bg-navy text-white hover:bg-padi-green hover:shadow-md hover:shadow-padi-green/30 hover:scale-105"
-                }`}>
-                {justAdded ? <FiCheck size={14} /> : <FiPlus size={14} />}
-              </button>
-            ))}
+          {product.stock > 0 && (
+            <StockBadge stock={product.stock} threshold={product.lowStockThreshold || 5} size="sm" />
+          )}
         </div>
+
+        {product.stock > 0 && (
+          <div className="mt-auto">
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="text-gray-500 font-medium">Stock Level</span>
+              <span className={`font-bold ${isLow ? 'text-amber-600' : 'text-gray-700'}`}>
+                {product.stock} units
+              </span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${isLow ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500'}`}
+                style={{ width: `${stockPercent}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-// ─── LIST CARD ─────────────────────────────────────────────────────
-const ListCard = ({ product, onOpenDetail, cartItem }) => {
-  const dispatch = useDispatch();
-  const [justAdded, setJustAdded] = useState(false);
-
+// ─── LIST CARD ───────────────────────────────────────────────
+const ListCard = ({ product, onOpenDetail }) => {
   if (!product) return null;
 
-  const handleAdd = (e) => {
-    e.stopPropagation();
-    dispatch(addItem(product));
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1000);
-  };
-
-  const handleCardClick = () => {
-    if (onOpenDetail) {
-      onOpenDetail(product);
-    }
-  };
+  const isLow = product.lowStockAlert;
+  const isOut = !product.inStock;
 
   return (
     <div
-      onClick={handleCardClick}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-padi-green/30 hover:shadow-lg hover:shadow-padi-green/10 transition-all duration-300 cursor-pointer flex gap-0">
-      <div className="w-24 h-24 xs:w-28 xs:h-28 sm:w-36 sm:h-36 flex-shrink-0 relative overflow-hidden bg-gray-50">
-        <ImageCarousel
-          images={product.images}
-          name={product.name}
-          category={product.category}
-          compact
-        />
+      onClick={() => onOpenDetail?.(product)}
+      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer flex">
+      <div className="w-28 h-28 sm:w-36 sm:h-36 flex-shrink-0 relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+        <ImageCarousel images={product.images} name={product.name} category={product.category} />
         
-        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <WishlistButton product={product} size="sm" />
-        </div>
-
-        {product.lowStockAlert && (
-          <div className="absolute top-1 left-1 z-10">
-            <span className="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">
-              Low
-            </span>
+        {isLow && !isOut && (
+          <div className="absolute bottom-1 left-1 bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
+            Low
           </div>
         )}
-
-        {!product.inStock && (
-          <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center z-10">
-            <span className="bg-white text-gray-600 px-2 py-1 rounded-full text-xs font-semibold">
-              Out of Stock
-            </span>
+        {isOut && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <span className="bg-white text-gray-600 px-2 py-1 rounded text-xs font-bold">Out</span>
           </div>
         )}
       </div>
 
       <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between min-w-0">
         <div>
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2">
               <CategoryBadge category={product.category} />
-              <h3 className="font-sora font-semibold text-navy text-sm sm:text-base mt-1 sm:mt-1.5 line-clamp-2">
-                {product.name}
-              </h3>
+              {isLow && !isOut && (
+                <span className="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-semibold">Low Stock</span>
+              )}
             </div>
-            <span className="font-bold text-padi-green text-sm sm:text-lg flex-shrink-0">
-              ₦{product.price.toLocaleString()}
-            </span>
           </div>
+          <h3 className="font-sora font-bold text-navy text-sm sm:text-base line-clamp-2 mb-1">
+            {product.name}
+          </h3>
           {product.description && (
-            <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-1.5 line-clamp-2 leading-relaxed hidden sm:block">
-              {product.description}
-            </p>
+            <p className="text-xs text-gray-500 line-clamp-1 hidden sm:block">{product.description}</p>
           )}
         </div>
 
-        <div className="mt-2 sm:mt-3 flex items-center justify-between gap-2">
-          <span className="text-xs text-gray-400 flex items-center gap-1">
-            <FiEye size={11} /> <span className="hidden sm:inline">Tap to view</span>
-            {product.stock > 0 && product.stock <= 5 && (
-              <span className="text-amber-500 ml-1">({product.stock} left)</span>
-            )}
-          </span>
-          {product.inStock &&
-            (cartItem ? (
-              <QtyControl qty={cartItem.qty} productId={product._id} compact />
-            ) : (
-              <button
-                onClick={handleAdd}
-                aria-label="Add to cart"
-                className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 touch-manipulation ${
-                  justAdded
-                    ? "bg-emerald-500 text-white"
-                    : "bg-navy text-white hover:bg-padi-green hover:shadow-md hover:shadow-padi-green/30"
-                }`}>
-                {justAdded ? (
-                  <>
-                    <FiCheck size={11} className="sm:size-[13px]" /> <span className="hidden sm:inline">Added</span>
-                  </>
-                ) : (
-                  <>
-                    <FiPlus size={11} className="sm:size-[13px]" /> <span className="hidden sm:inline">Add</span>
-                  </>
-                )}
-              </button>
-            ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─── SHOWCASE CARD (large editorial) ──────────────────────────────
-const ShowcaseCard = ({ product, onOpenDetail, cartItem }) => {
-  const dispatch = useDispatch();
-  const [justAdded, setJustAdded] = useState(false);
-
-  if (!product) return null;
-
-  const handleAdd = (e) => {
-    e.stopPropagation();
-    dispatch(addItem(product));
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1000);
-  };
-
-  const handleCardClick = () => {
-    if (onOpenDetail) {
-      onOpenDetail(product);
-    }
-  };
-
-  return (
-    <div
-      onClick={handleCardClick}
-      className="group bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-100 hover:border-padi-green/40 hover:shadow-2xl hover:shadow-padi-green/10 transition-all duration-500 cursor-pointer">
-      <div className="aspect-[4/3] sm:aspect-[4/3] relative overflow-hidden bg-gray-50">
-        <ImageCarousel
-          images={product.images}
-          name={product.name}
-          category={product.category}
-        />
-
-        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
-          <CategoryBadge category={product.category} />
-        </div>
-
-        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 flex items-center gap-2">
-          <WishlistButton product={product} size="sm" />
-          <span className="bg-navy text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-lg">
-            ₦{product.price.toLocaleString()}
-          </span>
-        </div>
-
-        {product.lowStockAlert && (
-          <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-10">
-            <span className="bg-amber-500 text-white text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-full font-medium flex items-center gap-1">
-              ⚠️ Low Stock {product.stock} left
-            </span>
-          </div>
-        )}
-
-        <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3 sm:p-4 z-10">
-          <span className="text-white text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-1.5">
-            <FiZap size={12} className="sm:size-[14px] text-padi-green" /> Tap for full details
-          </span>
-        </div>
-
-        {!product.inStock && (
-          <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center z-20">
-            <span className="bg-white text-gray-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
-              Out of Stock
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div className="p-3 sm:p-5">
-        <h3 className="font-sora font-bold text-navy text-base sm:text-lg leading-snug line-clamp-2">
-          {product.name}
-        </h3>
-        {product.description && (
-          <p className="text-xs sm:text-sm text-gray-500 mt-1.5 sm:mt-2 line-clamp-2 leading-relaxed hidden sm:block">
-            {product.description}
-          </p>
-        )}
-
-        <div className="mt-3 sm:mt-4 flex items-center justify-between gap-2 sm:gap-3">
+        <div className="flex items-end justify-between gap-2 mt-2">
           <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider font-medium hidden sm:block">
-              Price
-            </p>
-            <p className="font-bold text-padi-green text-lg sm:text-2xl">
+            <p className="font-bold text-padi-green text-base sm:text-lg">
               ₦{product.price.toLocaleString()}
             </p>
+            <div className="flex items-center gap-2 mt-1">
+              <StockBadge stock={product.stock} threshold={product.lowStockThreshold || 5} size="sm" />
+              <span className="text-xs text-gray-400">{product.stock} in stock</span>
+            </div>
           </div>
-
-          {product.inStock &&
-            (cartItem ? (
-              <QtyControl qty={cartItem.qty} productId={product._id} />
-            ) : (
-              <button
-                onClick={handleAdd}
-                aria-label="Add to cart"
-                className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 touch-manipulation ${
-                  justAdded
-                    ? "bg-emerald-500 text-white scale-95"
-                    : "bg-padi-green text-white hover:bg-padi-green-dark shadow-lg shadow-padi-green/30 hover:shadow-padi-green/50 hover:scale-105"
-                }`}>
-                {justAdded ? (
-                  <>
-                    <FiCheck size={13} className="sm:size-[16px]" /> Added
-                  </>
-                ) : (
-                  <>
-                    <FiShoppingCart size={13} className="sm:size-[16px]" /> <span className="hidden sm:inline">Add to Order</span>
-                  </>
-                )}
-              </button>
-            ))}
+          <div className="flex items-center gap-1 text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
+            <FiEye size={12} />
+            <span>View</span>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-// ─── EXPORTED WRAPPER ──────────────────────────────────────────────
+// ─── EXPORTED WRAPPER ────────────────────────────────────────
 const ProductCard = ({ product, onOpenDetail, view = "grid" }) => {
   if (!product) return null;
 
-  const cartItems = useSelector((state) => state.cart.items);
-  const cartItem = cartItems.find((i) => i._id === product._id);
+  if (view === "list") {
+    return <ListCard product={product} onOpenDetail={onOpenDetail} />;
+  }
 
-  if (view === "list")
-    return (
-      <ListCard
-        product={product}
-        onOpenDetail={onOpenDetail}
-        cartItem={cartItem}
-      />
-    );
-  if (view === "showcase")
-    return (
-      <ShowcaseCard
-        product={product}
-        onOpenDetail={onOpenDetail}
-        cartItem={cartItem}
-      />
-    );
-  return (
-    <GridCard
-      product={product}
-      onOpenDetail={onOpenDetail}
-      cartItem={cartItem}
-    />
-  );
+  return <GridCard product={product} onOpenDetail={onOpenDetail} />;
 };
 
 export default ProductCard;
-export { CategoryBadge, CATEGORY_META, ImageCarousel, QtyControl };
+export { CategoryBadge, CATEGORY_META, ImageCarousel };

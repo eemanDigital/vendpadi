@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { FiX, FiCheck, FiShoppingCart, FiShare2, FiStar, FiMessageSquare, FiChevronDown } from "react-icons/fi";
 import toast from "react-hot-toast";
 import QRCode from "react-qr-code";
-import { CategoryBadge, ImageCarousel, QtyControl } from "../ProductCard";
+import { CategoryBadge, ImageCarousel } from "../ProductCard";
+import QtyControl from "../ui/QtyControl";
 import RatingStars from "../ui/RatingStars";
 import ReviewForm from "./ReviewForm";
 
