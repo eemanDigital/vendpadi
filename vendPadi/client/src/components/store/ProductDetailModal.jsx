@@ -9,6 +9,7 @@ import { CategoryBadge, ImageCarousel } from "../ProductCard";
 import QtyControl from "../ui/QtyControl";
 import RatingStars from "../ui/RatingStars";
 import ReviewForm from "./ReviewForm";
+import { trackingAPI } from "../../api/axiosInstance";
 
 const springTransition = {
   type: "spring",
@@ -70,6 +71,12 @@ const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
       document.removeEventListener("keydown", handleEscape);
     };
   }, [onClose]);
+
+  useEffect(() => {
+    if (product && product._id && storeSlug) {
+      trackingAPI.trackProductView(storeSlug, product._id).catch(() => {});
+    }
+  }, [product?._id, storeSlug]);
 
   const handleAdd = () => {
     dispatch(addItem(product));

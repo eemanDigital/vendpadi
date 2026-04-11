@@ -122,7 +122,8 @@ const Storefront = () => {
       cartItems,
     );
 
-    trackingAPI.trackWhatsAppClick(slug, cartItems[0]?._id).catch(() => {});
+    const productIds = cartItems.map(item => item._id);
+    trackingAPI.trackWhatsAppClick(slug, productIds).catch(() => {});
 
     if (waLink) {
       window.open(waLink, "_blank");

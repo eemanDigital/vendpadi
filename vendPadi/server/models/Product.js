@@ -10,7 +10,8 @@ const productSchema = new mongoose.Schema({
   category: { type: String, default: '' },
   stock: { type: Number, default: 0, min: 0 },
   lowStockThreshold: { type: Number, default: 5, min: 1 },
-  clickCount: { type: Number, default: 0 }
+  clickCount: { type: Number, default: 0 },
+  viewCount: { type: Number, default: 0 }
 }, { timestamps: true });
 
 productSchema.index({ vendorId: 1, createdAt: -1 });

@@ -92,7 +92,8 @@ const publicAPI = axios.create({
 
 export const trackingAPI = {
   trackView: (slug) => publicAPI.post(`/track/view/${slug}`),
-  trackWhatsAppClick: (slug, productId) => publicAPI.post(`/track/whatsapp-click/${slug}`, { productId })
+  trackWhatsAppClick: (slug, productIds) => publicAPI.post(`/track/whatsapp-click/${slug}`, { productIds }),
+  trackProductView: (slug, productId) => publicAPI.post(`/track/product-view/${slug}/${productId}`)
 };
 
 export default api;

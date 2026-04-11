@@ -26,7 +26,7 @@ exports.trackView = catchAsync(async (req, res) => {
 
 exports.trackWhatsAppClick = catchAsync(async (req, res) => {
   const { slug } = req.params;
-  const { productId } = req.body;
+  const { productIds } = req.body;
 
   const vendor = await Vendor.findOneAndUpdate(
     { slug: slug.toLowerCase() },
@@ -38,12 +38,29 @@ exports.trackWhatsAppClick = catchAsync(async (req, res) => {
     return res.status(404).json({ message: 'Store not found' });
   }
 
-  if (productId) {
-    await Product.findByIdAndUpdate(
-      productId,
+  if (productIds && Array.isArray(productIds) && productIds.length > 0) {
+    await Product.updateMany(
+      { _id: { $in: productIds } },
       { $inc: { clickCount: 1 } }
     );
   }
+
+  res.json({ success: true });
+});
+
+exports.trackProductView = catchAsync(async (req, res) => {
+  const { slug, productId } = req.params;
+
+  const vendor = await Vendor.findOne({ slug: slug.toLowerCase() });
+
+  if (!vendor) {
+    return res.status(404).json({ message: 'Store not found' });
+  }
+
+  await Product.findByIdAndUpdate(
+    productId,
+    { $inc: { viewCount: 1 } }
+  );
 
   res.json({ success: true });
 });
