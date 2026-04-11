@@ -22,7 +22,8 @@ const vendorSchema = new mongoose.Schema({
   analytics: {
     viewsCount: { type: Number, default: 0 },
     whatsappClicks: { type: Number, default: 0 },
-    lastViewedAt: { type: Date, default: null }
+    lastViewedAt: { type: Date, default: null },
+    totalRevenue: { type: Number, default: 0 }
   },
   isActive: { type: Boolean, default: true },
   isAdmin: { type: Boolean, default: false },

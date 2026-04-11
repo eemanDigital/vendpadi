@@ -49,7 +49,23 @@ exports.updateOrderStatus = catchAsync(async (req, res) => {
   }
 
   const previousStatus = order.status;
+  const revenueAdded = order.revenueAdded || false;
   order.status = status;
+  
+  if ((status === 'confirmed' || status === 'delivered') && !revenueAdded) {
+    await Vendor.findByIdAndUpdate(req.vendor._id, {
+      $inc: { 'analytics.totalRevenue': order.totalAmount }
+    });
+    order.revenueAdded = true;
+  }
+
+  if (status === 'cancelled' && revenueAdded) {
+    await Vendor.findByIdAndUpdate(req.vendor._id, {
+      $inc: { 'analytics.totalRevenue': -order.totalAmount }
+    });
+    order.revenueAdded = false;
+  }
+
   await order.save();
 
   if ((status === 'confirmed' || status === 'delivered') && previousStatus !== 'confirmed' && previousStatus !== 'delivered') {
@@ -86,7 +102,12 @@ exports.updateOrderStatus = catchAsync(async (req, res) => {
     await order.save();
   }
   
-  res.json(order);
+  const updatedVendor = await Vendor.findById(req.vendor._id);
+  
+  res.json({ 
+    ...order.toObject(),
+    analytics: updatedVendor.analytics
+  });
 });
 
 exports.getOrderStats = catchAsync(async (req, res) => {
@@ -96,11 +117,10 @@ exports.getOrderStats = catchAsync(async (req, res) => {
   const pendingOrders = await Order.countDocuments({ vendorId, status: 'pending' });
   const confirmedOrders = await Order.countDocuments({ vendorId, status: 'confirmed' });
   const deliveredOrders = await Order.countDocuments({ vendorId, status: 'delivered' });
+  const cancelledOrders = await Order.countDocuments({ vendorId, status: 'cancelled' });
   
-  const totalRevenue = await Order.aggregate([
-    { $match: { vendorId, status: { $ne: 'cancelled' } } },
-    { $group: { _id: null, total: { $sum: '$totalAmount' } } }
-  ]);
+  const vendor = await Vendor.findById(vendorId).select('analytics');
+  const totalRevenue = vendor?.analytics?.totalRevenue || 0;
 
   const recentOrders = await Order.find({ vendorId })
     .sort({ createdAt: -1 })
@@ -111,7 +131,8 @@ exports.getOrderStats = catchAsync(async (req, res) => {
     pendingOrders,
     confirmedOrders,
     deliveredOrders,
-    totalRevenue: totalRevenue[0]?.total || 0,
+    cancelledOrders,
+    totalRevenue,
     recentOrders
   });
 });

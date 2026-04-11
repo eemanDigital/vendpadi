@@ -99,6 +99,7 @@ exports.getAnalytics = catchAsync(async (req, res) => {
     viewsCount: vendor.analytics.viewsCount || 0,
     whatsappClicks: vendor.analytics.whatsappClicks || 0,
     conversionRate: parseFloat(conversionRate),
+    totalRevenue: vendor.analytics.totalRevenue || 0,
     topProducts: products.map(p => ({
       id: p._id,
       name: p.name,

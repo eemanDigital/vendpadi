@@ -22,7 +22,7 @@ import Loading from '../components/Loading';
 import { logout } from '../store/authSlice';
 import { clearCart } from '../store/cartSlice';
 import toast from 'react-hot-toast';
-import { FiPlus, FiCopy, FiEdit2, FiTrash2, FiExternalLink, FiX, FiPackage, FiSettings, FiShoppingBag, FiLogOut, FiGrid, FiList, FiAlertTriangle, FiPackage as FiBox, FiEye, FiMessageCircle, FiShare2, FiTrendingUp, FiPercent } from 'react-icons/fi';
+import { FiPlus, FiCopy, FiEdit2, FiTrash2, FiExternalLink, FiX, FiPackage, FiSettings, FiShoppingBag, FiLogOut, FiGrid, FiList, FiAlertTriangle, FiPackage as FiBox, FiEye, FiMessageCircle, FiShare2, FiTrendingUp, FiPercent, FiDollarSign } from 'react-icons/fi';
 
 const PLAN_LIMITS = {
   free: { products: 5, images: 1 },
@@ -290,7 +290,7 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
           {vendor?.plan?.type !== 'free' && (
             <div className="mb-4 sm:mb-6">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3 mb-3 sm:mb-4">
                 <AnalyticsCard
                   title="Store Views"
                   value={analyticsLoading ? '...' : (analytics?.viewsCount || 0)}
@@ -305,17 +305,24 @@ const Dashboard = () => {
                   color="green"
                 />
                 <AnalyticsCard
+                  title="Revenue"
+                  value={analyticsLoading ? '...' : `₦${(analytics?.totalRevenue || 0).toLocaleString()}`}
+                  subtitle="confirmed orders"
+                  icon={FiDollarSign}
+                  color="gold"
+                />
+                <AnalyticsCard
                   title="Conversion Rate"
                   value={analyticsLoading ? '...' : `${analytics?.conversionRate || 0}%`}
                   subtitle="views to orders"
                   icon={FiPercent}
-                  color="gold"
+                  color="purple"
                 />
                 <AnalyticsCard
                   title="Total Products"
                   value={analyticsLoading ? '...' : (analytics?.totalProducts || 0)}
                   icon={FiPackage}
-                  color="purple"
+                  color="gray"
                 />
               </div>
               
@@ -326,6 +333,7 @@ const Dashboard = () => {
                     viewsCount={analytics?.viewsCount}
                     whatsappClicks={analytics?.whatsappClicks}
                     conversionRate={analytics?.conversionRate}
+                    totalRevenue={analytics?.totalRevenue}
                   />
                 </div>
                 <div>

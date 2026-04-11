@@ -17,7 +17,8 @@ const orderSchema = new mongoose.Schema({
     default: 'pending'
   },
   note: { type: String, default: '' },
-  stockReduced: { type: Boolean, default: false }
+  stockReduced: { type: Boolean, default: false },
+  revenueAdded: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);

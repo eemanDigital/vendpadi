@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { FiTrendingUp, FiTrendingDown, FiAward } from 'react-icons/fi';
+import { FiTrendingUp, FiTrendingDown, FiAward, FiDollarSign } from 'react-icons/fi';
 
-const GrowthInsights = ({ topProduct, viewsCount, whatsappClicks, conversionRate }) => {
+const GrowthInsights = ({ topProduct, viewsCount, whatsappClicks, conversionRate, totalRevenue }) => {
   const messages = [];
   
   if (viewsCount > 0) {
@@ -22,16 +22,25 @@ const GrowthInsights = ({ topProduct, viewsCount, whatsappClicks, conversionRate
     });
   }
 
-  if (conversionRate > 10) {
+  if (totalRevenue > 0) {
     messages.push({
-      icon: FiAward,
-      text: `Great! ${conversionRate}% of visitors are ordering`,
+      icon: FiDollarSign,
+      text: `You made ₦${totalRevenue.toLocaleString()} in revenue!`,
       color: 'text-gold',
       bg: 'bg-gold/10'
     });
   }
 
-  if (viewsCount === 0 && whatsappClicks === 0) {
+  if (conversionRate > 10) {
+    messages.push({
+      icon: FiAward,
+      text: `Great! ${conversionRate}% of visitors are ordering`,
+      color: 'text-orange-600',
+      bg: 'bg-orange-50'
+    });
+  }
+
+  if (viewsCount === 0 && whatsappClicks === 0 && totalRevenue === 0) {
     messages.push({
       icon: FiTrendingUp,
       text: 'Share your store to start getting orders',
