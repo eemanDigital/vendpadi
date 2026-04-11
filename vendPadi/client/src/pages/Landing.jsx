@@ -314,8 +314,10 @@ const Landing = () => {
                 features: [
                   '100 products',
                   '5 images per product',
+                  'Remove branding',
                   'Logo upload',
-                  'Store analytics (views, orders & conversion)',
+                  'PDF invoices & receipts',
+                  'Full analytics (views, orders & conversion)',
                   'Top products tracking',
                   'Share store link',
                   'Product QR codes',
@@ -338,8 +340,10 @@ const Landing = () => {
                 features: [
                   'Unlimited products',
                   '8 images per product',
+                  'Remove branding',
                   'Logo + cover image',
-                  'Full analytics dashboard',
+                  'PDF invoices & receipts',
+                  'Full analytics (views, orders & conversion)',
                   'Top products tracking',
                   'Share store link',
                   'Custom store link',

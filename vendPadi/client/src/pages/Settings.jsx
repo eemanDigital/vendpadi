@@ -19,13 +19,15 @@ const PLAN_FEATURES = {
     coverImage: false,
     customLink: false,
     pdf: false,
+    removeBranding: false,
+    analytics: 'basic',
+    topProducts: false,
     stockTracking: true,
     lowStockAlert: '10 items',
     filtering: true,
     sorting: false,
     wishlist: true,
     reviews: true,
-    analytics: false,
     shareTools: false
   },
   starter: { 
@@ -35,13 +37,15 @@ const PLAN_FEATURES = {
     coverImage: false,
     customLink: false,
     pdf: false,
+    removeBranding: true,
+    analytics: 'basic',
+    topProducts: false,
     stockTracking: true,
     lowStockAlert: '8 items',
     filtering: true,
     sorting: false,
     wishlist: true,
     reviews: true,
-    analytics: true,
     shareTools: true
   },
   business: { 
@@ -51,13 +55,15 @@ const PLAN_FEATURES = {
     coverImage: false,
     customLink: false,
     pdf: true,
+    removeBranding: true,
+    analytics: 'full',
+    topProducts: true,
     stockTracking: true,
     lowStockAlert: '5 items',
     filtering: true,
     sorting: true,
     wishlist: true,
     reviews: true,
-    analytics: true,
     shareTools: true
   },
   premium: { 
@@ -67,13 +73,15 @@ const PLAN_FEATURES = {
     coverImage: true,
     customLink: true,
     pdf: true,
+    removeBranding: true,
+    analytics: 'full',
+    topProducts: true,
     stockTracking: true,
     lowStockAlert: '3 items',
     filtering: true,
     sorting: true,
     wishlist: true,
     reviews: true,
-    analytics: true,
     shareTools: true
   }
 };
@@ -364,7 +372,12 @@ const Settings = () => {
                 </span>
                 {currentFeatures.analytics && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-medium">
-                    📊 Analytics Dashboard
+                    📊 Analytics ({currentFeatures.analytics === 'full' ? 'Full' : 'Basic'})
+                  </span>
+                )}
+                {currentFeatures.topProducts && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium">
+                    📈 Top Products
                   </span>
                 )}
                 {currentFeatures.shareTools && (

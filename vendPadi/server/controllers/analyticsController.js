@@ -67,53 +67,59 @@ exports.trackProductView = catchAsync(async (req, res) => {
 
 exports.getAnalytics = catchAsync(async (req, res) => {
   const vendorId = req.vendor._id;
-
-  const vendor = await Vendor.findById(vendorId).select('analytics slug businessName');
+  const vendor = await Vendor.findById(vendorId).select('analytics slug businessName plan');
   
   if (!vendor) {
     return res.status(404).json({ message: 'Vendor not found' });
   }
 
-  const products = await Product.find({ vendorId })
-    .sort({ clickCount: -1 })
-    .limit(5)
-    .select('name clickCount images price');
+  const planType = vendor.plan?.type || 'free';
+  const PLANS = { free: 0, starter: 1, business: 2, premium: 3 };
+  const hasFullAnalytics = PLANS[planType] >= PLANS.business;
+  const hasTopProducts = PLANS[planType] >= PLANS.business;
 
-  const today = new Date();
-  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+  let topProducts = [];
+  let topProduct = null;
+  let conversionRate = 0;
 
-  const viewsThisWeek = vendor.analytics.viewsCount;
-  
-  const totalProducts = await Product.countDocuments({ vendorId });
-  
-  const conversionRate = viewsThisWeek > 0 
-    ? ((vendor.analytics.whatsappClicks / viewsThisWeek) * 100).toFixed(1)
-    : 0;
+  if (hasFullAnalytics) {
+    const products = await Product.find({ vendorId })
+      .sort({ clickCount: -1 })
+      .limit(5)
+      .select('name clickCount images price');
 
-  const topProduct = products.length > 0 ? products[0] : null;
-
-  const storeUrl = `${req.protocol}://${req.get('host')}/store/${vendor.slug}`;
-
-  res.json({
-    viewsCount: vendor.analytics.viewsCount || 0,
-    whatsappClicks: vendor.analytics.whatsappClicks || 0,
-    conversionRate: parseFloat(conversionRate),
-    totalRevenue: vendor.analytics.totalRevenue || 0,
-    topProducts: products.map(p => ({
+    topProducts = products.map(p => ({
       id: p._id,
       name: p.name,
       clickCount: p.clickCount || 0,
       image: p.images?.[0] || null,
       price: p.price
-    })),
-    topProduct: topProduct ? {
-      id: topProduct._id,
-      name: topProduct.name,
-      clickCount: topProduct.clickCount || 0,
-      image: topProduct.images?.[0] || null,
-      price: topProduct.price
-    } : null,
+    }));
+
+    topProduct = topProducts.length > 0 ? topProducts[0] : null;
+
+    const today = new Date();
+    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const viewsThisWeek = vendor.analytics.viewsCount;
+    
+    conversionRate = viewsThisWeek > 0 
+      ? ((vendor.analytics.whatsappClicks / viewsThisWeek) * 100).toFixed(1)
+      : 0;
+  }
+
+  const totalProducts = await Product.countDocuments({ vendorId });
+  const storeUrl = `${req.protocol}://${req.get('host')}/store/${vendor.slug}`;
+
+  res.json({
+    level: planType,
+    hasFullAnalytics,
+    hasTopProducts,
+    viewsCount: vendor.analytics.viewsCount || 0,
+    whatsappClicks: vendor.analytics.whatsappClicks || 0,
+    conversionRate: hasFullAnalytics ? parseFloat(conversionRate) : null,
+    totalRevenue: vendor.analytics.totalRevenue || 0,
+    topProducts: hasTopProducts ? topProducts : [],
+    topProduct: hasTopProducts ? topProduct : null,
     totalProducts,
     storeUrl,
     businessName: vendor.businessName,

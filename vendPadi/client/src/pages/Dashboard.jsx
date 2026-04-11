@@ -56,7 +56,11 @@ const Dashboard = () => {
     lowStock: false
   });
 
-  const planLimits = PLAN_LIMITS[vendor?.plan?.type || 'free'];
+  const planType = vendor?.plan?.type || 'free';
+  const PLANS = { free: 0, starter: 1, business: 2, premium: 3 };
+  const planLimits = PLAN_LIMITS[planType];
+  const hasAnalytics = PLANS[planType] >= PLANS.starter;
+  const hasFullAnalytics = PLANS[planType] >= PLANS.business;
   const currentLimit = planLimits.products;
   const isAtLimit = products.length >= currentLimit && currentLimit !== Infinity;
 
@@ -288,9 +292,9 @@ const Dashboard = () => {
 
       <div className="lg:ml-64 pb-20 lg:pb-6">
         <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
-          {vendor?.plan?.type !== 'free' && (
+          {hasAnalytics && (
             <div className="mb-4 sm:mb-6">
-              <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <div className={`grid gap-2 sm:gap-3 mb-3 sm:mb-4 ${hasFullAnalytics ? 'grid-cols-2 lg:grid-cols-5' : 'grid-cols-2 lg:grid-cols-4'}`}>
                 <AnalyticsCard
                   title="Store Views"
                   value={analyticsLoading ? '...' : (analytics?.viewsCount || 0)}
@@ -311,13 +315,15 @@ const Dashboard = () => {
                   icon={FiDollarSign}
                   color="gold"
                 />
-                <AnalyticsCard
-                  title="Conversion Rate"
-                  value={analyticsLoading ? '...' : `${analytics?.conversionRate || 0}%`}
-                  subtitle="views to orders"
-                  icon={FiPercent}
-                  color="purple"
-                />
+                {hasFullAnalytics && (
+                  <AnalyticsCard
+                    title="Conversion Rate"
+                    value={analyticsLoading ? '...' : `${analytics?.conversionRate || 0}%`}
+                    subtitle="views to orders"
+                    icon={FiPercent}
+                    color="purple"
+                  />
+                )}
                 <AnalyticsCard
                   title="Total Products"
                   value={analyticsLoading ? '...' : (analytics?.totalProducts || 0)}
@@ -326,33 +332,20 @@ const Dashboard = () => {
                 />
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-                <div className="sm:col-span-2 lg:col-span-2">
-                  <GrowthInsights
-                    topProduct={analytics?.topProduct}
-                    viewsCount={analytics?.viewsCount}
-                    whatsappClicks={analytics?.whatsappClicks}
-                    conversionRate={analytics?.conversionRate}
-                    totalRevenue={analytics?.totalRevenue}
-                  />
-                </div>
-                <div>
-                  <button
-                    onClick={() => setShowShareModal(true)}
-                    className="w-full bg-padi-green hover:bg-padi-green-dark text-white p-3 sm:p-4 rounded-xl flex items-center justify-center gap-2 sm:gap-3 transition-colors"
-                  >
-                    <FiShare2 size={20} />
-                    <div className="text-left">
-                      <p className="font-semibold">Share Your Store</p>
-                      <p className="text-xs text-white/80">Get more customers</p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-              
-              {!analyticsLoading && analytics?.topProducts?.length > 0 && (
-                <div className="mt-4">
-                  <TopProductsList products={analytics.topProducts} />
+              {hasFullAnalytics && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+                  <div className="sm:col-span-2 lg:col-span-2">
+                    <GrowthInsights
+                      topProduct={analytics?.topProduct}
+                      viewsCount={analytics?.viewsCount}
+                      whatsappClicks={analytics?.whatsappClicks}
+                      conversionRate={analytics?.conversionRate}
+                      totalRevenue={analytics?.totalRevenue}
+                    />
+                  </div>
+                  <div>
+                    <TopProductsList products={analytics?.topProducts || []} />
+                  </div>
                 </div>
               )}
             </div>

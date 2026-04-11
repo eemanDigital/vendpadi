@@ -274,10 +274,10 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loadingAction, setLoadingAction] = useState(null);
-  // ✅ FIX 4: Track downloading by orderId+type to avoid global lock on all buttons
-  const [downloadingPdf, setDownloadingPdf] = useState(null); // format: `${orderId}-invoice` or `${orderId}-receipt`
+  const [downloadingPdf, setDownloadingPdf] = useState(null);
 
-  const isPremium = vendor?.plan?.type === "premium";
+  const planType = vendor?.plan?.type || 'free';
+  const canDownloadPdf = planType === 'business' || planType === 'premium';
 
   useEffect(() => {
     fetchData();
@@ -474,13 +474,13 @@ const Orders = () => {
             </div>
           )}
 
-          {/* Premium Banner */}
-          {!isPremium && (
+          {/* PDF Download Banner */}
+          {!canDownloadPdf && (
             <div className="bg-gradient-to-r from-navy to-navy-light text-white p-5 rounded-2xl mb-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className="text-3xl">👑</span>
+                <span className="text-3xl">📄</span>
                 <div>
-                  <h3 className="font-semibold">Upgrade to Premium</h3>
+                  <h3 className="font-semibold">Upgrade to Business or Premium</h3>
                   <p className="text-sm text-gray-300">
                     Generate PDF invoices & receipts for your orders
                   </p>
@@ -551,9 +551,8 @@ const Orders = () => {
                             <FiEye className="text-gray-500" />
                           </button>
 
-                          {isPremium && (
+                          {canDownloadPdf && (
                             <>
-                              {/* ✅ FIX 4: Each button checks its own key, not a global lock */}
                               <button
                                 onClick={() => downloadInvoice(order)}
                                 disabled={downloadingPdf === invoiceKey}
@@ -719,7 +718,7 @@ const Orders = () => {
                 </div>
               </div>
 
-              {isPremium && (
+              {canDownloadPdf && (
                 <div className="flex gap-3">
                   <button
                     onClick={() => downloadInvoice(selectedOrder)}
