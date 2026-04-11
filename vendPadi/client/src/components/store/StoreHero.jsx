@@ -7,9 +7,19 @@ const StoreHero = ({ vendor }) => {
 
   return (
     <div className="bg-gradient-to-b from-white to-gray-50/50 border-b border-gray-100">
+      {vendor.coverImage && (
+        <div className="w-full h-32 sm:h-48 overflow-hidden">
+          <OptimizedImage
+            src={vendor.coverImage}
+            alt="Store cover"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+      
       <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <div className="flex items-start gap-3 sm:gap-5">
-          <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white shadow-lg flex-shrink-0 bg-white">
+          <div className={`w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white shadow-lg flex-shrink-0 bg-white ${vendor.coverImage ? '-mt-8 sm:-mt-12' : ''}`}>
             <OptimizedImage
               src={vendor.logo}
               alt={vendor.businessName}

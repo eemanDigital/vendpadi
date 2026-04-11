@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import { vendorAPI, authAPI } from '../api/axiosInstance';
 import { updateVendor } from '../store/authSlice';
 import PlanBadge from '../components/PlanBadge';
@@ -107,6 +106,7 @@ const Settings = () => {
         category: vendor.category || 'other'
       });
       setLogoPreview(vendor.logo || '');
+      setCoverPreview(vendor.coverImage || '');
     }
   }, [vendor]);
 
@@ -143,9 +143,7 @@ const Settings = () => {
       if (coverFile && currentFeatures.coverImage) {
         const formDataCover = new FormData();
         formDataCover.append('coverImage', coverFile);
-        const { data: coverData } = await axios.post('/api/vendor/cover', formDataCover, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const { data: coverData } = await vendorAPI.updateCover(formDataCover);
         updatedData.coverImage = coverData.coverImage;
       }
 

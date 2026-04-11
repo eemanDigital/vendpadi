@@ -1,4 +1,4 @@
-const { uploadProduct, uploadLogo } = require('../config/cloudinary');
+const { uploadProduct, uploadLogo, uploadCover } = require('../config/cloudinary');
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -57,7 +57,7 @@ const handleUpload = (uploadFn) => catchAsync(async (req, res, next) => {
 
 const uploadProductImages = handleUpload(uploadProduct.array('images', 8));
 const uploadVendorLogo = handleUpload(uploadLogo.single('logo'));
-const uploadCoverImage = handleUpload(uploadLogo.single('coverImage'));
+const uploadCoverImage = handleUpload(uploadCover.single('coverImage'));
 
 module.exports = {
   uploadProductImages,

@@ -41,6 +41,17 @@ const logoStorage = new CloudinaryStorage({
   }
 });
 
+const coverStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'vendpadi/covers',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { width: 1200, height: 400, crop: 'fill', quality: 'auto', format: 'webp' }
+    ]
+  }
+});
+
 const uploadProduct = multer({ 
   storage: productStorage,
   limits: { fileSize: 5 * 1024 * 1024 }
@@ -51,4 +62,9 @@ const uploadLogo = multer({
   limits: { fileSize: 2 * 1024 * 1024 }
 });
 
-module.exports = { cloudinary, uploadProduct, uploadLogo };
+const uploadCover = multer({ 
+  storage: coverStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+module.exports = { cloudinary, uploadProduct, uploadLogo, uploadCover };

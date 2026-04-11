@@ -33,6 +33,9 @@ export const vendorAPI = {
   updateMe: (data) => api.put('/vendor/me', data),
   updateLogo: (formData) => api.put('/vendor/me/logo', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  updateCover: (formData) => api.post('/vendor/me/cover', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
   })
 };
 
