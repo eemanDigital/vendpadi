@@ -4,6 +4,10 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Vendor = require('../models/Vendor');
 
+router.get('/test', (req, res) => {
+  res.json({ message: 'Admin auth route working', path: '/api/admin/auth' });
+});
+
 router.options('/login', (req, res) => {
   res.status(200).end();
 });

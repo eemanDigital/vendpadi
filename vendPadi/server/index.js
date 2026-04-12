@@ -118,6 +118,11 @@ app.use("/api/", apiLimiter);
 app.use("/api/auth/", authLimiter);
 
 app.use((req, res, next) => {
+  console.log(`[ROUTE] ${req.method} ${req.path}`);
+  next();
+});
+
+app.use((req, res, next) => {
   const start = Date.now();
   res.on("finish", () => {
     const duration = Date.now() - start;
@@ -128,6 +133,19 @@ app.use((req, res, next) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
+console.log("Admin auth routes mounted at /api/admin/auth");
+
+app.use("/api/debug", (req, res) => {
+  res.json({ 
+    method: req.method, 
+    path: req.path,
+    originalUrl: req.originalUrl,
+    baseUrl: req.baseUrl,
+    routerPath: req.route?.path,
+    headers: req.headers
+  });
+});
+
 app.use("/api/admin", adminRoutes);
 app.use("/api/vendor", vendorRoutes);
 app.use("/api/products", productRoutes);
