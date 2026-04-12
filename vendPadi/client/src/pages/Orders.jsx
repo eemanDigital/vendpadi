@@ -44,27 +44,67 @@ const STATUS_CONFIG = {
   },
 };
 
-const generateInvoicePDF = (order, vendor) => {
+const loadImageAsBase64 = (url) => {
+  return new Promise((resolve, reject) => {
+    if (!url) {
+      resolve(null);
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const dataUrl = canvas.toDataURL('image/png');
+      resolve(dataUrl);
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+};
+
+const generateInvoicePDF = async (order, vendor) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
+  const logoData = await loadImageAsBase64(vendor?.logo);
 
   doc.setFillColor(37, 200, 102);
-  doc.rect(0, 0, pageWidth, 45, "F");
+  doc.rect(0, 0, pageWidth, 40, "F");
+
+  if (logoData) {
+    doc.addImage(logoData, 'PNG', 15, 8, 20, 20);
+  }
 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  doc.text("INVOICE", 20, 22);
+  doc.text("INVOICE", logoData ? 42 : 15, 18);
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(vendor?.businessName || "Store", 20, 32);
-  if (vendor?.phone) {
-    doc.text(`Tel: ${vendor.phone}`, 20, 39);
+  if (logoData) {
+    doc.text(vendor?.businessName || "Store", 42, 28);
+    if (vendor?.phone) {
+      doc.text(`Tel: ${vendor.phone}`, 42, 35);
+    }
+  } else {
+    doc.text(vendor?.businessName || "Store", 15, 28);
+    if (vendor?.phone) {
+      doc.text(`Tel: ${vendor.phone}`, 15, 35);
+    }
   }
 
   doc.setTextColor(26, 26, 46);
-  let y = 60;
+  let y = 55;
+
+  const customerDisplay = order.customerName && order.customerName !== 'Anonymous' 
+    ? order.customerName 
+    : order.customerPhone 
+      ? `Customer (${order.customerPhone})`
+      : 'WhatsApp Customer';
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
@@ -72,11 +112,7 @@ const generateInvoicePDF = (order, vendor) => {
   doc.setFont("helvetica", "normal");
   y += 7;
   doc.setFontSize(10);
-  doc.text(order.customerName || "Customer", 20, y);
-  if (order.customerPhone) {
-    y += 5;
-    doc.text(order.customerPhone, 20, y);
-  }
+  doc.text(customerDisplay, 20, y);
 
   doc.setFont("helvetica", "bold");
   doc.text("Order Details:", 120, 60);
@@ -164,30 +200,48 @@ const generateInvoicePDF = (order, vendor) => {
   doc.save(`Invoice-${order._id.slice(-8).toUpperCase()}.pdf`);
 };
 
-const generateReceiptPDF = (order, vendor) => {
+const generateReceiptPDF = async (order, vendor) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
+  const logoData = await loadImageAsBase64(vendor?.logo);
 
   doc.setFillColor(245, 166, 35);
   doc.rect(0, 0, pageWidth, 35, "F");
 
+  if (logoData) {
+    doc.addImage(logoData, 'PNG', 15, 8, 18, 18);
+  }
+
   doc.setTextColor(26, 26, 46);
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  doc.text("RECEIPT", 20, 22);
+  doc.text("RECEIPT", logoData ? 40 : 15, 22);
 
-  doc.setTextColor(26, 26, 46);
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  doc.text(vendor?.businessName || "Store", 20, 50);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  if (vendor?.phone) {
-    doc.text(`Tel: ${vendor.phone}`, 20, 58);
+  if (logoData) {
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(vendor?.businessName || "Store", 40, 28);
+    doc.setFont("helvetica", "normal");
+    if (vendor?.phone) {
+      doc.text(`Tel: ${vendor.phone}`, 40, 34);
+    }
+  } else {
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(vendor?.businessName || "Store", 15, 26);
+    doc.setFont("helvetica", "normal");
+    if (vendor?.phone) {
+      doc.text(`Tel: ${vendor.phone}`, 15, 33);
+    }
   }
 
-  doc.line(20, 65, pageWidth - 20, 65);
+  doc.line(15, 45, pageWidth - 15, 45);
+
+  const customerDisplay = order.customerName && order.customerName !== 'Anonymous' 
+    ? order.customerName 
+    : order.customerPhone 
+      ? `Customer (${order.customerPhone})`
+      : 'WhatsApp Customer';
 
   doc.setFontSize(10);
   doc.text(
@@ -198,15 +252,16 @@ const generateReceiptPDF = (order, vendor) => {
       hour: "2-digit",
       minute: "2-digit",
     })}`,
-    20,
-    73,
+    15,
+    55,
   );
-  doc.text(`Receipt #: ${order._id.slice(-8).toUpperCase()}`, 20, 80);
+  doc.text(`Receipt #: ${order._id.slice(-8).toUpperCase()}`, 15, 62);
+  doc.text(`Customer: ${customerDisplay}`, 15, 69);
 
-  let y = 92;
+  let y = 85;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text("Items Purchased", 20, y);
+  doc.text("Items Purchased", 15, y);
 
   autoTable(doc, {
     startY: y + 5,
@@ -227,28 +282,28 @@ const generateReceiptPDF = (order, vendor) => {
     bodyStyles: { fontSize: 9 },
     columnStyles: {
       0: { cellWidth: 12, halign: "center" },
-      1: { cellWidth: 90 },
+      1: { cellWidth: 95 },
       2: { cellWidth: 20, halign: "center" },
       3: { cellWidth: 48, halign: "right" },
     },
-    margin: { left: 20, right: 20 },
+    margin: { left: 15, right: 15 },
   });
 
   const finalY = (doc.lastAutoTable?.finalY ?? y + 40) + 12;
 
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.5);
-  doc.line(110, finalY, pageWidth - 20, finalY);
+  doc.line(100, finalY, pageWidth - 15, finalY);
 
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(26, 26, 46);
-  doc.text("TOTAL PAID:", 110, finalY + 10);
+  doc.text("TOTAL PAID:", 100, finalY + 10);
   doc.setTextColor(37, 200, 102);
   doc.setFontSize(14);
   doc.text(
     "NGN " + order.totalAmount.toLocaleString(),
-    pageWidth - 20,
+    pageWidth - 15,
     finalY + 10,
     { align: "right" },
   );
@@ -313,12 +368,12 @@ const Orders = () => {
   };
 
   // ✅ FIX 5: Removed dead isModal branching — both branches did the same thing
-  const downloadInvoice = (order) => {
+  const downloadInvoice = async (order) => {
     const key = `${order._id}-invoice`;
     if (downloadingPdf) return;
     setDownloadingPdf(key);
     try {
-      generateInvoicePDF(order, vendor);
+      await generateInvoicePDF(order, vendor);
       setSelectedOrder(null);
     } catch (error) {
       toast.error("Failed to generate invoice");
@@ -327,12 +382,12 @@ const Orders = () => {
     }
   };
 
-  const downloadReceipt = (order) => {
+  const downloadReceipt = async (order) => {
     const key = `${order._id}-receipt`;
     if (downloadingPdf) return;
     setDownloadingPdf(key);
     try {
-      generateReceiptPDF(order, vendor);
+      await generateReceiptPDF(order, vendor);
       setSelectedOrder(null);
     } catch (error) {
       toast.error("Failed to generate receipt");
