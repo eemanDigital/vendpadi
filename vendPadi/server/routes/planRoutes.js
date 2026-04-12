@@ -39,9 +39,33 @@ const catchAsync = (fn) => (req, res, next) => {
 };
 
 const PLANS = {
-  starter: { price: 1000, name: 'Starter', interval: 'monthly', products: 30, images: 3 },
-  business: { price: 2500, name: 'Business', interval: 'monthly', products: 100, images: 5 },
-  premium: { price: 5000, name: 'Premium', interval: 'monthly', products: 'unlimited', images: 8 }
+  starter: { 
+    price: 1000, 
+    yearlyPrice: 10000, 
+    name: 'Starter', 
+    interval: 'monthly', 
+    yearlyInterval: 'yearly',
+    products: 30, 
+    images: 3 
+  },
+  business: { 
+    price: 2500, 
+    yearlyPrice: 25000, 
+    name: 'Business', 
+    interval: 'monthly', 
+    yearlyInterval: 'yearly',
+    products: 100, 
+    images: 5 
+  },
+  premium: { 
+    price: 5000, 
+    yearlyPrice: 50000, 
+    name: 'Premium', 
+    interval: 'monthly', 
+    yearlyInterval: 'yearly',
+    products: 'unlimited', 
+    images: 8 
+  }
 };
 
 router.get('/', (req, res) => {
@@ -56,31 +80,39 @@ router.get('/', (req, res) => {
 });
 
 router.post('/upgrade', protect, catchAsync(async (req, res) => {
-  const { requestedPlan } = req.body;
+  const { requestedPlan, billingCycle } = req.body;
   
   if (!['starter', 'business', 'premium'].includes(requestedPlan)) {
     return res.status(400).json({ message: 'Invalid plan' });
   }
 
-  if (req.vendor.plan.type === requestedPlan) {
-    return res.status(400).json({ message: 'You are already on this plan' });
+  if (!['monthly', 'yearly'].includes(billingCycle)) {
+    return res.status(400).json({ message: 'Invalid billing cycle' });
+  }
+
+  if (req.vendor.plan.type === requestedPlan && req.vendor.plan.billingCycle === billingCycle) {
+    return res.status(400).json({ message: 'You are already on this plan with this billing cycle' });
   }
 
   const existingPending = await PlanRequest.findOne({
     vendorId: req.vendor._id,
     requestedPlan,
+    billingCycle,
     status: 'pending'
   });
 
   if (existingPending) {
-    return res.status(400).json({ message: 'You already have a pending request for this plan' });
+    return res.status(400).json({ message: `You already have a pending ${billingCycle} request for this plan` });
   }
+
+  const amount = billingCycle === 'yearly' ? PLANS[requestedPlan].yearlyPrice : PLANS[requestedPlan].price;
 
   const planRequest = await PlanRequest.create({
     vendorId: req.vendor._id,
     currentPlan: req.vendor.plan.type,
     requestedPlan,
-    amount: PLANS[requestedPlan].price
+    billingCycle,
+    amount
   });
 
   res.status(201).json(planRequest);
@@ -176,54 +208,72 @@ router.get('/admin/stats', protect, adminOnly, catchAsync(async (req, res) => {
 }));
 
 router.get('/admin/subscribers', protect, adminOnly, catchAsync(async (req, res) => {
-  const { plan, format } = req.query;
+  const { plan, format, billingCycle } = req.query;
   
   const query = {};
   if (plan && plan !== 'all') {
     query['plan.type'] = plan;
   }
+  if (billingCycle && billingCycle !== 'all') {
+    query['plan.billingCycle'] = billingCycle;
+  }
 
   if (format === 'grouped') {
     const grouped = {
-      free: [],
-      starter: [],
-      business: [],
-      premium: []
+      free: { monthly: [], yearly: [] },
+      starter: { monthly: [], yearly: [] },
+      business: { monthly: [], yearly: [] },
+      premium: { monthly: [], yearly: [] }
     };
 
     const subscribers = await Vendor.find(query)
-      .select('businessName email phone plan.type plan.expiresAt createdAt slug logo')
+      .select('businessName email phone plan.type plan.billingCycle plan.expiresAt createdAt slug logo')
       .sort({ createdAt: -1 });
 
     subscribers.forEach(sub => {
       const planType = sub.plan?.type || 'free';
+      const cycle = sub.plan?.billingCycle || 'monthly';
       if (grouped[planType]) {
-        grouped[planType].push(sub);
+        grouped[planType][cycle].push(sub);
       }
     });
 
     const counts = {
       total: subscribers.length,
-      free: grouped.free.length,
-      starter: grouped.starter.length,
-      business: grouped.business.length,
-      premium: grouped.premium.length
+      free: grouped.free.monthly.length + grouped.free.yearly.length,
+      starter: grouped.starter.monthly.length + grouped.starter.yearly.length,
+      business: grouped.business.monthly.length + grouped.business.yearly.length,
+      premium: grouped.premium.monthly.length + grouped.premium.yearly.length,
+      monthly: subscribers.filter(s => !s.plan?.billingCycle || s.plan.billingCycle === 'monthly').length,
+      yearly: subscribers.filter(s => s.plan?.billingCycle === 'yearly').length
     };
 
     const revenue = {
-      starter: grouped.starter.length * 1000,
-      business: grouped.business.length * 2500,
-      premium: grouped.premium.length * 5000
+      starter: {
+        monthly: grouped.starter.monthly.length * 1000,
+        yearly: grouped.starter.yearly.length * 10000
+      },
+      business: {
+        monthly: grouped.business.monthly.length * 2500,
+        yearly: grouped.business.yearly.length * 25000
+      },
+      premium: {
+        monthly: grouped.premium.monthly.length * 5000,
+        yearly: grouped.premium.yearly.length * 50000
+      }
     };
 
-    res.json({ grouped, counts, revenue });
+    const totalMonthly = revenue.starter.monthly + revenue.business.monthly + revenue.premium.monthly;
+    const totalYearly = revenue.starter.yearly + revenue.business.yearly + revenue.premium.yearly;
+
+    res.json({ grouped, counts, revenue, totalMonthly, totalYearly });
   } else {
     if (!plan || plan === 'all') {
       query['plan.type'] = { $ne: 'free' };
     }
 
     const subscribers = await Vendor.find(query)
-      .select('businessName email phone plan.type plan.expiresAt createdAt')
+      .select('businessName email phone plan.type plan.billingCycle plan.expiresAt createdAt')
       .sort({ createdAt: -1 });
 
     res.json(subscribers);
@@ -247,12 +297,19 @@ router.put('/admin/approve/:id', protect, adminOnly, catchAsync(async (req, res)
   await request.save();
 
   vendor.plan.type = request.requestedPlan;
-  vendor.plan.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  vendor.plan.billingCycle = request.billingCycle || 'monthly';
+  
+  if (request.billingCycle === 'yearly') {
+    vendor.plan.expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  } else {
+    vendor.plan.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  }
+  
   vendor.trial.active = false;
   vendor.trial.plan = null;
   await vendor.save();
 
-  res.json({ message: 'Plan upgraded successfully', request });
+  res.json({ message: `Plan upgraded successfully (${request.billingCycle})`, request });
 }));
 
 router.put('/admin/reject/:id', protect, adminOnly, catchAsync(async (req, res) => {

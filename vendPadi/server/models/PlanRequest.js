@@ -4,6 +4,7 @@ const planRequestSchema = new mongoose.Schema({
   vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true },
   currentPlan: { type: String, enum: ['free', 'starter', 'business', 'premium'], required: true },
   requestedPlan: { type: String, enum: ['starter', 'business', 'premium'], required: true },
+  billingCycle: { type: String, enum: ['monthly', 'yearly'], default: 'monthly' },
   amount: { type: Number, required: true },
   paymentMethod: { type: String, enum: ['bank_transfer', 'ussd', 'other'], default: 'bank_transfer' },
   paymentProof: { type: String, default: '' },

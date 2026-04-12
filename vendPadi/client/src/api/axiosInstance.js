@@ -79,7 +79,7 @@ export const planAPI = {
   }),
   getAdminRequests: () => api.get('/plans/admin/requests'),
   getAdminStats: () => api.get('/plans/admin/stats'),
-  getSubscribers: (plan = 'all', format = 'list') => api.get('/plans/admin/subscribers', { params: { plan, format } }),
+  getSubscribers: (plan = 'all', format = 'list', billingCycle = 'all') => api.get('/plans/admin/subscribers', { params: { plan, format, billingCycle } }),
   approveRequest: (id) => api.put(`/plans/admin/approve/${id}`),
   rejectRequest: (id, reason) => api.put(`/plans/admin/reject/${id}`, { reason })
 };

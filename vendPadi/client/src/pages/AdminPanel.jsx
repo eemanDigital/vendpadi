@@ -397,7 +397,12 @@ const AdminPanel = () => {
 
                         <div className="flex flex-wrap items-center gap-3 text-sm">
                           <span className="px-3 py-1 bg-gray-100 rounded-full text-gray-600">
-                            Free → {req.requestedPlan.charAt(0).toUpperCase() + req.requestedPlan.slice(1)}
+                            {req.requestedPlan.charAt(0).toUpperCase() + req.requestedPlan.slice(1)}
+                          </span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            req.billingCycle === 'yearly' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {req.billingCycle === 'yearly' ? '📅 Yearly' : '📆 Monthly'}
                           </span>
                           <span className="font-bold text-padi-green text-lg">
                             ₦{req.amount.toLocaleString()}
@@ -509,7 +514,7 @@ const AdminPanel = () => {
             {/* View Toggle */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <h2 className="font-semibold text-navy">Subscribers by Plan</h2>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="flex bg-gray-100 rounded-lg p-1">
                   <button
                     onClick={() => setSubscriberView('grouped')}
@@ -529,17 +534,19 @@ const AdminPanel = () => {
                   </button>
                 </div>
                 {subscriberView === 'table' && (
-                  <select
-                    value={subscriberFilter}
-                    onChange={(e) => setSubscriberFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-padi-green"
-                  >
-                    <option value="all">All Plans</option>
-                    <option value="starter">Starter</option>
-                    <option value="business">Business</option>
-                    <option value="premium">Premium</option>
-                    <option value="free">Free</option>
-                  </select>
+                  <>
+                    <select
+                      value={subscriberFilter}
+                      onChange={(e) => setSubscriberFilter(e.target.value)}
+                      className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-padi-green"
+                    >
+                      <option value="all">All Plans</option>
+                      <option value="starter">Starter</option>
+                      <option value="business">Business</option>
+                      <option value="premium">Premium</option>
+                      <option value="free">Free</option>
+                    </select>
+                  </>
                 )}
               </div>
             </div>
@@ -553,13 +560,14 @@ const AdminPanel = () => {
                 {/* Plan Summary Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { key: 'free', icon: '🆓', label: 'Free', price: '₦0', color: 'gray', bg: 'bg-gray-50', border: 'border-gray-200' },
-                    { key: 'starter', icon: '💡', label: 'Starter', price: '₦1,000/mo', color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200' },
-                    { key: 'business', icon: '🚀', label: 'Business', price: '₦2,500/mo', color: 'purple', bg: 'bg-purple-50', border: 'border-purple-200' },
-                    { key: 'premium', icon: '👑', label: 'Premium', price: '₦5,000/mo', color: 'amber', bg: 'bg-amber-50', border: 'border-amber-200' }
+                    { key: 'free', icon: '🆓', label: 'Free', color: 'gray', bg: 'bg-gray-50', border: 'border-gray-200' },
+                    { key: 'starter', icon: '💡', label: 'Starter', color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200' },
+                    { key: 'business', icon: '🚀', label: 'Business', color: 'purple', bg: 'bg-purple-50', border: 'border-purple-200' },
+                    { key: 'premium', icon: '👑', label: 'Premium', color: 'amber', bg: 'bg-amber-50', border: 'border-amber-200' }
                   ].map((plan) => {
                     const count = groupedSubscribers.counts?.[plan.key] || 0;
-                    const revenue = groupedSubscribers.revenue?.[plan.key] || 0;
+                    const monthlyRevenue = groupedSubscribers.revenue?.[plan.key]?.monthly || 0;
+                    const yearlyRevenue = groupedSubscribers.revenue?.[plan.key]?.yearly || 0;
                     const colorClasses = {
                       gray: 'text-gray-600',
                       blue: 'text-blue-600',
@@ -583,11 +591,17 @@ const AdminPanel = () => {
                           </span>
                         </div>
                         <h3 className="font-semibold text-navy mb-1">{plan.label}</h3>
-                        <p className="text-sm text-gray-500">{plan.price}</p>
-                        {plan.key !== 'free' && (
-                          <p className="text-sm font-medium text-padi-green mt-2">
-                            ₦{revenue.toLocaleString()}/mo potential
-                          </p>
+                        {plan.key !== 'free' ? (
+                          <div className="space-y-1 mt-2">
+                            <p className="text-xs text-gray-500">
+                              <span className="text-padi-green font-medium">₦{monthlyRevenue.toLocaleString()}</span>/mo
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              <span className="text-green-600 font-medium">₦{yearlyRevenue.toLocaleString()}</span>/yr
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 mt-2">₦0</p>
                         )}
                       </button>
                     );
@@ -596,21 +610,29 @@ const AdminPanel = () => {
 
                 {/* Revenue Summary */}
                 <div className="bg-gradient-to-r from-padi-green to-emerald-600 rounded-2xl p-5 text-white">
-                  <div className="flex items-center justify-between">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                      <p className="text-white/80 text-sm">Monthly Revenue Potential</p>
-                      <p className="text-3xl font-bold mt-1">
-                        ₦{(
-                          (groupedSubscribers.revenue?.starter || 0) +
-                          (groupedSubscribers.revenue?.business || 0) +
-                          (groupedSubscribers.revenue?.premium || 0)
-                        ).toLocaleString()}
+                      <p className="text-white/80 text-sm">Monthly Potential</p>
+                      <p className="text-2xl lg:text-3xl font-bold mt-1">
+                        ₦{(groupedSubscribers.totalMonthly || 0).toLocaleString()}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-white/80 text-sm">Paid Subscribers</p>
-                      <p className="text-3xl font-bold mt-1">
-                        {(groupedSubscribers.counts?.starter || 0) + (groupedSubscribers.counts?.business || 0) + (groupedSubscribers.counts?.premium || 0)}
+                    <div>
+                      <p className="text-white/80 text-sm">Yearly Potential</p>
+                      <p className="text-2xl lg:text-3xl font-bold mt-1">
+                        ₦{(groupedSubscribers.totalYearly || 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-white/80 text-sm">Monthly Subs</p>
+                      <p className="text-2xl lg:text-3xl font-bold mt-1">
+                        {groupedSubscribers.counts?.monthly || 0}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-white/80 text-sm">Yearly Subs</p>
+                      <p className="text-2xl lg:text-3xl font-bold mt-1">
+                        {groupedSubscribers.counts?.yearly || 0}
                       </p>
                     </div>
                   </div>
@@ -623,7 +645,7 @@ const AdminPanel = () => {
                       <h3 className="font-semibold text-navy capitalize">
                         {selectedGroup} Plan Subscribers
                         <span className="ml-2 text-sm text-gray-500">
-                          ({groupedSubscribers.grouped?.[selectedGroup]?.length || 0})
+                          ({(groupedSubscribers.grouped?.[selectedGroup]?.monthly?.length || 0) + (groupedSubscribers.grouped?.[selectedGroup]?.yearly?.length || 0)})
                         </span>
                       </h3>
                       <button
@@ -633,31 +655,44 @@ const AdminPanel = () => {
                         <FiX size={20} />
                       </button>
                     </div>
-                    {groupedSubscribers.grouped?.[selectedGroup]?.length > 0 ? (
+                    {((groupedSubscribers.grouped?.[selectedGroup]?.monthly?.length || 0) + (groupedSubscribers.grouped?.[selectedGroup]?.yearly?.length || 0)) > 0 ? (
                       <div className="divide-y divide-gray-100">
-                        {groupedSubscribers.grouped[selectedGroup].map((sub) => (
-                          <div key={sub._id} className="p-4 hover:bg-gray-50 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                {sub.logo ? (
-                                  <img src={sub.logo} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                  <span className="text-lg">🏪</span>
-                                )}
+                        {['monthly', 'yearly'].map((cycle) => {
+                          const subs = groupedSubscribers.grouped?.[selectedGroup]?.[cycle] || [];
+                          if (subs.length === 0) return null;
+                          return (
+                            <div key={cycle}>
+                              <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                                <span className="text-xs font-medium text-gray-500 uppercase">
+                                  {cycle} ({subs.length})
+                                </span>
                               </div>
-                              <div>
-                                <p className="font-medium text-navy">{sub.businessName}</p>
-                                <p className="text-sm text-gray-500">{sub.email}</p>
-                              </div>
+                              {subs.map((sub) => (
+                                <div key={sub._id} className="p-4 hover:bg-gray-50 flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                      {sub.logo ? (
+                                        <img src={sub.logo} alt="" className="w-full h-full object-cover" />
+                                      ) : (
+                                        <span className="text-lg">🏪</span>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-navy">{sub.businessName}</p>
+                                      <p className="text-sm text-gray-500">{sub.email}</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-sm text-gray-500">{sub.phone}</p>
+                                    <p className="text-xs text-gray-400">
+                                      Joined {new Date(sub.createdAt).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            <div className="text-right">
-                              <p className="text-sm text-gray-500">{sub.phone}</p>
-                              <p className="text-xs text-gray-400">
-                                Joined {new Date(sub.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="p-8 text-center text-gray-500">
@@ -674,8 +709,10 @@ const AdminPanel = () => {
                   </div>
                   <div className="divide-y divide-gray-100">
                     {['free', 'starter', 'business', 'premium'].map((plan) => {
-                      const vendors = groupedSubscribers.grouped?.[plan] || [];
-                      if (vendors.length === 0) return null;
+                      const monthlyVendors = groupedSubscribers.grouped?.[plan]?.monthly || [];
+                      const yearlyVendors = groupedSubscribers.grouped?.[plan]?.yearly || [];
+                      const totalVendors = monthlyVendors.length + yearlyVendors.length;
+                      if (totalVendors === 0) return null;
                       return (
                         <div key={plan}>
                           <button
@@ -689,34 +726,58 @@ const AdminPanel = () => {
                               <span className="font-medium text-navy capitalize">{plan}</span>
                             </div>
                             <div className="flex items-center gap-4">
-                              <span className="text-sm text-gray-500">{vendors.length} vendors</span>
+                              <span className="text-sm text-gray-500">
+                                {monthlyVendors.length} mo / {yearlyVendors.length} yr
+                              </span>
                               <FiTrendingUp className={`text-gray-400 transition-transform ${selectedGroup === plan ? 'rotate-90' : ''}`} />
                             </div>
                           </button>
                           {selectedGroup === plan && (
-                            <div className="bg-gray-50 p-4">
-                              {vendors.map((sub) => (
-                                <div key={sub._id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden">
-                                      {sub.logo ? (
-                                        <img src={sub.logo} alt="" className="w-full h-full object-cover" />
-                                      ) : (
-                                        <span>🏪</span>
-                                      )}
+                            <div className="bg-gray-50 p-4 space-y-3">
+                              {monthlyVendors.length > 0 && (
+                                <div>
+                                  <p className="text-xs font-medium text-gray-500 uppercase mb-2">Monthly ({monthlyVendors.length})</p>
+                                  {monthlyVendors.map((sub) => (
+                                    <div key={`mo-${sub._id}`} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+                                          {sub.logo ? (
+                                            <img src={sub.logo} alt="" className="w-full h-full object-cover" />
+                                          ) : (
+                                            <span>🏪</span>
+                                          )}
+                                        </div>
+                                        <div>
+                                          <p className="text-sm font-medium text-navy">{sub.businessName}</p>
+                                          <p className="text-xs text-gray-500">{sub.email}</p>
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <p className="text-sm font-medium text-navy">{sub.businessName}</p>
-                                      <p className="text-xs text-gray-500">{sub.email}</p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="text-xs text-gray-400">
-                                      Joined {new Date(sub.createdAt).toLocaleDateString()}
-                                    </p>
-                                  </div>
+                                  ))}
                                 </div>
-                              ))}
+                              )}
+                              {yearlyVendors.length > 0 && (
+                                <div>
+                                  <p className="text-xs font-medium text-green-600 uppercase mb-2">Yearly ({yearlyVendors.length})</p>
+                                  {yearlyVendors.map((sub) => (
+                                    <div key={`yr-${sub._id}`} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+                                          {sub.logo ? (
+                                            <img src={sub.logo} alt="" className="w-full h-full object-cover" />
+                                          ) : (
+                                            <span>🏪</span>
+                                          )}
+                                        </div>
+                                        <div>
+                                          <p className="text-sm font-medium text-navy">{sub.businessName}</p>
+                                          <p className="text-xs text-gray-500">{sub.email}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -737,41 +798,49 @@ const AdminPanel = () => {
                   </div>
                 ) : (
                   <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                    <table className="w-full">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Business</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Business</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Billing</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {subscribers.map((sub) => (
+                        <tr key={sub._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-navy">{sub.businessName}</div>
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">{sub.email}</td>
+                          <td className="px-6 py-4 text-gray-600">{sub.phone}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              sub.plan?.type === 'premium' ? 'bg-amber-100 text-amber-700' :
+                              sub.plan?.type === 'business' ? 'bg-purple-100 text-purple-700' :
+                              sub.plan?.type === 'starter' ? 'bg-blue-100 text-blue-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {sub.plan?.type || 'free'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              sub.plan?.billingCycle === 'yearly' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {sub.plan?.billingCycle === 'yearly' ? '📅 Yearly' : '📆 Monthly'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-gray-600 text-sm">
+                            {new Date(sub.createdAt).toLocaleDateString()}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {subscribers.map((sub) => (
-                          <tr key={sub._id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4">
-                              <div className="font-medium text-navy">{sub.businessName}</div>
-                            </td>
-                            <td className="px-6 py-4 text-gray-600">{sub.email}</td>
-                            <td className="px-6 py-4 text-gray-600">{sub.phone}</td>
-                            <td className="px-6 py-4">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                sub.plan?.type === 'premium' ? 'bg-amber-100 text-amber-700' :
-                                sub.plan?.type === 'business' ? 'bg-blue-100 text-blue-700' :
-                                sub.plan?.type === 'starter' ? 'bg-green-100 text-green-700' :
-                                'bg-gray-100 text-gray-700'
-                              }`}>
-                                {sub.plan?.type || 'free'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-gray-600 text-sm">
-                              {new Date(sub.createdAt).toLocaleDateString()}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                      ))}
+                    </tbody>
+                  </table>
                   </div>
                 )}
               </>

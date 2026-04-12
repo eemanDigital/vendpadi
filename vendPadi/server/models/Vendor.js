@@ -18,6 +18,7 @@ const vendorSchema = new mongoose.Schema({
   },
   plan: {
     type: { type: String, enum: ['free', 'starter', 'business', 'premium'], default: 'free' },
+    billingCycle: { type: String, enum: ['monthly', 'yearly'], default: 'monthly' },
     expiresAt: { type: Date, default: null }
   },
   trial: {

@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { planAPI } from '../api/axiosInstance';
 import toast from 'react-hot-toast';
-import { FiX, FiCheck, FiUpload, FiClock, FiAlertCircle, FiCreditCard, FiSmartphone, FiRefreshCw, FiTrendingUp, FiZap, FiStar, FiMail, FiBarChart2, FiGrid, FiMaximize, FiPackage, FiSearch, FiHeart, FiMessageSquare, FiAlertTriangle, FiShare2, FiEye, FiLink } from 'react-icons/fi';
+import { FiX, FiCheck, FiUpload, FiClock, FiAlertCircle, FiCreditCard, FiSmartphone, FiTrendingUp, FiZap, FiStar, FiMail, FiBarChart2, FiGrid, FiMaximize, FiPackage, FiSearch, FiHeart, FiMessageSquare, FiAlertTriangle, FiShare2, FiEye, FiLink, FiCalendar, FiPercent } from 'react-icons/fi';
 
 const PLAN_DETAILS = {
   free: {
     name: 'Free',
     icon: '🆓',
     price: 0,
+    yearlyPrice: 0,
     color: 'gray',
     tagline: 'Perfect to get started',
     features: [
@@ -30,6 +31,7 @@ const PLAN_DETAILS = {
     name: 'Starter',
     icon: '💡',
     price: 1000,
+    yearlyPrice: 10000,
     color: 'blue',
     tagline: 'Look professional and get more orders',
     features: [
@@ -51,6 +53,7 @@ const PLAN_DETAILS = {
     name: 'Business',
     icon: '🚀',
     price: 2500,
+    yearlyPrice: 25000,
     color: 'green',
     tagline: 'Grow faster and track what sells best',
     popular: true,
@@ -73,6 +76,7 @@ const PLAN_DETAILS = {
     name: 'Premium',
     icon: '👑',
     price: 5000,
+    yearlyPrice: 50000,
     color: 'gold',
     tagline: 'Run your business like a brand',
     features: [
@@ -102,6 +106,7 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
   const { vendor } = useSelector((state) => state.auth);
   const [step, setStep] = useState('select');
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [billingCycle, setBillingCycle] = useState('monthly');
   const [paymentDetails, setPaymentDetails] = useState(FALLBACK_PAYMENT);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -110,6 +115,7 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
   const [paymentRef, setPaymentRef] = useState('');
 
   const currentPlan = vendor?.plan?.type || 'free';
+  const currentBillingCycle = vendor?.plan?.billingCycle || 'monthly';
 
   useEffect(() => {
     if (isOpen) {
@@ -140,13 +146,14 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
     if (plan === currentPlan) return;
     if (plan === 'free') return;
     setSelectedPlan(plan);
+    setBillingCycle('monthly');
     setStep('payment');
   };
 
   const handleRequestUpgrade = async () => {
     setLoading(true);
     try {
-      await planAPI.requestUpgrade(selectedPlan);
+      await planAPI.requestUpgrade(selectedPlan, billingCycle);
       toast.success('Upgrade request submitted! Proceed to payment.');
       fetchRequests();
     } catch (error) {
@@ -166,10 +173,10 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
     try {
       let requestId;
       
-      const existingRequest = requests.find(r => r.requestedPlan === selectedPlan && r.status === 'pending');
+      const existingRequest = requests.find(r => r.requestedPlan === selectedPlan && r.billingCycle === billingCycle && r.status === 'pending');
       
       if (!existingRequest) {
-        const { data } = await planAPI.requestUpgrade(selectedPlan);
+        const { data } = await planAPI.requestUpgrade(selectedPlan, billingCycle);
         requestId = data._id;
       } else {
         requestId = existingRequest._id;
@@ -242,13 +249,43 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
         <div className="flex-1 overflow-y-auto p-5">
           {step === 'select' && (
             <div className="space-y-4">
+              {/* Billing Cycle Toggle */}
+              <div className="bg-gradient-to-r from-padi-green/10 to-emerald-50 rounded-2xl p-4">
+                <div className="flex items-center justify-center gap-3">
+                  <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-navy' : 'text-gray-400'}`}>
+                    Monthly
+                  </span>
+                  <button
+                    onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
+                    className={`relative w-14 h-7 rounded-full transition-colors ${
+                      billingCycle === 'yearly' ? 'bg-padi-green' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        billingCycle === 'yearly' ? 'left-8' : 'left-1'
+                      }`}
+                    />
+                  </button>
+                  <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'text-navy' : 'text-gray-400'}`}>
+                    Yearly
+                  </span>
+                  {billingCycle === 'yearly' && (
+                    <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">
+                      Save ~17%
+                    </span>
+                  )}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(PLAN_DETAILS).map(([planKey, plan]) => {
-                  const isCurrentPlan = currentPlan === planKey;
+                  const isCurrentPlan = currentPlan === planKey && currentBillingCycle === billingCycle;
                   const planOrder = ['free', 'starter', 'business', 'premium'];
                   const currentPlanIndex = planOrder.indexOf(currentPlan);
                   const thisPlanIndex = planOrder.indexOf(planKey);
-                  const isDowngrade = thisPlanIndex <= currentPlanIndex && isCurrentPlan === false;
+                  const isDowngrade = thisPlanIndex <= currentPlanIndex && !isCurrentPlan;
+                  const displayPrice = billingCycle === 'yearly' ? plan.yearlyPrice : plan.price;
                   
                   return (
                     <div
@@ -256,12 +293,12 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                       className={`relative p-4 rounded-2xl border-2 transition-all ${
                         isCurrentPlan
                           ? 'border-padi-green bg-padi-green/5'
-                          : plan.popular
+                          : plan.popular && billingCycle === 'monthly'
                           ? 'border-padi-green/50 hover:border-padi-green shadow-lg'
                           : 'border-gray-100 hover:border-gray-200'
-                      } ${isDowngrade ? 'opacity-50' : ''}`}
+                      } ${isDowngrade && planKey !== 'free' ? 'opacity-50' : ''}`}
                     >
-                      {plan.popular && !isCurrentPlan && (
+                      {plan.popular && !isCurrentPlan && billingCycle === 'monthly' && (
                         <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-padi-green text-white text-xs font-medium px-3 py-0.5 rounded-full">
                           Most Popular
                         </span>
@@ -269,6 +306,11 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                       {isCurrentPlan && (
                         <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-medium px-3 py-0.5 rounded-full">
                           Current Plan
+                        </span>
+                      )}
+                      {billingCycle === 'yearly' && planKey !== 'free' && (
+                        <span className="absolute -top-2 right-2 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                          Best Value
                         </span>
                       )}
                       
@@ -279,9 +321,18 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                           <p className="text-xs text-gray-400 mt-0.5">{plan.tagline}</p>
                         )}
                         <p className="text-xl font-bold text-padi-green mt-2">
-                          {plan.price === 0 ? 'Free' : `₦${plan.price.toLocaleString()}`}
-                          {plan.price > 0 && <span className="text-xs text-gray-400 font-normal">/mo</span>}
+                          {displayPrice === 0 ? 'Free' : `₦${displayPrice.toLocaleString()}`}
+                          {displayPrice > 0 && (
+                            <span className="text-xs text-gray-400 font-normal">
+                              /{billingCycle === 'yearly' ? 'yr' : 'mo'}
+                            </span>
+                          )}
                         </p>
+                        {billingCycle === 'yearly' && plan.price > 0 && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            Save ₦{(plan.price * 12 - plan.yearlyPrice).toLocaleString()}/year
+                          </p>
+                        )}
                       </div>
 
                       <ul className="space-y-1.5 mb-4">
@@ -324,7 +375,9 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                         <div className="flex items-center gap-3">
                           <FiClock className="text-amber-600" />
                           <div>
-                            <p className="font-medium text-sm">Upgrade to {PLAN_DETAILS[req.requestedPlan]?.name}</p>
+                            <p className="font-medium text-sm">
+                              {PLAN_DETAILS[req.requestedPlan]?.name} ({req.billingCycle || 'monthly'})
+                            </p>
                             <p className="text-xs text-gray-500">₦{req.amount.toLocaleString()} - {req.paymentProof ? 'Proof uploaded' : 'Awaiting payment proof'}</p>
                           </div>
                         </div>
@@ -349,9 +402,30 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                   <span className="text-3xl">{PLAN_DETAILS[selectedPlan]?.icon}</span>
                   <div>
                     <p className="font-bold text-lg">{PLAN_DETAILS[selectedPlan]?.name} Plan</p>
-                    <p className="text-padi-green font-bold text-xl">₦{PLAN_DETAILS[selectedPlan]?.price.toLocaleString()}/month</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-padi-green font-bold text-xl">
+                        ₦{(billingCycle === 'yearly' ? PLAN_DETAILS[selectedPlan]?.yearlyPrice : PLAN_DETAILS[selectedPlan]?.price).toLocaleString()}
+                      </span>
+                      <span className="text-sm text-gray-500">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
+                    </div>
+                    {billingCycle === 'yearly' && PLAN_DETAILS[selectedPlan]?.price > 0 && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <FiCalendar className="text-padi-green" size={14} />
+                        <span className="text-xs text-green-600">
+                          12 months included
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
+                {billingCycle === 'yearly' && PLAN_DETAILS[selectedPlan]?.price > 0 && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2">
+                    <FiPercent className="text-green-600" size={16} />
+                    <p className="text-sm text-green-700">
+                      Yearly subscription saves you ₦{(PLAN_DETAILS[selectedPlan].price * 12 - PLAN_DETAILS[selectedPlan].yearlyPrice).toLocaleString()} compared to monthly!
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="bg-navy text-white rounded-2xl p-5">
@@ -373,7 +447,9 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                   </div>
                   <div className="flex justify-between pt-2 border-t border-white/20">
                     <span className="text-gray-300">Amount</span>
-                    <span className="font-bold text-padi-green text-lg">₦{PLAN_DETAILS[selectedPlan]?.price.toLocaleString()}</span>
+                    <span className="font-bold text-padi-green text-lg">
+                      ₦{(billingCycle === 'yearly' ? PLAN_DETAILS[selectedPlan]?.yearlyPrice : PLAN_DETAILS[selectedPlan]?.price).toLocaleString()}
+                    </span>
                   </div>
                 </div>
                 <p className="text-xs text-gray-400 mt-4 leading-relaxed">
