@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const { validationResult } = require('express-validator');
 const Vendor = require('../models/Vendor');
 const generateSlug = require('../utils/generateSlug');
-const { sendPasswordResetEmail, sendWelcomeEmail } = require('../utils/email');
+const { sendPasswordResetEmail, sendWelcomeEmail, sendTrialStartedEmail } = require('../utils/email');
 
 const catchAsync = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -56,10 +56,22 @@ exports.register = catchAsync(async (req, res) => {
     isAdmin
   });
 
+  vendor.startTrial('premium');
+  await vendor.save();
+
   const token = generateToken(vendor._id);
 
   sendWelcomeEmail(vendor.email, vendor.businessName).catch(err => {
     console.error('Failed to send welcome email:', err);
+  });
+
+  sendTrialStartedEmail(
+    vendor.email, 
+    vendor.businessName, 
+    vendor.trial.plan, 
+    vendor.trial.endDate
+  ).catch(err => {
+    console.error('Failed to send trial start email:', err);
   });
 
   res.status(201).json({
@@ -72,6 +84,7 @@ exports.register = catchAsync(async (req, res) => {
       phone: vendor.phone,
       category: vendor.category,
       plan: vendor.plan,
+      trial: vendor.trial,
       logo: vendor.logo,
       coverImage: vendor.coverImage,
       customLink: vendor.customLink,
@@ -102,6 +115,9 @@ exports.login = catchAsync(async (req, res) => {
     return res.status(401).json({ message: 'Invalid email or password' });
   }
 
+  vendor.checkTrialExpired();
+  await vendor.save();
+
   const token = generateToken(vendor._id);
 
   res.json({
@@ -114,6 +130,7 @@ exports.login = catchAsync(async (req, res) => {
       phone: vendor.phone,
       category: vendor.category,
       plan: vendor.plan,
+      trial: vendor.trial,
       logo: vendor.logo,
       coverImage: vendor.coverImage,
       customLink: vendor.customLink,

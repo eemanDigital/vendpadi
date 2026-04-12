@@ -37,7 +37,8 @@ export const vendorAPI = {
   updateCover: (formData) => api.post('/vendor/me/cover', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  updateCustomLink: (customLink) => api.put('/vendor/me/custom-link', { customLink })
+  updateCustomLink: (customLink) => api.put('/vendor/me/custom-link', { customLink }),
+  getTrialStatus: () => api.get('/vendor/trial-status')
 };
 
 export const productAPI = {

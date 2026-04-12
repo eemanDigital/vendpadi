@@ -258,7 +258,7 @@ const Settings = () => {
           <Link to="/" className="flex items-center gap-2">
             <Logo variant="icon" size="sm" />
           </Link>
-          <PlanBadge plan={vendor?.plan} size="sm" />
+          <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
         </div>
       </header>
 
@@ -278,7 +278,7 @@ const Settings = () => {
           </div>
           <h3 className="font-sora font-semibold text-center">{vendor?.businessName}</h3>
           <div className="flex justify-center mt-2">
-            <PlanBadge plan={vendor?.plan} size="sm" />
+            <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
           </div>
         </div>
 
@@ -306,7 +306,7 @@ const Settings = () => {
               <div>
                 <h2 className="font-sora font-semibold text-lg">Current Plan</h2>
                 <div className="flex items-center gap-2 mt-1">
-                  <PlanBadge plan={vendor?.plan} size="md" />
+                  <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="md" />
                 </div>
               </div>
               <div className="flex items-center gap-3">

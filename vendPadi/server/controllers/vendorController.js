@@ -11,6 +11,9 @@ exports.getMe = catchAsync(async (req, res) => {
     return res.status(404).json({ message: 'Vendor not found' });
   }
 
+  vendor.checkTrialExpired();
+  await vendor.save();
+
   res.json(vendor);
 });
 
@@ -56,6 +59,7 @@ exports.updateMe = catchAsync(async (req, res) => {
     phone: vendor.phone,
     category: vendor.category,
     plan: vendor.plan,
+    trial: vendor.trial,
     logo: vendor.logo,
     coverImage: vendor.coverImage,
     customLink: vendor.customLink,

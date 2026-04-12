@@ -18,6 +18,7 @@ const reviewRoutes = require("./routes/reviewRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const trackingRoutes = require("./routes/trackingRoutes");
 const { sanitizeBody } = require("./middleware/sanitizeMiddleware");
+const { startScheduler } = require("./utils/trialScheduler");
 
 const app = express();
 
@@ -216,9 +217,40 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
+const cleanupExpiredTrials = async () => {
+  try {
+    const Vendor = require("./models/Vendor");
+    const now = new Date();
+    
+    const result = await Vendor.updateMany(
+      {
+        "trial.active": true,
+        "trial.endDate": { $lt: now }
+      },
+      {
+        $set: {
+          "trial.active": false,
+          "trial.plan": null
+        }
+      }
+    );
+    
+    if (result.modifiedCount > 0) {
+      log.info(`Cleaned up ${result.modifiedCount} expired trials`);
+    }
+  } catch (error) {
+    log.error("Error cleaning up expired trials:", error);
+  }
+};
+
+setInterval(cleanupExpiredTrials, 60 * 60 * 1000);
+
 app.listen(PORT, () => {
   log.info(`Server running on port ${PORT}`);
   log.info(`Environment: ${process.env.NODE_ENV || "development"}`);
+  
+  cleanupExpiredTrials();
+  startScheduler();
 });
 
 module.exports = app;

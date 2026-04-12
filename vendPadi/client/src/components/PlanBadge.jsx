@@ -21,14 +21,31 @@ const PLAN_CONFIG = {
   }
 };
 
-const PlanBadge = ({ plan, size = 'md' }) => {
-  const config = PLAN_CONFIG[plan?.type || 'free'];
+const TRIAL_CONFIG = {
+  label: 'Trial',
+  color: 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white',
+  badge: '🔥'
+};
+
+const PlanBadge = ({ plan, trial, size = 'md' }) => {
+  const isOnTrial = trial?.active && trial?.endDate && new Date(trial.endDate) > new Date();
+  const effectivePlan = isOnTrial ? trial.plan : (plan?.type || 'free');
+  const config = PLAN_CONFIG[effectivePlan] || PLAN_CONFIG.free;
   
   const sizeClasses = {
     sm: 'text-xs px-2 py-0.5',
     md: 'text-sm px-3 py-1',
     lg: 'text-base px-4 py-1.5'
   };
+
+  if (isOnTrial) {
+    return (
+      <span className={`inline-flex items-center gap-1 rounded-full font-medium ${TRIAL_CONFIG.color} ${sizeClasses[size]}`}>
+        <span>{TRIAL_CONFIG.badge}</span>
+        {TRIAL_CONFIG.label}
+      </span>
+    );
+  }
 
   return (
     <span className={`inline-flex items-center gap-1 rounded-full font-medium ${config.color} ${sizeClasses[size]}`}>

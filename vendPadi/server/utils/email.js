@@ -412,3 +412,319 @@ exports.sendOrderNotificationEmail = async (email, businessName, orderDetails) =
     html,
   });
 };
+
+exports.sendTrialStartedEmail = async (email, businessName, trialPlan, endDate) => {
+  const dashboardUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/dashboard` : 'http://localhost:5173/dashboard';
+  const settingsUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/settings` : 'http://localhost:5173/settings';
+  const endDateFormatted = new Date(endDate).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="${baseStyles}">
+      <div style="${cardStyles}">
+        <div style="background: linear-gradient(135deg, #F5A623 0%, #F8E71C 100%); padding: 32px; text-align: center;">
+          <h1 style="color: #1a1a2e; margin: 0; font-size: 28px; font-weight: bold;">🔥 Premium Trial Activated!</h1>
+        </div>
+        <div style="${contentStyles}">
+          <h2 style="color: #1a1a2e; margin: 0 0 16px; font-size: 22px;">
+            Hi ${businessName}! 🎉
+          </h2>
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            Your <strong style="color: #F5A623;">${trialPlan.charAt(0).toUpperCase() + trialPlan.slice(1)} trial</strong> is now active! For the next <strong>7 days</strong>, you have full access to all premium features.
+          </p>
+          
+          <div style="background: #FFF9E6; border: 1px solid #F5A623; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <p style="color: #1a1a2e; margin: 0 0 8px; font-size: 14px;">Trial ends on</p>
+            <p style="color: #F5A623; margin: 0; font-size: 20px; font-weight: bold;">${endDateFormatted}</p>
+          </div>
+
+          <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="margin: 0 0 12px; color: #1a1a2e; font-size: 16px;">🔥 What's unlocked:</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+              <li>Unlimited products</li>
+              <li>8 images per product</li>
+              <li>Cover image for your store</li>
+              <li>Custom store link</li>
+              <li>Full analytics dashboard</li>
+            </ul>
+          </div>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${dashboardUrl}" style="${buttonStyles}">
+              Explore Premium Features 🚀
+            </a>
+          </div>
+
+          <p style="color: #666; line-height: 1.7; margin: 0 0 16px; font-size: 14px;">
+            Not ready to commit? No worries! After your trial ends, you'll automatically switch to the Free plan.
+          </p>
+        </div>
+        <div style="${footerStyles}">
+          <p style="color: #666; margin: 0 0 8px; font-size: 14px;">
+            <strong>VendPadi</strong> - Build your WhatsApp store in minutes
+          </p>
+          <p style="color: #999; margin: 0; font-size: 12px;">
+            <a href="${process.env.CLIENT_URL || '#'}" style="color: #25C675;">vendpadi.com</a>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `🔥 Your VendPadi Premium Trial is Active!`,
+    html,
+  });
+};
+
+exports.sendTrialExpiringReminderEmail = async (email, businessName, daysRemaining, trialPlan) => {
+  const dashboardUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/dashboard` : 'http://localhost:5173/dashboard';
+  const upgradeUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/settings` : 'http://localhost:5173/settings';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="${baseStyles}">
+      <div style="${cardStyles}">
+        <div style="background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); padding: 32px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">⏰ Trial Ending Soon!</h1>
+        </div>
+        <div style="${contentStyles}">
+          <h2 style="color: #1a1a2e; margin: 0 0 16px; font-size: 22px;">
+            Hi ${businessName}!
+          </h2>
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            Your <strong style="color: #F5A623;">${trialPlan.charAt(0).toUpperCase() + trialPlan.slice(1)} trial</strong> is ending in <strong style="color: #FF6B6B;">${daysRemaining} day${daysRemaining > 1 ? 's' : ''}</strong>.
+          </p>
+          
+          <div style="background: #FFE8E8; border: 1px solid #FF6B6B; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <p style="color: #FF6B6B; margin: 0; font-size: 18px; font-weight: bold;">
+              ${daysRemaining} day${daysRemaining > 1 ? 's' : ''} left to experience Premium
+            </p>
+          </div>
+
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            Don't lose access to the features you've been using. Upgrade now to keep everything working seamlessly.
+          </p>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${upgradeUrl}" style="${buttonStyles}">
+              Upgrade Now 💎
+            </a>
+          </div>
+
+          <p style="color: #999; line-height: 1.7; margin: 0; font-size: 14px; text-align: center;">
+            Or continue with our free plan - no credit card required!
+          </p>
+        </div>
+        <div style="${footerStyles}">
+          <p style="color: #666; margin: 0 0 8px; font-size: 14px;">
+            <strong>VendPadi</strong> - Build your WhatsApp store in minutes
+          </p>
+          <p style="color: #999; margin: 0; font-size: 12px;">
+            <a href="${process.env.CLIENT_URL || '#'}" style="color: #25C675;">vendpadi.com</a>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `⏰ Your VendPadi trial ends in ${daysRemaining} day${daysRemaining > 1 ? 's' : ''}!`,
+    html,
+  });
+};
+
+exports.sendTrialExpiredEmail = async (email, businessName) => {
+  const dashboardUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/dashboard` : 'http://localhost:5173/dashboard';
+  const upgradeUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/settings` : 'http://localhost:5173/settings';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="${baseStyles}">
+      <div style="${cardStyles}">
+        <div style="background: linear-gradient(135deg, #666 0%, #999 100%); padding: 32px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">Trial Ended</h1>
+        </div>
+        <div style="${contentStyles}">
+          <h2 style="color: #1a1a2e; margin: 0 0 16px; font-size: 22px;">
+            Hi ${businessName}!
+          </h2>
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            Your VendPadi Premium trial has ended. You've been automatically moved to the Free plan.
+          </p>
+          
+          <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="margin: 0 0 12px; color: #1a1a2e; font-size: 16px;">What's on Free plan:</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+              <li>5 products</li>
+              <li>1 image per product</li>
+              <li>WhatsApp orders</li>
+              <li>Basic store</li>
+            </ul>
+          </div>
+
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            Want to unlock all features again? Upgrade to continue growing your business!
+          </p>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${upgradeUrl}" style="${buttonStyles}">
+              View Plans 💎
+            </a>
+          </div>
+        </div>
+        <div style="${footerStyles}">
+          <p style="color: #666; margin: 0 0 8px; font-size: 14px;">
+            <strong>VendPadi</strong> - Build your WhatsApp store in minutes
+          </p>
+          <p style="color: #999; margin: 0; font-size: 12px;">
+            <a href="${process.env.CLIENT_URL || '#'}" style="color: #25C675;">vendpadi.com</a>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `Your VendPadi Premium trial has ended`,
+    html,
+  });
+};
+
+exports.sendFirstOrderFollowUpEmail = async (email, businessName, orderCount, revenue) => {
+  const dashboardUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/dashboard` : 'http://localhost:5173/dashboard';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="${baseStyles}">
+      <div style="${cardStyles}">
+        <div style="${headerStyles}">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">📈 You're Getting Orders!</h1>
+        </div>
+        <div style="${contentStyles}">
+          <h2 style="color: #1a1a2e; margin: 0 0 16px; font-size: 22px;">
+            Hi ${businessName}! 🎉
+          </h2>
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            Great news! Your VendPadi store is getting traction. You've received <strong>${orderCount} order${orderCount > 1 ? 's' : ''}</strong> with a total of <strong style="color: #25C675;">₦${revenue?.toLocaleString()}</strong> in revenue!
+          </p>
+
+          <div style="background: #f0fdf4; border: 1px solid #25C675; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <p style="color: #1a1a2e; margin: 0 0 8px; font-size: 16px;">Total Revenue</p>
+            <p style="color: #25C675; margin: 0; font-size: 28px; font-weight: bold;">₦${revenue?.toLocaleString()}</p>
+          </div>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${dashboardUrl}" style="${buttonStyles}">
+              View Your Analytics 📊
+            </a>
+          </div>
+
+          <p style="color: #666; line-height: 1.7; margin: 0; font-size: 14px;">
+            Keep adding products and sharing your store to get more orders!
+          </p>
+        </div>
+        <div style="${footerStyles}">
+          <p style="color: #666; margin: 0 0 8px; font-size: 14px;">
+            <strong>VendPadi</strong> - Build your WhatsApp store in minutes
+          </p>
+          <p style="color: #999; margin: 0; font-size: 12px;">
+            <a href="${process.env.CLIENT_URL || '#'}" style="color: #25C675;">vendpadi.com</a>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `📈 Your VendPadi store made ₦${revenue?.toLocaleString()}!`,
+    html,
+  });
+};
+
+exports.sendFirstProductFollowUpEmail = async (email, businessName) => {
+  const dashboardUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/dashboard` : 'http://localhost:5173/dashboard';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="${baseStyles}">
+      <div style="${cardStyles}">
+        <div style="${headerStyles}">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">🛍️ Ready to Sell?</h1>
+        </div>
+        <div style="${contentStyles}">
+          <h2 style="color: #1a1a2e; margin: 0 0 16px; font-size: 22px;">
+            Hi ${businessName}! 👋
+          </h2>
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            You've set up your VendPadi store - that's awesome! 🎉 Now let's get your first sale.
+          </p>
+
+          <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="margin: 0 0 12px; color: #1a1a2e; font-size: 16px;">💡 Quick tips to get orders:</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+              <li>Share your store link on WhatsApp status</li>
+              <li>Add more products - customers love variety</li>
+              <li>Add clear prices and descriptions</li>
+              <li>Respond quickly to order messages</li>
+            </ul>
+          </div>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${dashboardUrl}" style="${buttonStyles}">
+              Add More Products 🛍️
+            </a>
+          </div>
+        </div>
+        <div style="${footerStyles}">
+          <p style="color: #666; margin: 0 0 8px; font-size: 14px;">
+            <strong>VendPadi</strong> - Build your WhatsApp store in minutes
+          </p>
+          <p style="color: #999; margin: 0; font-size: 12px;">
+            <a href="${process.env.CLIENT_URL || '#'}" style="color: #25C675;">vendpadi.com</a>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `🛍️ Your VendPadi store is ready - let's get your first sale!`,
+    html,
+  });
+};

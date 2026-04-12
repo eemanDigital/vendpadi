@@ -428,7 +428,7 @@ const Orders = () => {
             {vendor?.businessName}
           </h3>
           <div className="flex justify-center mt-2">
-            <PlanBadge plan={vendor?.plan} size="sm" />
+            <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
           </div>
         </div>
 

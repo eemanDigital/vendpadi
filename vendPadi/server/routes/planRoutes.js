@@ -210,6 +210,8 @@ router.put('/admin/approve/:id', protect, adminOnly, catchAsync(async (req, res)
 
   vendor.plan.type = request.requestedPlan;
   vendor.plan.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  vendor.trial.active = false;
+  vendor.trial.plan = null;
   await vendor.save();
 
   res.json({ message: 'Plan upgraded successfully', request });

@@ -7,6 +7,7 @@ import ProductCard from '../components/ProductCard';
 import ProductForm from '../components/ProductForm';
 import PlanBadge from '../components/PlanBadge';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
+import TrialBanner from '../components/TrialBanner';
 import Logo from '../components/Logo';
 import ShareStoreModal from '../components/ShareStoreModal';
 import SearchInput from '../components/ui/SearchInput';
@@ -211,7 +212,7 @@ const Dashboard = () => {
           </div>
           <h3 className="font-sora font-semibold text-center truncate px-2">{vendor?.businessName}</h3>
           <div className="flex justify-center mt-2">
-            <PlanBadge plan={vendor?.plan} size="sm" />
+            <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
           </div>
           
           <div className="mt-4 bg-white/10 rounded-xl p-3">
@@ -286,9 +287,11 @@ const Dashboard = () => {
           <Link to="/" className="flex items-center gap-2">
             <Logo variant="icon" size="sm" />
           </Link>
-          <PlanBadge plan={vendor?.plan} size="sm" />
+          <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
         </div>
       </header>
+
+      <TrialBanner />
 
       <div className="lg:ml-64 pb-20 lg:pb-6">
         <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
