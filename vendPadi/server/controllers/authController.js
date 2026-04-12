@@ -232,3 +232,153 @@ exports.changePassword = catchAsync(async (req, res) => {
 
   res.status(200).json({ message: 'Password changed successfully' });
 });
+
+exports.requestDeleteAccount = catchAsync(async (req, res) => {
+  const vendorId = req.vendor?._id;
+  
+  if (!vendorId) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  const { password, reason } = req.body;
+
+  if (!password) {
+    return res.status(400).json({ message: 'Password confirmation is required' });
+  }
+
+  const vendor = await Vendor.findById(vendorId);
+
+  if (!vendor) {
+    return res.status(404).json({ message: 'Account not found' });
+  }
+
+  const isMatch = await bcrypt.compare(password, vendor.passwordHash);
+  if (!isMatch) {
+    return res.status(400).json({ message: 'Incorrect password' });
+  }
+
+  vendor.requestDeletion(reason || '');
+  await vendor.save();
+
+  res.status(200).json({ 
+    message: 'Account deletion requested. You can restore your account within 30 days.',
+    deletionDate: vendor.deletionRequestedAt
+  });
+});
+
+exports.cancelDeleteAccount = catchAsync(async (req, res) => {
+  const vendorId = req.vendor?._id;
+  
+  if (!vendorId) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  const { password } = req.body;
+
+  if (!password) {
+    return res.status(400).json({ message: 'Password confirmation is required' });
+  }
+
+  const vendor = await Vendor.findById(vendorId);
+
+  if (!vendor) {
+    return res.status(404).json({ message: 'Account not found' });
+  }
+
+  if (!vendor.deletionRequestedAt) {
+    return res.status(400).json({ message: 'No deletion request found' });
+  }
+
+  const isMatch = await bcrypt.compare(password, vendor.passwordHash);
+  if (!isMatch) {
+    return res.status(400).json({ message: 'Incorrect password' });
+  }
+
+  vendor.restoreAccount();
+  await vendor.save();
+
+  res.status(200).json({ 
+    message: 'Account restored successfully!',
+    vendor
+  });
+});
+
+exports.getDeletionStatus = catchAsync(async (req, res) => {
+  const vendorId = req.vendor?._id;
+  
+  if (!vendorId) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  const vendor = await Vendor.findById(vendorId);
+
+  if (!vendor) {
+    return res.status(404).json({ message: 'Account not found' });
+  }
+
+  const daysRemaining = vendor.deletionRequestedAt
+    ? Math.max(0, 30 - Math.ceil((Date.now() - new Date(vendor.deletionRequestedAt)) / (1000 * 60 * 60 * 24)))
+    : null;
+
+  res.status(200).json({ 
+    deletionRequested: !!vendor.deletionRequestedAt,
+    deletionRequestedAt: vendor.deletionRequestedAt,
+    daysRemaining,
+    permanentDeletionDate: vendor.deletionRequestedAt
+      ? new Date(new Date(vendor.deletionRequestedAt).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      : null
+  });
+});
+
+exports.exportAccountData = catchAsync(async (req, res) => {
+  const vendorId = req.vendor?._id;
+  
+  if (!vendorId) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  const vendor = await Vendor.findById(vendorId);
+  const Product = require('../models/Product');
+  const Order = require('../models/Order');
+
+  if (!vendor) {
+    return res.status(404).json({ message: 'Account not found' });
+  }
+
+  const products = await Product.find({ vendorId });
+  const orders = await Order.find({ vendorId }).sort({ createdAt: -1 });
+
+  const exportData = {
+    exportDate: new Date().toISOString(),
+    account: {
+      businessName: vendor.businessName,
+      email: vendor.email,
+      phone: vendor.phone,
+      category: vendor.category,
+      createdAt: vendor.createdAt,
+      plan: vendor.plan,
+      analytics: vendor.analytics
+    },
+    products: products.map(p => ({
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      stock: p.stock,
+      category: p.category,
+      images: p.images,
+      createdAt: p.createdAt
+    })),
+    orders: orders.map(o => ({
+      customerName: o.customerName,
+      customerPhone: o.customerPhone,
+      items: o.items,
+      totalAmount: o.totalAmount,
+      status: o.status,
+      createdAt: o.createdAt
+    })),
+    totalProducts: products.length,
+    totalOrders: orders.length
+  };
+
+  res.status(200).json(exportData);
+});
