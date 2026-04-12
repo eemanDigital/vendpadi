@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { initWishlist } from "../store/wishlistSlice";
 import { clearCart } from "../store/cartSlice";
 import { storeAPI, trackingAPI } from "../api/axiosInstance";
 import { buildWhatsAppOrderLink } from "../utils/whatsapp";
@@ -89,6 +90,7 @@ const Storefront = () => {
         setLoading(true);
         const { data } = await storeAPI.getStore(slug);
         setStore(data);
+        dispatch(initWishlist(slug));
         trackingAPI.trackView(slug).catch(() => {});
       } catch {
         toast.error("Store not found");
