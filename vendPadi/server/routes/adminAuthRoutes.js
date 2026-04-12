@@ -4,6 +4,10 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Vendor = require('../models/Vendor');
 
+router.options('/login', (req, res) => {
+  res.status(200).end();
+});
+
 router.post('/login', async (req, res) => {
   try {
     const { email, secretCode } = req.body;

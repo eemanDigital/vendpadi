@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setCredentials } from '../store/authSlice';
-import toast from 'react-hot-toast';
-import { FiShield, FiMail, FiLock } from 'react-icons/fi';
-import Logo from '../components/Logo';
-import axios from 'axios';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../store/authSlice";
+import toast from "react-hot-toast";
+import { FiShield, FiMail, FiLock } from "react-icons/fi";
+import Logo from "../components/Logo";
+import axios from "axios";
 
 const AUTH_API = axios.create({
-  baseURL: '/api',
-  headers: { 'Content-Type': 'application/json' }
+  baseURL: "/api",
+  headers: { "Content-Type": "application/json" },
 });
 
 const AdminLogin = () => {
@@ -17,14 +17,14 @@ const AdminLogin = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    secretCode: ''
+    email: "",
+    secretCode: "",
   });
 
   const handleChange = (e) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -33,14 +33,19 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const response = await AUTH_API.post('/admin/auth/login', formData);
+      const response = await AUTH_API.post("/admin/auth/login", formData);
 
-      dispatch(setCredentials({ token: response.data.token, vendor: response.data.admin }));
-      localStorage.setItem('vendpadi_admin_token', response.data.token);
-      toast.success('Welcome, Admin!');
-      navigate('/admin-panel');
+      dispatch(
+        setCredentials({
+          token: response.data.token,
+          vendor: response.data.admin,
+        }),
+      );
+      localStorage.setItem("vendpadi_admin_token", response.data.token);
+      toast.success("Welcome, Admin!");
+      navigate("/admin-panel");
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Invalid credentials');
+      toast.error(error.response?.data?.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }
@@ -56,18 +61,25 @@ const AdminLogin = () => {
           <div className="mt-6 w-20 h-20 bg-padi-green/20 rounded-full flex items-center justify-center mx-auto">
             <FiShield className="text-padi-green text-4xl" />
           </div>
-          <h1 className="font-sora font-bold text-2xl mt-4 text-white">Admin Portal</h1>
+          <h1 className="font-sora font-bold text-2xl mt-4 text-white">
+            Admin Portal
+          </h1>
           <p className="text-gray-400 mt-2">Sign in to manage VendPadi</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-2xl">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-2xl">
           <div className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Admin Email
               </label>
               <div className="relative">
-                <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <FiMail
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
                 <input
                   type="email"
                   name="email"
@@ -85,7 +97,10 @@ const AdminLogin = () => {
                 Secret Code
               </label>
               <div className="relative">
-                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <FiLock
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
                 <input
                   type="password"
                   name="secretCode"
@@ -102,8 +117,7 @@ const AdminLogin = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-6 py-3 bg-padi-green hover:bg-padi-green-dark text-white font-semibold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
+            className="w-full mt-6 py-3 bg-padi-green hover:bg-padi-green-dark text-white font-semibold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
             {loading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -119,11 +133,15 @@ const AdminLogin = () => {
         </form>
 
         <p className="text-center text-gray-500 text-sm mt-6">
-          <Link to="/login" className="text-gray-400 hover:text-white transition-colors">
+          <Link
+            to="/login"
+            className="text-gray-400 hover:text-white transition-colors">
             Vendor Login
           </Link>
           <span className="mx-2">•</span>
-          <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+          <Link
+            to="/"
+            className="text-gray-400 hover:text-white transition-colors">
             Back to Home
           </Link>
         </p>
