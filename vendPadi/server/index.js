@@ -22,7 +22,7 @@ const { startScheduler } = require("./utils/trialScheduler");
 
 const app = express();
 
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 const logsDir = path.join(__dirname, "logs");
 if (!fs.existsSync(logsDir)) {
@@ -137,13 +137,13 @@ app.use("/api/admin/auth", adminAuthRoutes);
 console.log("Admin auth routes mounted at /api/admin/auth");
 
 app.use("/api/debug", (req, res) => {
-  res.json({ 
-    method: req.method, 
+  res.json({
+    method: req.method,
     path: req.path,
     originalUrl: req.originalUrl,
     baseUrl: req.baseUrl,
     routerPath: req.route?.path,
-    headers: req.headers
+    headers: req.headers,
   });
 });
 
@@ -221,20 +221,20 @@ const cleanupExpiredTrials = async () => {
   try {
     const Vendor = require("./models/Vendor");
     const now = new Date();
-    
+
     const result = await Vendor.updateMany(
       {
         "trial.active": true,
-        "trial.endDate": { $lt: now }
+        "trial.endDate": { $lt: now },
       },
       {
         $set: {
           "trial.active": false,
-          "trial.plan": null
-        }
-      }
+          "trial.plan": null,
+        },
+      },
     );
-    
+
     if (result.modifiedCount > 0) {
       log.info(`Cleaned up ${result.modifiedCount} expired trials`);
     }
@@ -248,7 +248,7 @@ setInterval(cleanupExpiredTrials, 60 * 60 * 1000);
 app.listen(PORT, () => {
   log.info(`Server running on port ${PORT}`);
   log.info(`Environment: ${process.env.NODE_ENV || "development"}`);
-  
+
   cleanupExpiredTrials();
   startScheduler();
 });

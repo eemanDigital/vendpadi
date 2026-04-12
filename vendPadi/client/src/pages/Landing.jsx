@@ -4,7 +4,6 @@ import {
   FiShare2,
   FiMessageCircle,
   FiCheck,
-  FiStar,
   FiMenu,
   FiX,
   FiLogOut,
@@ -14,24 +13,176 @@ import {
   FiHeart,
   FiMessageSquare,
   FiAlertTriangle,
-  FiSearch,
   FiBarChart2,
   FiZap,
   FiClock,
   FiCalendar,
+  FiArrowRight,
+  FiStar,
+  FiShield,
+  FiGlobe,
+  FiSmartphone,
+  FiUsers,
+  FiDollarSign,
+  FiAward,
+  FiPercent,
+  FiArrowUpRight,
+  FiArrowDownRight,
+  FiShoppingBag,
+  FiShoppingCart,
+  FiHome,
+  FiSmile,
+  FiTrendingDown,
+  FiGift,
+  FiSun,
+  FiCoffee,
 } from "react-icons/fi";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/authSlice";
 import { clearCart } from "../store/cartSlice";
 import Logo from "../components/Logo";
 
+const AnimatedCounter = ({ end, duration = 2000, suffix = "" }) => {
+  const [count, setCount] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+          let start = 0;
+          const increment = end / (duration / 16);
+          const timer = setInterval(() => {
+            start += increment;
+            if (start >= end) {
+              setCount(end);
+              clearInterval(timer);
+            } else {
+              setCount(Math.floor(start));
+            }
+          }, 16);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [end, duration, hasAnimated]);
+
+  return (
+    <span ref={ref}>
+      {count.toLocaleString()}
+      {suffix}
+    </span>
+  );
+};
+
+const ScrollReveal = ({ children, delay = 0, className = "" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setIsVisible(true), delay);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [delay]);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+      } ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+const FloatingShape = ({ className, delay = 0 }) => (
+  <div
+    className={`absolute rounded-full blur-3xl opacity-20 animate-pulse ${className}`}
+    style={{ animationDelay: `${delay}s`, animationDuration: "4s" }}
+  />
+);
+
+const BentoCard = ({ children, className = "", span = "1x1" }) => {
+  const spans = {
+    "1x1": "",
+    "2x1": "md:col-span-2",
+    "1x2": "md:row-span-2",
+    "2x2": "md:col-span-2 md:row-span-2",
+  };
+
+  return (
+    <div
+      className={`bg-white rounded-3xl p-8 border border-gray-100 hover:border-padi-green/20 hover:shadow-xl transition-all duration-500 hover:-translate-y-1 ${spans[span]} ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+const SplitSection = ({ image, title, subtitle, points, reverse = false, badge }) => {
+  return (
+    <div
+      className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
+        reverse ? "lg:flex-row-reverse" : ""
+      }`}>
+      <div className={reverse ? "lg:order-2" : ""}>
+        {badge && (
+          <span className="inline-block text-padi-green font-semibold text-sm mb-4 tracking-wider uppercase">
+            {badge}
+          </span>
+        )}
+        <h3 className="font-sora font-bold text-3xl lg:text-4xl text-navy mb-4">
+          {title}
+        </h3>
+        <p className="text-gray-500 text-lg mb-8">{subtitle}</p>
+        <ul className="space-y-4">
+          {points.map((point, i) => (
+            <li key={i} className="flex items-start gap-4">
+              <div className="w-6 h-6 rounded-full bg-padi-green/10 flex items-center justify-center flex-shrink-0 mt-1">
+                <FiCheck className="text-padi-green" size={14} />
+              </div>
+              <span className="text-gray-600">{point}</span>
+            </li>
+          ))}
+        </ul>
+        <Link
+          to="/register"
+          className="inline-flex items-center gap-2 text-padi-green font-semibold mt-8 hover:gap-4 transition-all">
+          Get started free <FiArrowRight />
+        </Link>
+      </div>
+      <div className={`relative ${reverse ? "lg:order-1" : ""}`}>
+        <div className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-3xl p-8 border border-gray-200">
+          {image}
+        </div>
+        <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-padi-green/10 rounded-2xl -z-10"></div>
+        <div className="absolute -top-4 -left-4 w-16 h-16 bg-gold/10 rounded-xl -z-10"></div>
+      </div>
+    </div>
+  );
+};
+
 const Landing = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, vendor } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [billingCycle, setBillingCycle] = useState('monthly');
+  const [billingCycle, setBillingCycle] = useState("monthly");
+  const [openFaq, setOpenFaq] = useState(null);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -40,105 +191,110 @@ const Landing = () => {
     setMobileMenuOpen(false);
   };
 
-  const features = [
+  const faqs = [
     {
-      icon: FiBarChart2,
-      title: "Analytics Dashboard",
-      desc: "Track store views, orders & top products",
+      q: "Do I need a credit card to start the free trial?",
+      a: "No! You get 7 days of free Premium access with no credit card required. Experience all features before deciding.",
     },
     {
-      icon: FiTrendingUp,
-      title: "Growth Insights",
-      desc: "See what's working and get more orders",
+      q: "Can I switch plans later?",
+      a: "Absolutely. Upgrade or downgrade anytime from your dashboard. Changes take effect immediately.",
     },
     {
-      icon: FiShare2,
-      title: "One-Click Sharing",
-      desc: "Share your store on WhatsApp, Instagram & anywhere",
+      q: "What happens after my free trial ends?",
+      a: "You'll automatically move to the Free plan. Your data stays safe, and you can upgrade anytime to unlock more features.",
     },
     {
-      icon: FiPackage,
-      title: "Stock Management",
-      desc: "Track inventory, get low stock alerts, manage quantities easily",
+      q: "How do WhatsApp orders work?",
+      a: "Customers browse your store, tap 'Order', and it opens WhatsApp with their cart items pre-filled. You receive the order directly.",
     },
     {
-      icon: FiGrid,
-      title: "Smart Filtering",
-      desc: "Search, sort & filter products by category, price, or stock",
+      q: "Can I use my own domain?",
+      a: "Custom domains are available on the Premium plan. Free and paid plans use yourname.vendpadi.com by default.",
+    },
+  ];
+
+  const useCases = [
+    {
+      icon: FiShoppingBag,
+      title: "Fashion & Clothing",
+      desc: "Showcase your latest collections with beautiful product galleries",
+      example: "From ₦0/mo",
+    },
+    {
+      icon: FiSmartphone,
+      title: "Electronics & Gadgets",
+      desc: "Perfect for phones, accessories, and tech products",
+      example: "From ₦0/mo",
     },
     {
       icon: FiHeart,
-      title: "Wishlist",
-      desc: "Customers can save favorite items for later purchase",
+      title: "Beauty & Cosmetics",
+      desc: "Let customers browse shades and products with ease",
+      example: "From ₦0/mo",
     },
     {
-      icon: FiMessageSquare,
-      title: "Reviews & Ratings",
-      desc: "Build trust with customer reviews and star ratings",
-    },
-    {
-      icon: FiAlertTriangle,
-      title: "Low Stock Alerts",
-      desc: "Get notified when products are running low",
+      icon: FiCoffee,
+      title: "Food & Catering",
+      desc: "Share menus and take orders for events",
+      example: "From ₦0/mo",
     },
   ];
 
-  const revenueFeatures = [
-    {
-      icon: FiTrendingUp,
-      title: "See Your Growth",
-      desc: "Track views, clicks, and orders. Know what's working.",
-      highlight: "Your store analytics",
-    },
-    {
-      icon: FiShare2,
-      title: "Share Everywhere",
-      desc: "One link for WhatsApp, Instagram bio, or anywhere.",
-      highlight: "Instant sharing",
-    },
-    {
-      icon: FiMessageCircle,
-      title: "Orders on WhatsApp",
-      desc: "Customers order with one tap. No app downloads needed.",
-      highlight: "Zero friction",
-    },
+  const trustedLogos = [
+    "Paystack",
+    "Flutterwave",
+    "Jumia",
+    "Konga",
+    "Andela",
+    "Piggyvest",
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Nav */}
-      <nav className="bg-navy text-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-14 sm:h-16">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-navy/95 backdrop-blur-md border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-2">
               <Logo variant="icon-light" size="sm" showText={true} />
             </Link>
 
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-8">
               {isAuthenticated ? (
                 <>
                   <Link
                     to="/dashboard"
-                    className="hover:text-padi-green transition-colors font-medium flex items-center gap-2">
+                    className="text-gray-300 hover:text-padi-green transition-colors font-medium flex items-center gap-2 text-sm">
                     <FiLayout size={18} /> Dashboard
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="hover:text-red-400 transition-colors font-medium flex items-center gap-2">
+                    className="text-gray-300 hover:text-red-400 transition-colors font-medium flex items-center gap-2 text-sm">
                     <FiLogOut size={18} /> Logout
                   </button>
                 </>
               ) : (
                 <>
+                  <a
+                    href="#features"
+                    className="text-gray-300 hover:text-white transition-colors font-medium text-sm">
+                    Features
+                  </a>
+                  <a
+                    href="#pricing"
+                    className="text-gray-300 hover:text-white transition-colors font-medium text-sm">
+                    Pricing
+                  </a>
                   <Link
                     to="/login"
-                    className="hover:text-padi-green transition-colors font-medium">
+                    className="text-gray-300 hover:text-white transition-colors font-medium text-sm">
                     Login
                   </Link>
                   <Link
                     to="/register"
-                    className="btn-primary text-sm py-2 px-4 flex items-center gap-1.5">
-                    <FiZap size={14} /> Free 7-Day Trial
+                    className="bg-padi-green hover:bg-padi-green-dark text-white font-semibold py-2.5 px-5 rounded-full transition-all duration-300 text-sm flex items-center gap-2 hover:shadow-lg hover:shadow-padi-green/30">
+                    <FiZap size={14} /> Free Trial
                   </Link>
                 </>
               )}
@@ -152,8 +308,22 @@ const Landing = () => {
           </div>
 
           <div
-            className={`md:hidden overflow-hidden transition-all duration-300 ${mobileMenuOpen ? "max-h-48 pb-4" : "max-h-0"}`}>
+            className={`md:hidden overflow-hidden transition-all duration-300 ${
+              mobileMenuOpen ? "max-h-64 pb-4" : "max-h-0"
+            }`}>
             <div className="flex flex-col gap-1 pt-2 border-t border-white/10">
+              <a
+                href="#features"
+                className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium text-sm"
+                onClick={() => setMobileMenuOpen(false)}>
+                Features
+              </a>
+              <a
+                href="#pricing"
+                className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium text-sm"
+                onClick={() => setMobileMenuOpen(false)}>
+                Pricing
+              </a>
               {isAuthenticated ? (
                 <>
                   <Link
@@ -178,9 +348,9 @@ const Landing = () => {
                   </Link>
                   <Link
                     to="/register"
-                    className="mt-2 mx-1 btn-primary text-center py-3 flex items-center justify-center gap-2"
+                    className="mt-2 mx-1 bg-padi-green text-center py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
                     onClick={() => setMobileMenuOpen(false)}>
-                    <FiZap size={14} /> Start Free 7-Day Trial
+                    <FiZap size={14} /> Start Free Trial
                   </Link>
                 </>
               )}
@@ -190,277 +360,608 @@ const Landing = () => {
       </nav>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-navy via-navy to-navy-light text-white py-16 sm:py-20 lg:py-28 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-6">
-            <FiTrendingUp className="text-padi-green" />
-            <span className="text-sm">Built for Nigerian businesses 🇳🇬</span>
+      <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 px-4 overflow-hidden bg-gradient-to-b from-navy via-navy to-navy-light">
+        <FloatingShape className="w-[500px] h-[500px] bg-padi-green -top-40 -left-40" delay={0} />
+        <FloatingShape className="w-[400px] h-[400px] bg-padi-green top-1/2 -right-20" delay={1} />
+
+        <div className="max-w-7xl mx-auto relative">
+          <div className="max-w-4xl mx-auto text-center">
+            <ScrollReveal>
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-5 py-2.5 rounded-full mb-8 border border-white/10">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-padi-green opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-padi-green"></span>
+                </span>
+                <span className="text-sm text-gray-300 font-medium">
+                  Built for Nigerian businesses
+                </span>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={100}>
+              <h1 className="font-sora font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-8 leading-[1.1] tracking-tight text-white">
+                Your Products.{" "}
+                <span className="bg-gradient-to-r from-padi-green to-emerald-400 bg-clip-text text-transparent">
+                  One Link.
+                </span>{" "}
+                <br />
+                Orders on WhatsApp.
+              </h1>
+            </ScrollReveal>
+
+            <ScrollReveal delay={200}>
+              <p className="text-lg sm:text-xl text-gray-300 mb-12 max-w-2xl mx-auto px-4 leading-relaxed">
+                Create your online store in minutes. Share your link on WhatsApp,
+                Instagram, or anywhere. Customers order with a single tap.
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal delay={300}>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                  to="/register"
+                  className="group relative inline-flex items-center gap-3 bg-padi-green hover:bg-padi-green-dark text-white font-bold py-4 px-10 rounded-full text-lg transition-all duration-300 shadow-xl shadow-padi-green/30 hover:shadow-padi-green/50 hover:-translate-y-1">
+                  <FiZap className="group-hover:rotate-12 transition-transform" />
+                  Start 7-Day Premium Trial — Free
+                  <FiArrowRight className="opacity-0 -ml-8 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+                </Link>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={400}>
+              <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-400">
+                <span className="flex items-center gap-2">
+                  <FiCheck className="text-padi-green" /> No credit card
+                </span>
+                <span className="flex items-center gap-2">
+                  <FiCheck className="text-padi-green" /> All Premium features
+                </span>
+                <span className="flex items-center gap-2">
+                  <FiCheck className="text-padi-green" /> Setup in 2 min
+                </span>
+              </div>
+            </ScrollReveal>
           </div>
 
-          <h1 className="font-sora font-bold text-3xl sm:text-5xl md:text-6xl lg:text-7xl mb-6 leading-tight tracking-tight">
-            Your Products.
-            <br />
-            <span className="text-padi-green">One Link.</span>
-            <br />
-            Orders on WhatsApp.
-          </h1>
-
-          <p className="text-base sm:text-lg text-gray-300 mb-10 max-w-2xl mx-auto px-4">
-            Create your online store in minutes. Share your link on WhatsApp,
-            Instagram, or anywhere. Customers order with a single tap — no app
-            downloads needed.
-          </p>
-
-          <Link
-            to="/register"
-            className="inline-flex items-center gap-2 bg-padi-green hover:bg-padi-green-dark text-white font-bold py-4 px-8 rounded-2xl text-lg transition-all shadow-lg shadow-padi-green/30 hover:shadow-padi-green/50">
-            <FiZap />
-            Start 7-Day Premium Trial — Free
-          </Link>
-          <p className="mt-4 text-sm text-gray-400 flex items-center justify-center gap-2">
-            <FiCheck className="text-padi-green" /> No credit card required
-            <span className="mx-2">•</span>
-            <FiCheck className="text-padi-green" /> All Premium features
-            included
-          </p>
+          {/* Dashboard Preview */}
+          <ScrollReveal delay={500}>
+            <div className="mt-20 max-w-5xl mx-auto">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-navy/30 border border-white/10">
+                <div className="bg-gradient-to-r from-navy to-navy-light p-1">
+                  <div className="bg-white rounded-t-2xl overflow-hidden">
+                    <div className="bg-gray-100 h-12 flex items-center px-4 gap-2 border-b border-gray-200">
+                      <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                      <span className="ml-4 text-xs text-gray-400">vendpadi.com/store/fashionista</span>
+                    </div>
+                    <div className="p-6 lg:p-10">
+                      <div className="grid grid-cols-3 gap-4 mb-6">
+                        {[
+                          { label: "Orders", value: "1,247", trend: "+12%", up: true },
+                          { label: "Views", value: "8,392", trend: "+24%", up: true },
+                          { label: "Revenue", value: "₦456K", trend: "+18%", up: true },
+                        ].map((stat, i) => (
+                          <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <p className="text-xs text-gray-500 mb-1">{stat.label}</p>
+                            <p className="text-xl font-bold text-navy">{stat.value}</p>
+                            <div className="flex items-center gap-1">
+                              {stat.up ? (
+                                <FiArrowUpRight className="text-padi-green" size={12} />
+                              ) : (
+                                <FiArrowDownRight className="text-red-400" size={12} />
+                              )}
+                              <span className="text-xs text-padi-green font-medium">{stat.trend}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-4 gap-3">
+                        {[1, 2, 3, 4].map((i) => (
+                          <div key={i} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                            <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-20 mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-3/4 mb-1"></div>
+                            <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* Revenue Focus Section */}
-      <section className="py-16 sm:py-20 px-4 bg-gradient-to-r from-padi-green/5 to-gold/5">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">
-            Built to Help You{" "}
-            <span className="text-padi-green">Make More Sales</span>
-          </h2>
-          <p className="text-gray-500 text-center mb-10">
-            Everything you need to get orders and grow your business
-          </p>
+      {/* Trusted By - Logo Cloud */}
+      {/* 
+      <section className="py-20 px-4 bg-white border-y border-gray-100">
+        <div className="max-w-7xl mx-auto">
+          <ScrollReveal>
+            <p className="text-center text-sm text-gray-400 mb-10 font-medium uppercase tracking-widest">
+              Powering Nigerian businesses
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={100}>
+            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-60">
+              {trustedLogos.map((logo, i) => (
+                <span
+                  key={i}
+                  className="text-2xl font-bold text-gray-700 font-sora hover:text-navy transition-colors cursor-default">
+                  {logo}
+                </span>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+      */}
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {revenueFeatures.map((item, i) => (
-              <div
-                key={i}
-                className="bg-white p-6 rounded-2xl shadow-sm border border-padi-green/20 hover:shadow-md hover:border-padi-green/40 transition-all">
-                <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
-                  <item.icon className="text-padi-green text-xl" />
+      {/* Problem/Solution - Split Section */}
+      <section className="py-20 lg:py-28 px-4">
+        <div className="max-w-7xl mx-auto">
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <span className="inline-block text-red-500 font-semibold text-sm mb-3 tracking-wider uppercase">
+                The Problem
+              </span>
+              <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-navy mb-6">
+                Stop sending price lists manually
+              </h2>
+              <p className="text-gray-500 text-lg text-balance">
+                You're tired of sending individual prices to customers, updating
+                WhatsApp statuses, and losing track of orders in chat threads.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-16">
+            {[
+              { icon: FiSmile, title: "Scattered Orders", desc: "Orders come through WhatsApp, Instagram DMs, phone calls... chaos." },
+              { icon: FiClock, title: "Wasted Time", desc: "Hours spent sending individual prices and updating product lists." },
+              { icon: FiTrendingDown, title: "Lost Sales", desc: "Customers forget what you offer or move to a competitor." },
+            ].map((item, i) => (
+              <ScrollReveal key={i} delay={i * 100}>
+                <div className="bg-red-50/50 border border-red-100 rounded-2xl p-6 text-center">
+                  <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <item.icon className="text-red-500 text-2xl" />
+                  </div>
+                  <h3 className="font-sora font-bold text-lg text-navy mb-2">{item.title}</h3>
+                  <p className="text-gray-500 text-sm">{item.desc}</p>
                 </div>
-                <h3 className="font-sora font-semibold text-lg mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-gray-500 text-sm">{item.desc}</p>
-                <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-padi-green bg-padi-green/10 px-2 py-1 rounded-full">
-                  {item.highlight}
+              </ScrollReveal>
+            ))}
+          </div>
+
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <span className="inline-block text-padi-green font-semibold text-sm mb-3 tracking-wider uppercase">
+                The Solution
+              </span>
+              <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-navy mb-6">
+                One store. One link. <span className="text-padi-green">All orders on WhatsApp.</span>
+              </h2>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { icon: FiGlobe, title: "Beautiful Store", desc: "Professional online store in minutes" },
+              { icon: FiShare2, title: "Easy Sharing", desc: "Share anywhere: WhatsApp, Instagram, SMS" },
+              { icon: FiMessageCircle, title: "Instant Orders", desc: "Customers order directly on WhatsApp" },
+            ].map((item, i) => (
+              <ScrollReveal key={i} delay={i * 100}>
+                <div className="bg-gradient-to-br from-padi-green/5 to-padi-green/10 border border-padi-green/20 rounded-2xl p-6 text-center hover:shadow-lg transition-shadow">
+                  <div className="w-14 h-14 bg-padi-green rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <item.icon className="text-white text-2xl" />
+                  </div>
+                  <h3 className="font-sora font-bold text-lg text-navy mb-2">{item.title}</h3>
+                  <p className="text-gray-500 text-sm">{item.desc}</p>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-16 sm:py-20 px-4 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">
-            Powerful Features
-          </h2>
-          <p className="text-gray-500 text-center mb-10">
-            Everything you need to manage and grow your business
-          </p>
+      {/* Bento Grid Features */}
+      <section id="features" className="py-20 lg:py-28 px-4 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto">
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <span className="inline-block text-padi-green font-semibold text-sm mb-3 tracking-wider uppercase">
+                Powerful Features
+              </span>
+              <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-navy mb-6">
+                Everything you need to{" "}
+                <span className="text-padi-green">sell online</span>
+              </h2>
+              <p className="text-gray-500 text-lg">
+                From product management to analytics — all in one place
+              </p>
+            </div>
+          </ScrollReveal>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, i) => (
-              <div
-                key={i}
-                className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
-                  <feature.icon className="text-padi-green text-xl" />
+          <div className="grid md:grid-cols-4 gap-4 auto-rows-[minmax(200px,auto)]">
+            {/* Large featured card */}
+            <ScrollReveal className="md:col-span-2 md:row-span-2">
+              <BentoCard span="2x2" className="h-full flex flex-col">
+                <div className="w-16 h-16 bg-gradient-to-br from-padi-green to-emerald-400 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-padi-green/20">
+                  <FiTrendingUp className="text-white text-3xl" />
                 </div>
-                <h3 className="font-sora font-semibold text-lg mb-2">
-                  {feature.title}
+                <h3 className="font-sora font-bold text-2xl text-navy mb-3">
+                  Real-time Analytics
                 </h3>
-                <p className="text-gray-500 text-sm">{feature.desc}</p>
-              </div>
+                <p className="text-gray-500 mb-6 flex-1">
+                  Track views, orders, and revenue in real-time. Know exactly what's
+                  selling and what's not. Make data-driven decisions to grow your business.
+                </p>
+                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-padi-green">2.5K</div>
+                    <div className="text-xs text-gray-500">Views this week</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-padi-green">156</div>
+                    <div className="text-xs text-gray-500">Orders</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-padi-green">₦89K</div>
+                    <div className="text-xs text-gray-500">Revenue</div>
+                  </div>
+                </div>
+              </BentoCard>
+            </ScrollReveal>
+
+            {/* Small cards */}
+            <ScrollReveal delay={100}>
+              <BentoCard className="h-full">
+                <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
+                  <FiShare2 className="text-padi-green text-xl" />
+                </div>
+                <h3 className="font-sora font-semibold text-lg text-navy mb-2">
+                  One-Click Share
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Share on WhatsApp, Instagram, or anywhere instantly
+                </p>
+              </BentoCard>
+            </ScrollReveal>
+
+            <ScrollReveal delay={150}>
+              <BentoCard className="h-full">
+                <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
+                  <FiPackage className="text-padi-green text-xl" />
+                </div>
+                <h3 className="font-sora font-semibold text-lg text-navy mb-2">
+                  Stock Alerts
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Get notified when products are running low
+                </p>
+              </BentoCard>
+            </ScrollReveal>
+
+            <ScrollReveal delay={200}>
+              <BentoCard className="h-full">
+                <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
+                  <FiGrid className="text-padi-green text-xl" />
+                </div>
+                <h3 className="font-sora font-semibold text-lg text-navy mb-2">
+                  Smart Filters
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Search, sort by price, category, or availability
+                </p>
+              </BentoCard>
+            </ScrollReveal>
+
+            <ScrollReveal delay={250}>
+              <BentoCard className="h-full">
+                <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
+                  <FiHeart className="text-padi-green text-xl" />
+                </div>
+                <h3 className="font-sora font-semibold text-lg text-navy mb-2">
+                  Wishlist
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Customers save items for later purchase
+                </p>
+              </BentoCard>
+            </ScrollReveal>
+
+            {/* Wide card */}
+            <ScrollReveal delay={300} className="md:col-span-2">
+              <BentoCard span="2x1" className="h-full">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <FiMessageSquare className="text-padi-green text-xl" />
+                  </div>
+                  <div>
+                    <h3 className="font-sora font-semibold text-lg text-navy mb-2">
+                      Reviews & Ratings
+                    </h3>
+                    <p className="text-gray-500 text-sm mb-3">
+                      Build trust with customer reviews. Customers can rate products and leave feedback.
+                    </p>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <FiStar key={i} className="text-yellow-400 fill-yellow-400" size={16} />
+                      ))}
+                      <span className="text-sm text-gray-500 ml-2">4.8 avg (234 reviews)</span>
+                    </div>
+                  </div>
+                </div>
+              </BentoCard>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases - Horizontal Scroll on Mobile */}
+      <section className="py-20 lg:py-28 px-4">
+        <div className="max-w-7xl mx-auto">
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <span className="inline-block text-padi-green font-semibold text-sm mb-3 tracking-wider uppercase">
+                Use Cases
+              </span>
+              <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-navy mb-6">
+                Works for any{" "}
+                <span className="text-padi-green">business type</span>
+              </h2>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {useCases.map((item, i) => (
+              <ScrollReveal key={i} delay={i * 100}>
+                <div className="group bg-white border border-gray-100 rounded-2xl p-6 hover:border-padi-green/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+                  <div className="w-14 h-14 bg-gradient-to-br from-padi-green/10 to-padi-green/5 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <item.icon className="text-padi-green text-2xl" />
+                  </div>
+                  <h3 className="font-sora font-bold text-lg text-navy mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm mb-4">{item.desc}</p>
+                  <div className="text-padi-green font-semibold text-sm">
+                    Starting {item.example}
+                  </div>
+                </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 sm:py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">
-            How It Works
-          </h2>
-          <p className="text-gray-500 text-center mb-10">
-            Three simple steps to start selling
-          </p>
+      {/* How It Works - Stepped Timeline */}
+      <section id="how-it-works" className="py-20 lg:py-28 px-4 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto">
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <span className="inline-block text-padi-green font-semibold text-sm mb-3 tracking-wider uppercase">
+                Simple Process
+              </span>
+              <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-navy mb-6">
+                Get started in{" "}
+                <span className="text-padi-green">3 easy steps</span>
+              </h2>
+            </div>
+          </ScrollReveal>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="max-w-4xl mx-auto">
             {[
               {
-                step: "1",
-                icon: FiCheck,
-                title: "Sign Up (Free)",
-                desc: "Sign up in 30 seconds. Get a unique link like vendpadi.com/store/yourname. Start with 7 days FREE Premium access.",
+                step: "01",
+                icon: FiZap,
+                title: "Sign Up — It's Free",
+                desc: "Create your account in 30 seconds. Get a unique store link like vendpadi.com/store/yourname. Start immediately with 7 days of FREE Premium access.",
+                color: "from-amber-400 to-orange-500",
               },
               {
-                step: "2",
-                icon: FiTrendingUp,
+                step: "02",
+                icon: FiPackage,
                 title: "Add Your Products",
-                desc: "Upload photos, set prices, add stock. Your catalog is ready instantly. All features unlocked during your trial.",
+                desc: "Upload photos, set prices, add stock quantities. Your store is live instantly — no technical skills needed. All features unlocked during your trial.",
+                color: "from-padi-green to-emerald-400",
               },
               {
-                step: "3",
+                step: "03",
                 icon: FiShare2,
                 title: "Share & Get Orders",
-                desc: "Share your link on WhatsApp. Customers tap to order — it opens WhatsApp with their order ready.",
+                desc: "Share your link on WhatsApp. Customers browse, tap 'Order', and it opens WhatsApp with their order ready. You receive it instantly.",
+                color: "from-blue-400 to-indigo-500",
               },
             ].map((item, i) => (
-              <div
-                key={i}
-                className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow text-center border border-gray-100">
-                <div className="w-14 h-14 bg-padi-green/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <item.icon className="text-padi-green text-2xl" />
+              <ScrollReveal key={i} delay={i * 150}>
+                <div className="flex gap-6 mb-8 last:mb-0">
+                  <div className="flex-shrink-0">
+                    <div
+                      className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}>
+                      <item.icon className="text-white text-2xl" />
+                    </div>
+                    {i < 2 && (
+                      <div className="w-0.5 h-12 bg-gradient-to-b from-gray-300 to-transparent mx-auto mt-2"></div>
+                    )}
+                  </div>
+                  <div className="flex-1 bg-white rounded-2xl p-6 border border-gray-100 hover:border-padi-green/20 hover:shadow-lg transition-all">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-xs font-bold text-gray-400 tracking-widest">
+                        STEP {item.step}
+                      </span>
+                    </div>
+                    <h3 className="font-sora font-bold text-xl text-navy mb-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-500">{item.desc}</p>
+                  </div>
                 </div>
-                <span className="text-padi-green font-bold text-sm">
-                  Step {item.step}
-                </span>
-                <h3 className="font-sora font-semibold text-lg sm:text-xl mt-2 mb-3">
-                  {item.title}
-                </h3>
-                <p className="text-gray-500 text-sm">{item.desc}</p>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Why Vendors Love Us */}
-      <section className="py-16 sm:py-20 px-4 bg-navy text-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">
-            Why Vendors Choose VendPadi
-          </h2>
-          <p className="text-gray-400 text-center mb-10">
-            More than just a store builder — it's a sales platform
-          </p>
+      {/* Stats - Horizontal Cards */}
+      <section className="py-20 lg:py-28 px-4 bg-navy text-white relative overflow-hidden">
+        <FloatingShape className="w-96 h-96 bg-padi-green top-0 left-0" delay={0} />
+        <div className="max-w-7xl mx-auto relative">
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl mb-6">
+                Trusted by{" "}
+                <span className="text-padi-green">thousands</span> of vendors
+              </h2>
+            </div>
+          </ScrollReveal>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: "🔥", stat: "1,000+", label: "Trials Started" },
-              { icon: "🛒", stat: "5,000+", label: "Orders Received" },
-              { icon: "🏪", stat: "2,000+", label: "Active Stores" },
-              { icon: "⭐", stat: "4.8/5", label: "Customer Rating" },
+              { icon: FiZap, stat: "1000", suffix: "+", label: "Trials Started", color: "from-amber-400 to-orange-500" },
+              { icon: FiShoppingCart, stat: "5000", suffix: "+", label: "Orders Received", color: "from-padi-green to-emerald-400" },
+              { icon: FiHome, stat: "2000", suffix: "+", label: "Active Stores", color: "from-blue-400 to-indigo-500" },
+              { icon: FiStar, stat: "4.8", suffix: "/5", label: "Customer Rating", color: "from-pink-400 to-rose-500" },
             ].map((item, i) => (
-              <div
-                key={i}
-                className="p-6 bg-white/5 rounded-2xl border border-white/10">
-                <div className="text-4xl mb-3">{item.icon}</div>
-                <div className="font-sora font-bold text-3xl text-padi-green mb-1">
-                  {item.stat}
+              <ScrollReveal key={i} delay={i * 100}>
+                <div className="text-center p-8 bg-white/5 backdrop-blur rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br p-1" style={{ background: `linear-gradient(135deg, ${item.color.includes('amber') ? '#fbbf24, #ea580c' : item.color.includes('padi-green') ? '#25C866, #34d399' : item.color.includes('blue') ? '#60a5fa, #6366f1' : '#f472b6, #f43f5e'})` }}>
+                    <div className="w-full h-full bg-white/10 rounded-xl flex items-center justify-center">
+                      <item.icon className="text-white text-3xl" />
+                    </div>
+                  </div>
+                  <div className="font-sora font-bold text-4xl lg:text-5xl text-padi-green mb-2">
+                    <AnimatedCounter end={parseFloat(item.stat)} suffix={item.suffix} />
+                  </div>
+                  <div className="text-sm text-gray-400 font-medium">{item.label}</div>
                 </div>
-                <div className="text-sm text-gray-400">{item.label}</div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Trial CTA */}
-      <section className="py-12 sm:py-16 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full mb-4">
-            <FiZap className="text-yellow-200" />
-            <span className="text-sm font-medium">7-Day Free Trial</span>
+      {/* Testimonials - Large Quote Style */}
+      <section className="py-20 lg:py-28 px-4">
+        <div className="max-w-7xl mx-auto">
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <span className="inline-block text-padi-green font-semibold text-sm mb-3 tracking-wider uppercase">
+                Testimonials
+              </span>
+              <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-navy mb-6">
+                Loved by{" "}
+                <span className="text-padi-green">Nigerian vendors</span>
+              </h2>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Chioma Eze",
+                role: "Fashion Vendor, Lagos",
+                text: "VendPadi changed how I sell. I share my store link on WhatsApp and orders come in automatically. My sales increased by 40% in just one month!",
+              },
+              {
+                name: "Emeka Okonkwo",
+                role: "Electronics Store Owner, Abuja",
+                text: "The setup was incredibly easy. I had my store ready in minutes. Now my customers can browse products anytime without texting me.",
+              },
+              {
+                name: "Fatima Bello",
+                role: "Cosmetic Business, Kano",
+                text: "Finally, a solution that works for Nigerian businesses. The WhatsApp ordering feature is exactly what I needed. Highly recommended!",
+              },
+            ].map((item, i) => (
+              <ScrollReveal key={i} delay={i * 100}>
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-padi-green/20 hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                  <div className="flex items-center gap-1 mb-6">
+                    {[...Array(5)].map((_, j) => (
+                      <FiStar key={j} className="text-yellow-400 fill-yellow-400" size={20} />
+                    ))}
+                  </div>
+                  <div className="flex-1">
+                    <svg className="w-10 h-10 text-padi-green/20 mb-4" fill="currentColor" viewBox="0 0 32 32">
+                      <path d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-1.1.9-2 2-2V8zm14 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-1.1.9-2 2-2V8z"/>
+                    </svg>
+                    <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                      "{item.text}"
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                    <div className="w-12 h-12 bg-gradient-to-br from-padi-green to-padi-green-dark rounded-full flex items-center justify-center text-white font-bold text-lg">
+                      {item.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-navy">{item.name}</p>
+                      <p className="text-sm text-gray-500">{item.role}</p>
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
           </div>
-          <h2 className="font-sora font-bold text-2xl sm:text-4xl mb-4">
-            Try Premium — Completely Free
-          </h2>
-          <p className="text-white/90 mb-6 text-base sm:text-lg max-w-2xl mx-auto">
-            When you sign up, you get{" "}
-            <strong>7 days of FREE Premium access</strong>. No credit card
-            needed. Experience all Premium features before deciding.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 mb-8">
-            <div className="flex items-center gap-2">
-              <FiClock className="text-yellow-200" />
-              <span className="text-sm">7 days free</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <FiCheck className="text-yellow-200" />
-              <span className="text-sm">Unlimited products</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <FiCheck className="text-yellow-200" />
-              <span className="text-sm">All features unlocked</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <FiCheck className="text-yellow-200" />
-              <span className="text-sm">Custom store link</span>
-            </div>
-          </div>
-          <Link
-            to="/register"
-            className="inline-flex items-center gap-2 bg-white text-amber-600 font-bold py-4 px-10 rounded-2xl text-lg hover:bg-gray-100 transition-all shadow-xl">
-            <FiZap /> Start Your Free Trial
-          </Link>
-          <p className="mt-4 text-sm text-white/80">
-            After trial: choose Monthly or Yearly plans. <span className="text-yellow-200 font-medium">Yearly saves up to ₦10,000!</span>
-          </p>
         </div>
       </section>
 
       {/* Pricing */}
-      <section className="py-16 sm:py-20 px-4 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="font-sora font-bold text-2xl sm:text-3xl text-center mb-3">
-            Simple Pricing
-          </h2>
-          <p className="text-gray-500 text-center mb-6">
-            Start free. Upgrade when you start getting orders.
-          </p>
-
-          {/* Billing Cycle Toggle */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-3 bg-white rounded-full p-1.5 shadow-sm border border-gray-200">
-              <button
-                onClick={() => setBillingCycle('monthly')}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
-                  billingCycle === 'monthly'
-                    ? 'bg-padi-green text-white shadow'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setBillingCycle('yearly')}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
-                  billingCycle === 'yearly'
-                    ? 'bg-padi-green text-white shadow'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <FiCalendar size={16} />
-                Yearly
-                {billingCycle === 'yearly' && (
-                  <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                    Save ~17%
-                  </span>
-                )}
-              </button>
+      <section id="pricing" className="py-20 lg:py-28 px-4 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto">
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <span className="inline-block text-padi-green font-semibold text-sm mb-3 tracking-wider uppercase">
+                Simple Pricing
+              </span>
+              <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-navy mb-6">
+                Choose your{" "}
+                <span className="text-padi-green">plan</span>
+              </h2>
+              <p className="text-gray-500 text-lg">
+                Start free. Upgrade when you start getting orders.
+              </p>
             </div>
-          </div>
+          </ScrollReveal>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+          <ScrollReveal delay={100}>
+            <div className="flex justify-center mb-12">
+              <div className="inline-flex items-center gap-3 bg-white rounded-full p-1.5 shadow-lg border border-gray-100">
+                <button
+                  onClick={() => setBillingCycle("monthly")}
+                  className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+                    billingCycle === "monthly"
+                      ? "bg-padi-green text-white shadow-lg shadow-padi-green/30"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}>
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setBillingCycle("yearly")}
+                  className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                    billingCycle === "yearly"
+                      ? "bg-padi-green text-white shadow-lg shadow-padi-green/30"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}>
+                  <FiCalendar size={16} />
+                  Yearly
+                  {billingCycle === "yearly" && (
+                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">
+                      Save ~17%
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {[
               {
                 plan: "Free",
-                icon: "🆓",
+                icon: FiGift,
                 monthlyPrice: "₦0",
                 yearlyPrice: "₦0",
-                period: billingCycle === 'yearly' ? '/year' : 'forever',
+                period: billingCycle === "yearly" ? "/year" : "forever",
                 tagline: "Perfect to get started",
                 features: [
                   "5 products",
@@ -470,245 +971,367 @@ const Landing = () => {
                   "Store QR code",
                   "Stock tracking",
                   "Low stock alerts",
-                  "Product filtering & search",
-                  "Wishlist for customers",
-                  "Customer reviews",
-                  "VendPadi branding",
+                  "Product filtering",
+                  "Wishlist",
+                  "Reviews",
                 ],
                 cta: "Get Started",
                 highlight: false,
-                badge: null,
               },
               {
                 plan: "Starter",
-                icon: "💡",
+                icon: FiSun,
                 monthlyPrice: "₦1,000",
                 yearlyPrice: "₦10,000",
-                period: billingCycle === 'yearly' ? '/year' : '/month',
-                tagline: "Look professional and get more orders",
+                period: billingCycle === "yearly" ? "/year" : "/month",
+                tagline: "Look professional",
                 features: [
                   "30 products",
                   "3 images per product",
                   "Remove branding",
                   "Logo upload",
-                  "Store analytics (views & orders)",
+                  "Store analytics",
                   "Share store link",
                   "Stock tracking",
                   "Low stock alerts",
-                  "Product filtering & search",
-                  "Wishlist for customers",
-                  "Customer reviews",
+                  "Wishlist",
+                  "Reviews",
                 ],
                 cta: "Upgrade",
                 highlight: false,
-                badge: null,
-                badgeYearly: "Save ₦2,000",
+                badge: billingCycle === "yearly" ? "Save ₦2K" : null,
               },
               {
                 plan: "Business",
-                icon: "🚀",
+                icon: FiTrendingUp,
                 monthlyPrice: "₦2,500",
                 yearlyPrice: "₦25,000",
-                period: billingCycle === 'yearly' ? '/year' : '/month',
-                tagline: "Grow faster and track what sells best",
+                period: billingCycle === "yearly" ? "/year" : "/month",
+                tagline: "Grow faster",
                 features: [
                   "100 products",
                   "5 images per product",
                   "Remove branding",
                   "Logo upload",
-                  "PDF invoices & receipts",
-                  "Full analytics (views, orders & conversion)",
-                  "Top products tracking",
-                  "Share store link",
-                  "Product QR codes",
-                  "Stock tracking",
-                  "Low stock alerts",
-                  "Advanced filtering & sorting",
-                  "Wishlist for customers",
-                  "Customer reviews",
+                  "PDF invoices",
+                  "Full analytics",
+                  "Top products",
+                  "QR codes",
+                  "Wishlist",
+                  "Reviews",
                 ],
                 cta: "Go Business",
                 highlight: true,
                 badge: "Most Popular",
-                badgeYearly: "Save ₦5,000",
               },
               {
                 plan: "Premium",
-                icon: "👑",
+                icon: FiAward,
                 monthlyPrice: "₦5,000",
                 yearlyPrice: "₦50,000",
-                period: billingCycle === 'yearly' ? '/year' : '/month',
-                tagline: "Run your business like a brand",
+                period: billingCycle === "yearly" ? "/year" : "/month",
+                tagline: "Run like a brand",
                 features: [
                   "Unlimited products",
                   "8 images per product",
                   "Remove branding",
-                  "Logo + cover image",
-                  "PDF invoices & receipts",
-                  "Full analytics (views, orders & conversion)",
-                  "Top products tracking",
-                  "Share store link",
-                  "Custom store link",
-                  "Stock tracking",
-                  "Low stock alerts",
-                  "Advanced filtering & sorting",
-                  "Wishlist for customers",
-                  "Customer reviews",
+                  "Logo + cover",
+                  "PDF invoices",
+                  "Full analytics",
+                  "Custom domain",
                   "Priority support",
+                  "Wishlist",
+                  "Reviews",
                 ],
-                cta: "Start Free Trial",
+                cta: "Start Trial",
                 highlight: false,
-                badge: billingCycle === 'yearly' ? null : "Try Free for 7 Days",
-                badgeYearly: "Save ₦10,000",
+                badge: billingCycle === "yearly" ? "Save ₦10K" : "Try Free 7 Days",
               },
             ].map((item, i) => (
-              <div
-                key={i}
-                className={`relative flex flex-col p-5 sm:p-6 rounded-2xl transition-all ${item.highlight ? "bg-navy text-white ring-2 ring-padi-green shadow-xl scale-[1.02]" : "bg-white border border-gray-200 hover:border-padi-green/30"}`}>
-                {item.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-padi-green text-white px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap">
-                    {item.badge}
-                  </div>
-                )}
-                {billingCycle === 'yearly' && item.badgeYearly && !item.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
-                    {item.badgeYearly}
-                  </div>
-                )}
-                <div className="text-4xl mb-2">{item.icon}</div>
-                <h3 className="font-sora font-bold text-xl sm:text-2xl">
-                  {item.plan}
-                </h3>
-                <div className="mt-4 mb-1">
-                  <span className="text-4xl sm:text-5xl font-bold">
-                    {billingCycle === 'yearly' ? item.yearlyPrice : item.monthlyPrice}
-                  </span>
-                  <span
-                    className={`text-sm ${item.highlight ? "text-gray-300" : "text-gray-500"}`}>
-                    {item.period}
-                  </span>
-                </div>
-                {billingCycle === 'yearly' && item.monthlyPrice !== "₦0" && (
-                  <p className={`text-xs mb-2 ${item.highlight ? "text-green-400" : "text-green-600"}`}>
-                    {Math.round((1 - (parseInt(item.yearlyPrice.replace(/,/g, '')) / (parseInt(item.monthlyPrice.replace(/,/g, '')) * 12))) * 100)}% off vs monthly
-                  </p>
-                )}
-                <p
-                  className={`text-xs mb-4 ${item.highlight ? "text-gray-300" : "text-gray-500"}`}>
-                  {item.tagline}
-                </p>
-                <ul className="space-y-2 mb-4 flex-1">
-                  {item.features.map((f, j) => (
-                    <li key={j} className="flex items-start gap-2 text-sm">
-                      <FiCheck
-                        className={`flex-shrink-0 mt-0.5 ${item.highlight ? 'text-green-400' : 'text-padi-green'}`}
-                        size={16}
-                      />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to="/register"
-                  className={`block text-center py-3 px-6 rounded-xl font-semibold transition-all mt-auto ${
+              <ScrollReveal key={i} delay={i * 75}>
+                <div
+                  className={`relative flex flex-col rounded-3xl transition-all duration-500 hover:-translate-y-2 ${
                     item.highlight
-                      ? "bg-padi-green text-white hover:bg-padi-green-dark shadow-lg shadow-padi-green/30"
-                      : "bg-navy text-white hover:bg-navy-light"
+                      ? "bg-gradient-to-br from-navy to-navy-light text-white ring-2 ring-padi-green shadow-2xl shadow-padi-green/20 scale-[1.02]"
+                      : "bg-white border border-gray-200 hover:border-padi-green/30 hover:shadow-xl"
                   }`}>
-                  {item.cta}
-                </Link>
-              </div>
+                  {item.badge && (
+                    <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-sm font-bold whitespace-nowrap shadow-lg ${
+                      item.highlight
+                        ? "bg-gradient-to-r from-padi-green to-padi-green-dark text-white"
+                        : "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                    }`}>
+                  {item.badge}
+                  </div>
+                  )}
+                  <div className="p-8 flex-1 flex flex-col">
+                    <div className="w-14 h-14 bg-gradient-to-br from-padi-green/10 to-padi-green/5 rounded-2xl flex items-center justify-center mb-4">
+                      <item.icon className={`text-3xl ${item.highlight ? 'text-padi-green' : 'text-padi-green'}`} />
+                    </div>
+                    <h3 className="font-sora font-bold text-2xl mb-1">{item.plan}</h3>
+                    <div className="mt-4 mb-1">
+                      <span className="text-5xl font-bold">
+                        {billingCycle === "yearly" ? item.yearlyPrice : item.monthlyPrice}
+                      </span>
+                      <span className={`text-sm ml-1 ${item.highlight ? "text-gray-300" : "text-gray-500"}`}>
+                        {item.period}
+                      </span>
+                    </div>
+                    <p className={`text-sm mb-6 ${item.highlight ? "text-gray-300" : "text-gray-500"}`}>
+                      {item.tagline}
+                    </p>
+                    <ul className="space-y-3 mb-8 flex-1">
+                      {item.features.map((f, j) => (
+                        <li key={j} className="flex items-start gap-3 text-sm">
+                          <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${
+                            item.highlight ? "bg-padi-green/30" : "bg-padi-green/10"
+                          }`}>
+                            <FiCheck className="text-padi-green" size={12} />
+                          </div>
+                          <span className={item.highlight ? "text-gray-200" : "text-gray-600"}>
+                            {f}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link
+                      to="/register"
+                      className={`block text-center py-4 px-6 rounded-2xl font-bold transition-all mt-auto ${
+                        item.highlight
+                          ? "bg-padi-green text-white hover:bg-padi-green-dark shadow-xl shadow-padi-green/30"
+                          : "bg-navy text-white hover:bg-navy-light"
+                      }`}>
+                      {item.cta}
+                    </Link>
+                  </div>
+                </div>
+              </ScrollReveal>
             ))}
           </div>
 
-          {/* Yearly Savings Callout */}
-          <div className="mt-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-full text-sm">
-              <FiCalendar className="text-green-600" />
-              <span>
-                <strong>Yearly plans save you money!</strong> Starter saves ₦2,000, Business saves ₦5,000, Premium saves ₦10,000 per year.
-              </span>
+          {/* Yearly Savings */}
+          <ScrollReveal delay={400}>
+            <div className="mt-12 text-center">
+              <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-700 px-6 py-4 rounded-2xl text-sm font-medium">
+                <FiPercent className="text-green-600" size={20} />
+                <span>
+                  <strong>Yearly plans save you money!</strong> Starter saves ₦2,000, Business saves ₦5,000, Premium saves ₦10,000.
+                </span>
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 sm:py-20 px-4 bg-gradient-to-r from-padi-green to-padi-green-dark text-white text-center">
+      {/* FAQ Section */}
+      <section className="py-20 lg:py-28 px-4">
         <div className="max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full mb-4">
-            <FiZap className="text-yellow-200" />
-            <span className="text-sm font-medium">7-Day Premium Trial</span>
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <span className="inline-block text-padi-green font-semibold text-sm mb-3 tracking-wider uppercase">
+                FAQ
+              </span>
+              <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-navy mb-6">
+                Questions? <span className="text-padi-green">Answered.</span>
+              </h2>
+            </div>
+          </ScrollReveal>
+
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <ScrollReveal key={i} delay={i * 50}>
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <button
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
+                    <span className="font-semibold text-navy pr-4">{faq.q}</span>
+                    <span
+                      className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+                        openFaq === i ? "bg-padi-green text-white" : "bg-gray-100 text-gray-500"
+                      }`}>
+                      {openFaq === i ? (
+                        <FiX size={14} />
+                      ) : (
+                        <FiArrowRight size={14} />
+                      )}
+                    </span>
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${
+                      openFaq === i ? "max-h-48" : "max-h-0"
+                    }`}>
+                    <p className="px-6 pb-5 text-gray-500">{faq.a}</p>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
           </div>
-          <h2 className="font-sora font-bold text-2xl sm:text-4xl mb-4">
-            Ready to Get More Orders?
-          </h2>
-          <p className="text-white/90 mb-6 text-base sm:text-lg">
-            Stop sending price lists manually.
-            <br />
-            Let customers browse your store and order instantly on WhatsApp.
-          </p>
-          <p className="text-white font-medium mb-4">
-            Start with 7 days of FREE Premium access.
-          </p>
-          <Link
-            to="/register"
-            className="inline-flex items-center gap-2 bg-white text-padi-green font-bold py-4 px-10 rounded-2xl text-lg hover:bg-gray-100 transition-all shadow-xl mb-4">
-            <FiZap /> Start Your Free Trial
-          </Link>
-          <p className="text-white/70 text-sm">No credit card needed • Set up in 2 minutes</p>
-          <div className="mt-4 inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
-            <FiCalendar className="text-green-300" size={16} />
-            <span className="text-white/90 text-sm">Yearly plans available — Save up to ₦10,000!</span>
-          </div>
-          <p className="mt-4 text-white/80 text-sm font-medium">
-            Join Nigerian vendors already growing with VendPadi.
-          </p>
+
+          <ScrollReveal delay={300}>
+            <div className="mt-12 text-center">
+              <p className="text-gray-500 mb-4">Still have questions?</p>
+              <a
+                href="mailto:support@vendpadi.com"
+                className="inline-flex items-center gap-2 text-padi-green font-semibold hover:underline">
+                Contact our support team <FiArrowRight />
+              </a>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* One-Time Setup Option */}
-      <section className="py-12 px-4 bg-gold/10">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="text-3xl mb-3">💡</div>
-          <h3 className="font-sora font-bold text-xl mb-2">
-            One-Time Setup Option
+      {/* Final CTA - Split */}
+      <section className="py-20 lg:py-28 px-4 bg-gradient-to-br from-padi-green via-padi-green-dark to-padi-green relative overflow-hidden">
+        <FloatingShape className="w-96 h-96 bg-white top-0 right-0 opacity-10" delay={0} />
+        <FloatingShape className="w-64 h-64 bg-white bottom-0 left-1/4 opacity-10" delay={1} />
+        <div className="max-w-7xl mx-auto relative">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <ScrollReveal>
+                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-5 py-2.5 rounded-full mb-6">
+                  <FiZap className="text-yellow-300" />
+                  <span className="text-white font-medium">7-Day Premium Trial</span>
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal delay={100}>
+                <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-white mb-6">
+                  Ready to get more orders?
+                </h2>
+              </ScrollReveal>
+
+              <ScrollReveal delay={200}>
+                <p className="text-white/90 text-lg mb-8 leading-relaxed">
+                  Stop sending price lists manually. Let customers browse your store
+                  and order instantly on WhatsApp.
+                </p>
+              </ScrollReveal>
+
+              <ScrollReveal delay={300}>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link
+                    to="/register"
+                    className="group inline-flex items-center justify-center gap-3 bg-white text-padi-green font-bold py-4 px-10 rounded-full text-lg hover:bg-gray-100 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1">
+                    <FiZap className="group-hover:rotate-12 transition-transform" />
+                    Start Your Free Trial
+                    <FiArrowRight className="opacity-0 -ml-6 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+                  </Link>
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal delay={400}>
+                <div className="flex flex-wrap items-center gap-6 mt-8 text-white/80 text-sm">
+                  <span className="flex items-center gap-2">
+                    <FiCheck className="text-yellow-300" /> No credit card
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <FiCheck className="text-yellow-300" /> All Premium features
+                  </span>
+                </div>
+              </ScrollReveal>
+            </div>
+
+            <ScrollReveal delay={200}>
+              <div className="hidden lg:block">
+                <div className="bg-white/10 backdrop-blur rounded-3xl p-8 border border-white/20">
+                  <div className="grid grid-cols-2 gap-6">
+                    {[
+                      { icon: FiClock, label: "Setup Time", value: "2 minutes" },
+                      { icon: FiUsers, label: "Happy Customers", value: "2000+" },
+                      { icon: FiDollarSign, label: "Money Saved", value: "₦10K/year" },
+                      { icon: FiAward, label: "Satisfaction", value: "4.8/5" },
+                    ].map((item, i) => (
+                      <div key={i} className="text-center p-4 bg-white/10 rounded-2xl">
+                        <item.icon className="text-yellow-300 mx-auto mb-2" size={24} />
+                        <div className="text-white font-bold text-lg">{item.value}</div>
+                        <div className="text-white/70 text-sm">{item.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* Setup Service */}
+      <section className="py-16 px-4 bg-gradient-to-r from-amber-50 to-orange-50 border-t border-amber-100">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-amber-200">
+            <FiSmartphone className="text-white text-2xl" />
+          </div>
+          <h3 className="font-sora font-bold text-2xl mb-3 text-navy">
+            Need help setting up?
           </h3>
-          <p className="text-gray-600 text-sm mb-4">
-            Don't want to set it up yourself?
-            <br />
-            We'll create your store for you in 24 hours.
+          <p className="text-gray-600 mb-6">
+            Don't want to set it up yourself? We'll create your store for you in
+            24 hours.
           </p>
-          <div className="inline-flex items-center gap-2 bg-white px-6 py-3 rounded-xl shadow-sm mb-4">
-            <span className="text-2xl font-bold text-gold">₦5,000</span>
+          <div className="inline-flex items-center gap-3 bg-white px-8 py-4 rounded-2xl shadow-lg mb-6">
+            <span className="text-3xl font-bold text-amber-600">₦5,000</span>
             <span className="text-gray-500 text-sm">one-time</span>
           </div>
-          <p className="text-sm text-gray-500">Contact us to get started</p>
+          <br />
           <a
             href="mailto:support@vendpadi.com?subject=Store Setup Service"
-            className="inline-flex items-center gap-2 mt-4 text-gold hover:text-gold-dark font-medium transition-colors">
-            👉 Request Setup Service
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-3 px-8 rounded-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <FiGlobe size={18} />
+            Request Setup Service
           </a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-navy text-gray-400 py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div>
+      <footer className="bg-navy text-gray-400 pt-16 pb-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div className="md:col-span-2">
               <Link to="/" className="inline-flex items-center gap-2 mb-4">
                 <Logo variant="icon-light" size="md" />
               </Link>
-              <p className="text-sm text-gray-400">
-                Build your online store in minutes. Share on WhatsApp. Track
-                your growth. Sell more.
+              <p className="text-gray-400 mb-6 max-w-sm leading-relaxed">
+                Build your online store in minutes. Share on WhatsApp. Track your
+                growth. Sell more with VendPadi.
               </p>
+              <div className="flex items-center gap-4">
+                <a
+                  href="#"
+                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-padi-green transition-colors">
+                  <FiMessageCircle className="text-white" />
+                </a>
+                <a
+                  href="#"
+                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-padi-green transition-colors">
+                  <FiGlobe className="text-white" />
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-white mb-4">Product</h4>
+              <ul className="space-y-3">
+                <li>
+                  <a href="#features" className="text-sm hover:text-padi-green transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className="text-sm hover:text-padi-green transition-colors">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#how-it-works" className="text-sm hover:text-padi-green transition-colors">
+                    How It Works
+                  </a>
+                </li>
+              </ul>
             </div>
 
             <div>
               <h4 className="font-semibold text-white mb-4">Legal</h4>
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 <li>
                   <Link
                     to="/privacy-policy"
@@ -732,32 +1355,16 @@ const Landing = () => {
                 </li>
               </ul>
             </div>
-
-            <div>
-              <h4 className="font-semibold text-white mb-4">Support</h4>
-              <ul className="space-y-2">
-                <li>
-                  <a
-                    href="mailto:support@vendpadi.com"
-                    className="text-sm hover:text-padi-green transition-colors">
-                    Contact Us
-                  </a>
-                </li>
-                <li>
-                  <Link
-                    to="/faq"
-                    className="text-sm hover:text-padi-green transition-colors">
-                    FAQ
-                  </Link>
-                </li>
-              </ul>
-            </div>
           </div>
 
-          <div className="pt-8 border-t border-white/10 text-center">
-            <p className="text-sm">
-              © {new Date().getFullYear()} VendPadi. Made with ❤️ in Nigeria 🇳🇬
+          <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm flex items-center gap-2">
+              © {new Date().getFullYear()} VendPadi. Made with <FiHeart className="text-red-400" /> in Nigeria
             </p>
+            <div className="flex items-center gap-2 text-sm">
+              <FiShield className="text-padi-green" />
+              <span>Secure & Reliable</span>
+            </div>
           </div>
         </div>
       </footer>
