@@ -409,7 +409,7 @@ const Orders = () => {
       {/* Sidebar */}
       <div className="hidden lg:block fixed left-0 top-0 w-64 h-full bg-navy text-white p-6">
         <Link to="/" className="flex items-center gap-3 mb-8">
-          <Logo variant="icon-light" size="md" />
+          <Logo variant="icon-light" size="md" showText />
         </Link>
 
         <div className="mb-6">

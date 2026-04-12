@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { FiTrendingUp, FiShare2, FiMessageCircle, FiCheck, FiStar, FiMenu, FiX, FiLogOut, FiLayout, FiPackage, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiBarChart2 } from 'react-icons/fi';
+import { FiTrendingUp, FiShare2, FiMessageCircle, FiCheck, FiStar, FiMenu, FiX, FiLogOut, FiLayout, FiPackage, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiBarChart2, FiZap, FiClock } from 'react-icons/fi';
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
@@ -77,7 +77,9 @@ const Landing = () => {
               ) : (
                 <>
                   <Link to="/login" className="hover:text-padi-green transition-colors font-medium">Login</Link>
-                  <Link to="/register" className="btn-primary text-sm py-2 px-4">Get Started Free</Link>
+                  <Link to="/register" className="btn-primary text-sm py-2 px-4 flex items-center gap-1.5">
+                    <FiZap size={14} /> Free 7-Day Trial
+                  </Link>
                 </>
               )}
             </div>
@@ -119,10 +121,10 @@ const Landing = () => {
                   </Link>
                   <Link 
                     to="/register" 
-                    className="mt-2 mx-1 btn-primary text-center py-3"
+                    className="mt-2 mx-1 btn-primary text-center py-3 flex items-center justify-center gap-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Get Started Free
+                    <FiZap size={14} /> Start Free 7-Day Trial
                   </Link>
                 </>
               )}
@@ -154,9 +156,14 @@ const Landing = () => {
             to="/register" 
             className="inline-flex items-center gap-2 bg-padi-green hover:bg-padi-green-dark text-white font-bold py-4 px-8 rounded-2xl text-lg transition-all shadow-lg shadow-padi-green/30 hover:shadow-padi-green/50"
           >
-            <FiStar />
-            Create Your Free Store
+            <FiZap />
+            Start 7-Day Premium Trial — Free
           </Link>
+          <p className="mt-4 text-sm text-gray-400 flex items-center justify-center gap-2">
+            <FiCheck className="text-padi-green" /> No credit card required
+            <span className="mx-2">•</span>
+            <FiCheck className="text-padi-green" /> All Premium features included
+          </p>
         </div>
       </section>
 
@@ -211,8 +218,8 @@ const Landing = () => {
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { step: '1', icon: FiCheck, title: 'Register Your Store', desc: 'Sign up in 30 seconds. Get a unique link like vendpadi.com/store/yourname' },
-              { step: '2', icon: FiTrendingUp, title: 'Add Your Products', desc: 'Upload photos, set prices, add stock. Your catalog is ready instantly.' },
+              { step: '1', icon: FiCheck, title: 'Sign Up (Free)', desc: 'Sign up in 30 seconds. Get a unique link like vendpadi.com/store/yourname. Start with 7 days FREE Premium access.' },
+              { step: '2', icon: FiTrendingUp, title: 'Add Your Products', desc: 'Upload photos, set prices, add stock. Your catalog is ready instantly. All features unlocked during your trial.' },
               { step: '3', icon: FiShare2, title: 'Share & Get Orders', desc: 'Share your link on WhatsApp. Customers tap to order — it opens WhatsApp with their order ready.' }
             ].map((item, i) => (
               <div key={i} className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow text-center border border-gray-100">
@@ -236,7 +243,7 @@ const Landing = () => {
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
             {[
-              { icon: '📊', stat: '10,000+', label: 'Store Views Tracked' },
+              { icon: '🔥', stat: '1,000+', label: 'Trials Started' },
               { icon: '🛒', stat: '5,000+', label: 'Orders Received' },
               { icon: '🏪', stat: '2,000+', label: 'Active Stores' },
               { icon: '⭐', stat: '4.8/5', label: 'Customer Rating' }
@@ -248,6 +255,46 @@ const Landing = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Trial CTA */}
+      <section className="py-12 sm:py-16 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full mb-4">
+            <FiZap className="text-yellow-200" />
+            <span className="text-sm font-medium">7-Day Free Trial</span>
+          </div>
+          <h2 className="font-sora font-bold text-2xl sm:text-4xl mb-4">Try Premium — Completely Free</h2>
+          <p className="text-white/90 mb-6 text-base sm:text-lg max-w-2xl mx-auto">
+            When you sign up, you get <strong>7 days of FREE Premium access</strong>. 
+            No credit card needed. Experience all Premium features before deciding.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 mb-8">
+            <div className="flex items-center gap-2">
+              <FiClock className="text-yellow-200" />
+              <span className="text-sm">7 days free</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FiCheck className="text-yellow-200" />
+              <span className="text-sm">Unlimited products</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FiCheck className="text-yellow-200" />
+              <span className="text-sm">All features unlocked</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FiCheck className="text-yellow-200" />
+              <span className="text-sm">Custom store link</span>
+            </div>
+          </div>
+          <Link 
+            to="/register" 
+            className="inline-flex items-center gap-2 bg-white text-amber-600 font-bold py-4 px-10 rounded-2xl text-lg hover:bg-gray-100 transition-all shadow-xl"
+          >
+            <FiZap /> Start Your Free Trial
+          </Link>
+          <p className="mt-4 text-sm text-white/80">After trial: choose any plan or continue with Free tier</p>
         </div>
       </section>
 
@@ -354,9 +401,9 @@ const Landing = () => {
                   'Customer reviews',
                   'Priority support'
                 ],
-                cta: 'Go Premium',
+                cta: 'Start Free Trial',
                 highlight: false,
-                badge: null
+                badge: 'Try Free for 7 Days'
               }
             ].map((item, i) => (
               <div key={i} className={`relative flex flex-col p-5 sm:p-6 rounded-2xl transition-all ${item.highlight ? 'bg-navy text-white ring-2 ring-padi-green shadow-xl scale-[1.02]' : 'bg-white border border-gray-200 hover:border-padi-green/30'}`}>
@@ -399,17 +446,20 @@ const Landing = () => {
       {/* CTA */}
       <section className="py-16 sm:py-20 px-4 bg-gradient-to-r from-padi-green to-padi-green-dark text-white text-center">
         <div className="max-w-3xl mx-auto">
-          <div className="text-5xl mb-4">🚀</div>
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full mb-4">
+            <FiZap className="text-yellow-200" />
+            <span className="text-sm font-medium">7-Day Premium Trial</span>
+          </div>
           <h2 className="font-sora font-bold text-2xl sm:text-4xl mb-4">Ready to Get More Orders?</h2>
           <p className="text-white/90 mb-6 text-base sm:text-lg">
             Stop sending price lists manually.<br />
             Let customers browse your store and order instantly on WhatsApp.
           </p>
-          <p className="text-white font-medium mb-8">
-            Track your growth. Share your store. Sell faster.
+          <p className="text-white font-medium mb-4">
+            Start with 7 days of FREE Premium access.
           </p>
           <Link to="/register" className="inline-flex items-center gap-2 bg-white text-padi-green font-bold py-4 px-10 rounded-2xl text-lg hover:bg-gray-100 transition-all shadow-xl mb-4">
-            <FiTrendingUp /> Start Your Free Store
+            <FiZap /> Start Your Free Trial
           </Link>
           <p className="text-white/70 text-sm">No credit card needed • Set up in 2 minutes</p>
           <p className="mt-4 text-white/80 text-sm font-medium">

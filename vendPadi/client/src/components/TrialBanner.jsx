@@ -75,63 +75,63 @@ const TrialBanner = () => {
     : 'bg-gradient-to-r from-amber-500 to-yellow-500';
 
   return (
-    <div className={`${bannerStyle} text-white px-4 py-3`}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-            {isExpiringSoon ? <FiAlertCircle className="text-white" /> : <FiZap className="text-white" />}
-          </div>
-          <div>
-            <p className="font-semibold text-sm flex items-center gap-2">
-              <FiZap className="text-yellow-200" />
-              Premium Trial Active
-              {isExpiringSoon && (
-                <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">
-                  Expiring Soon!
-                </span>
-              )}
-            </p>
-            <p className="text-xs text-white/90 flex items-center gap-1">
-              <FiClock className="text-yellow-200" />
-              {daysRemaining} day{daysRemaining !== 1 ? 's' : ''} remaining • 
-              <Link 
-                to="/settings" 
-                className="underline hover:text-white font-medium ml-1"
-              >
-                Upgrade now
-              </Link>
-              {!isExpiringSoon && (
-                <span className="text-white/70 ml-2">•</span>
-              )}
-              {!isExpiringSoon && (
-                <button 
-                  onClick={handleDismiss}
-                  className="text-white/70 hover:text-white ml-1 text-xs underline"
+    <div className={`${bannerStyle} text-white px-3 sm:px-4 py-2.5 sm:py-3`}>
+      <div className="lg:ml-64">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+              {isExpiringSoon ? <FiAlertCircle className="text-white" size={14} /> : <FiZap className="text-white" size={14} />}
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <FiZap className="text-yellow-200 flex-shrink-0" />
+                <span className="truncate">Premium Trial Active</span>
+                {isExpiringSoon && (
+                  <span className="bg-white/20 px-1.5 sm:px-2 py-0.5 rounded-full text-xs flex-shrink-0">
+                    Expiring Soon!
+                  </span>
+                )}
+              </p>
+              <p className="text-xs text-white/90 flex items-center gap-1 flex-wrap">
+                <FiClock className="text-yellow-200 flex-shrink-0" />
+                <span>{daysRemaining} day{daysRemaining !== 1 ? 's' : ''} remaining</span>
+                <span className="hidden sm:inline">•</span>
+                <Link 
+                  to="/settings" 
+                  className="underline hover:text-white font-medium whitespace-nowrap"
                 >
-                  Dismiss
-                </button>
-              )}
-            </p>
+                  Upgrade now
+                </Link>
+                {!isExpiringSoon && (
+                  <button 
+                    onClick={handleDismiss}
+                    className="text-white/70 hover:text-white text-xs underline whitespace-nowrap"
+                  >
+                    Dismiss
+                  </button>
+                )}
+              </p>
+            </div>
           </div>
-        </div>
-        
-        {isExpiringSoon && (
-          <Link
-            to="/settings"
-            className="bg-white text-amber-600 px-4 py-1.5 rounded-lg font-semibold text-sm hover:bg-white/90 transition-colors"
-          >
-            Upgrade Now
-          </Link>
-        )}
+          
+          {isExpiringSoon && (
+            <Link
+              to="/settings"
+              className="bg-white text-amber-600 px-3 sm:px-4 py-1.5 rounded-lg font-semibold text-xs sm:text-sm hover:bg-white/90 transition-colors flex-shrink-0"
+            >
+              Upgrade
+            </Link>
+          )}
 
-        {!isExpiringSoon && (
-          <button
-            onClick={handleDismiss}
-            className="p-1 hover:bg-white/20 rounded-full transition-colors"
-          >
-            <FiX className="text-white" />
-          </button>
-        )}
+          {!isExpiringSoon && (
+            <button
+              onClick={handleDismiss}
+              className="p-1.5 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
+            >
+              <FiX className="text-white" size={16} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

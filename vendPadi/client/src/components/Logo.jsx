@@ -1,22 +1,30 @@
-const Logo = ({ variant = 'full', size = 'md', className = '' }) => {
+const Logo = ({ variant = 'full', size = 'md', showText = false, className = '' }) => {
   const sizes = {
-    sm: { width: 80, height: 32 },
-    md: { width: 120, height: 48 },
-    lg: { width: 160, height: 64 },
-    xl: { width: 200, height: 80 },
+    sm: { width: 80, height: 32, icon: 24, text: 'sm' },
+    md: { width: 120, height: 48, icon: 32, text: 'md' },
+    lg: { width: 160, height: 64, icon: 40, text: 'lg' },
+    xl: { width: 200, height: 80, icon: 48, text: 'xl' },
   };
 
-  const { width, height } = sizes[size] || sizes.md;
+  const { width, height, icon: iconSize, text: textSize } = sizes[size] || sizes.md;
+
+  const textSizes = {
+    sm: { fontSize: 14, iconSize: 24, gap: 1.5 },
+    md: { fontSize: 18, iconSize: 32, gap: 2 },
+    lg: { fontSize: 22, iconSize: 40, gap: 2.5 },
+    xl: { fontSize: 26, iconSize: 48, gap: 3 },
+  };
+
+  const { fontSize, iconSize: sz, gap } = textSizes[textSize] || textSizes.md;
 
   if (variant === 'icon') {
-    return (
+    const Icon = () => (
       <svg
-        width={height}
-        height={height}
+        width={iconSize}
+        height={iconSize}
         viewBox="0 0 80 80"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={className}
       >
         <defs>
           <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -37,17 +45,33 @@ const Logo = ({ variant = 'full', size = 'md', className = '' }) => {
         <circle cx="72" cy="18" r="3" fill="url(#iconGrad)" opacity="0.5"/>
       </svg>
     );
+
+    if (showText) {
+      return (
+        <div className={`flex items-center gap-${gap} ${className}`}>
+          <Icon />
+          <span 
+            className="font-sora font-bold whitespace-nowrap" 
+            style={{ fontSize: `${fontSize}px`, lineHeight: 1 }}
+          >
+            <span className="text-navy">Vend</span>
+            <span className="text-padi-green">Padi</span>
+          </span>
+        </div>
+      );
+    }
+
+    return <Icon />;
   }
 
   if (variant === 'icon-light') {
-    return (
+    const Icon = () => (
       <svg
-        width={height}
-        height={height}
+        width={iconSize}
+        height={iconSize}
         viewBox="0 0 80 80"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={className}
       >
         <defs>
           <linearGradient id="iconGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -64,6 +88,22 @@ const Logo = ({ variant = 'full', size = 'md', className = '' }) => {
         <circle cx="72" cy="18" r="3" fill="url(#iconGradLight)" opacity="0.5"/>
       </svg>
     );
+
+    if (showText) {
+      return (
+        <div className={`flex items-center gap-${gap} ${className}`}>
+          <Icon />
+          <span 
+            className="font-sora font-bold text-white whitespace-nowrap" 
+            style={{ fontSize: `${fontSize}px`, lineHeight: 1 }}
+          >
+            Vend<span className="text-padi-green">Padi</span>
+          </span>
+        </div>
+      );
+    }
+
+    return <Icon />;
   }
 
   return (

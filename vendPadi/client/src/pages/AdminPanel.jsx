@@ -54,18 +54,26 @@ const AdminPanel = () => {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailResult, setEmailResult] = useState(null);
   const [subscriberFilter, setSubscriberFilter] = useState('all');
+  const [subscriberView, setSubscriberView] = useState('grouped');
+  const [groupedSubscribers, setGroupedSubscribers] = useState({ grouped: {}, counts: {}, revenue: {} });
+  const [selectedGroup, setSelectedGroup] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [requestsRes, statsRes, subscribersRes] = await Promise.all([
+      const [requestsRes, statsRes, groupedRes] = await Promise.all([
         planAPI.getAdminRequests(),
         planAPI.getAdminStats(),
-        planAPI.getSubscribers(subscriberFilter)
+        planAPI.getSubscribers('all', 'grouped')
       ]);
       setRequests(requestsRes.data);
       setStats(statsRes.data);
-      setSubscribers(subscribersRes.data);
+      setGroupedSubscribers(groupedRes.data);
+      
+      if (subscriberView === 'table') {
+        const subsRes = await planAPI.getSubscribers(subscriberFilter);
+        setSubscribers(subsRes.data);
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to load data');
     } finally {
@@ -75,7 +83,13 @@ const AdminPanel = () => {
 
   useEffect(() => {
     fetchData();
-  }, [subscriberFilter]);
+  }, [subscriberFilter, subscriberView]);
+
+  useEffect(() => {
+    if (subscriberView === 'table') {
+      planAPI.getSubscribers(subscriberFilter).then(res => setSubscribers(res.data));
+    }
+  }, [subscriberFilter, subscriberView]);
 
   const handleApprove = async (id) => {
     if (!confirm('Approve this upgrade request?')) return;
@@ -216,9 +230,9 @@ const AdminPanel = () => {
           >
             <FiUsers size={16} />
             <span className="hidden sm:inline">Subscribers</span>
-            {stats.total - (stats.byPlan.free || 0) > 0 && (
+            {(stats.byPlan.starter || 0) + (stats.byPlan.business || 0) + (stats.byPlan.premium || 0) > 0 && (
               <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
-                {stats.total - (stats.byPlan.free || 0)}
+                {(stats.byPlan.starter || 0) + (stats.byPlan.business || 0) + (stats.byPlan.premium || 0)}
               </span>
             )}
           </button>
@@ -227,7 +241,7 @@ const AdminPanel = () => {
         {activeTab === 'stats' ? (
           /* Stats Tab */
           <div className="space-y-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="bg-white rounded-xl p-5 border border-gray-100">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -241,31 +255,41 @@ const AdminPanel = () => {
               <div className="bg-white rounded-xl p-5 border border-gray-100">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                    <FiPackage className="text-gray-600 text-xl" />
+                    <span className="text-xl">🆓</span>
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-navy">{stats.byPlan.free}</p>
-                <p className="text-sm text-gray-500 mt-1">Free Plan</p>
+                <p className="text-3xl font-bold text-navy">{stats.byPlan.free || 0}</p>
+                <p className="text-sm text-gray-500 mt-1">Free</p>
               </div>
 
               <div className="bg-white rounded-xl p-5 border border-gray-100">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <FiTrendingUp className="text-blue-600 text-xl" />
+                    <span className="text-xl">💡</span>
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-navy">{stats.byPlan.basic}</p>
-                <p className="text-sm text-gray-500 mt-1">Basic Plan</p>
+                <p className="text-3xl font-bold text-navy">{stats.byPlan.starter || 0}</p>
+                <p className="text-sm text-gray-500 mt-1">Starter</p>
+              </div>
+
+              <div className="bg-white rounded-xl p-5 border border-gray-100">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <span className="text-xl">🚀</span>
+                  </div>
+                </div>
+                <p className="text-3xl font-bold text-navy">{stats.byPlan.business || 0}</p>
+                <p className="text-sm text-gray-500 mt-1">Business</p>
               </div>
 
               <div className="bg-white rounded-xl p-5 border border-gray-100">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                    <FiDollarSign className="text-amber-600 text-xl" />
+                    <span className="text-xl">👑</span>
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-navy">{stats.byPlan.premium}</p>
-                <p className="text-sm text-gray-500 mt-1">Premium Plan</p>
+                <p className="text-3xl font-bold text-navy">{stats.byPlan.premium || 0}</p>
+                <p className="text-sm text-gray-500 mt-1">Premium</p>
               </div>
             </div>
 
@@ -273,22 +297,23 @@ const AdminPanel = () => {
             <div className="bg-white rounded-xl p-6 border border-gray-100">
               <h3 className="font-semibold text-navy mb-4">Plan Distribution</h3>
               <div className="space-y-4">
-                {Object.entries(stats.byPlan).map(([plan, count]) => {
+                {[
+                  { key: 'free', label: 'Free', color: 'bg-gray-400' },
+                  { key: 'starter', label: 'Starter', color: 'bg-blue-500' },
+                  { key: 'business', label: 'Business', color: 'bg-purple-500' },
+                  { key: 'premium', label: 'Premium', color: 'bg-amber-500' }
+                ].map(({ key, label, color }) => {
+                  const count = stats.byPlan[key] || 0;
                   const percentage = stats.total > 0 ? Math.round((count / stats.total) * 100) : 0;
-                  const colors = {
-                    free: 'bg-gray-400',
-                    basic: 'bg-blue-500',
-                    premium: 'bg-amber-500'
-                  };
                   return (
-                    <div key={plan}>
+                    <div key={key}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="capitalize font-medium">{plan}</span>
+                        <span className="capitalize font-medium">{label}</span>
                         <span className="text-gray-500">{count} vendors ({percentage}%)</span>
                       </div>
                       <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
                         <div 
-                          className={`h-full ${colors[plan]} rounded-full transition-all`}
+                          className={`h-full ${color} rounded-full transition-all`}
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
@@ -481,69 +506,275 @@ const AdminPanel = () => {
           </div>
         ) : activeTab === 'subscribers' ? (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-navy">Subscribers</h2>
-              <select
-                value={subscriberFilter}
-                onChange={(e) => setSubscriberFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-padi-green"
-              >
-                <option value="all">All Plans</option>
-                <option value="starter">Starter</option>
-                <option value="business">Business</option>
-                <option value="premium">Premium</option>
-              </select>
+            {/* View Toggle */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <h2 className="font-semibold text-navy">Subscribers by Plan</h2>
+              <div className="flex items-center gap-3">
+                <div className="flex bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setSubscriberView('grouped')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      subscriberView === 'grouped' ? 'bg-white shadow text-navy' : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Cards
+                  </button>
+                  <button
+                    onClick={() => setSubscriberView('table')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      subscriberView === 'table' ? 'bg-white shadow text-navy' : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Table
+                  </button>
+                </div>
+                {subscriberView === 'table' && (
+                  <select
+                    value={subscriberFilter}
+                    onChange={(e) => setSubscriberFilter(e.target.value)}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-padi-green"
+                  >
+                    <option value="all">All Plans</option>
+                    <option value="starter">Starter</option>
+                    <option value="business">Business</option>
+                    <option value="premium">Premium</option>
+                    <option value="free">Free</option>
+                  </select>
+                )}
+              </div>
             </div>
 
             {loading ? (
               <div className="flex items-center justify-center py-20">
                 <div className="w-12 h-12 border-4 border-padi-green border-t-transparent rounded-full animate-spin"></div>
               </div>
-            ) : subscribers.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FiUsers className="text-gray-400 text-4xl" />
-                </div>
-                <h3 className="font-sora font-bold text-xl text-navy mb-2">No Subscribers</h3>
-                <p className="text-gray-500">No paid subscribers found for this filter.</p>
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Business</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {subscribers.map((sub) => (
-                      <tr key={sub._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div className="font-medium text-navy">{sub.businessName}</div>
-                        </td>
-                        <td className="px-6 py-4 text-gray-600">{sub.email}</td>
-                        <td className="px-6 py-4 text-gray-600">{sub.phone}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            sub.plan?.type === 'premium' ? 'bg-amber-100 text-amber-700' :
-                            sub.plan?.type === 'business' ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {sub.plan?.type || 'N/A'}
+            ) : subscriberView === 'grouped' ? (
+              <>
+                {/* Plan Summary Cards */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { key: 'free', icon: '🆓', label: 'Free', price: '₦0', color: 'gray', bg: 'bg-gray-50', border: 'border-gray-200' },
+                    { key: 'starter', icon: '💡', label: 'Starter', price: '₦1,000/mo', color: 'blue', bg: 'bg-blue-50', border: 'border-blue-200' },
+                    { key: 'business', icon: '🚀', label: 'Business', price: '₦2,500/mo', color: 'purple', bg: 'bg-purple-50', border: 'border-purple-200' },
+                    { key: 'premium', icon: '👑', label: 'Premium', price: '₦5,000/mo', color: 'amber', bg: 'bg-amber-50', border: 'border-amber-200' }
+                  ].map((plan) => {
+                    const count = groupedSubscribers.counts?.[plan.key] || 0;
+                    const revenue = groupedSubscribers.revenue?.[plan.key] || 0;
+                    const colorClasses = {
+                      gray: 'text-gray-600',
+                      blue: 'text-blue-600',
+                      purple: 'text-purple-600',
+                      amber: 'text-amber-600'
+                    };
+                    return (
+                      <button
+                        key={plan.key}
+                        onClick={() => setSelectedGroup(selectedGroup === plan.key ? null : plan.key)}
+                        className={`p-5 rounded-2xl border-2 transition-all text-left ${
+                          selectedGroup === plan.key 
+                            ? `${plan.border} ${plan.bg} shadow-md scale-[1.02]` 
+                            : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-3xl">{plan.icon}</span>
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${plan.bg} ${colorClasses[plan.color]}`}>
+                            {count} {count === 1 ? 'vendor' : 'vendors'}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 text-gray-600 text-sm">
-                          {sub.plan?.expiresAt ? new Date(sub.plan.expiresAt).toLocaleDateString() : 'N/A'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        </div>
+                        <h3 className="font-semibold text-navy mb-1">{plan.label}</h3>
+                        <p className="text-sm text-gray-500">{plan.price}</p>
+                        {plan.key !== 'free' && (
+                          <p className="text-sm font-medium text-padi-green mt-2">
+                            ₦{revenue.toLocaleString()}/mo potential
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Revenue Summary */}
+                <div className="bg-gradient-to-r from-padi-green to-emerald-600 rounded-2xl p-5 text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white/80 text-sm">Monthly Revenue Potential</p>
+                      <p className="text-3xl font-bold mt-1">
+                        ₦{(
+                          (groupedSubscribers.revenue?.starter || 0) +
+                          (groupedSubscribers.revenue?.business || 0) +
+                          (groupedSubscribers.revenue?.premium || 0)
+                        ).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white/80 text-sm">Paid Subscribers</p>
+                      <p className="text-3xl font-bold mt-1">
+                        {(groupedSubscribers.counts?.starter || 0) + (groupedSubscribers.counts?.business || 0) + (groupedSubscribers.counts?.premium || 0)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Selected Group Details */}
+                {selectedGroup && (
+                  <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                    <div className="p-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                      <h3 className="font-semibold text-navy capitalize">
+                        {selectedGroup} Plan Subscribers
+                        <span className="ml-2 text-sm text-gray-500">
+                          ({groupedSubscribers.grouped?.[selectedGroup]?.length || 0})
+                        </span>
+                      </h3>
+                      <button
+                        onClick={() => setSelectedGroup(null)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <FiX size={20} />
+                      </button>
+                    </div>
+                    {groupedSubscribers.grouped?.[selectedGroup]?.length > 0 ? (
+                      <div className="divide-y divide-gray-100">
+                        {groupedSubscribers.grouped[selectedGroup].map((sub) => (
+                          <div key={sub._id} className="p-4 hover:bg-gray-50 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                {sub.logo ? (
+                                  <img src={sub.logo} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-lg">🏪</span>
+                                )}
+                              </div>
+                              <div>
+                                <p className="font-medium text-navy">{sub.businessName}</p>
+                                <p className="text-sm text-gray-500">{sub.email}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-gray-500">{sub.phone}</p>
+                              <p className="text-xs text-gray-400">
+                                Joined {new Date(sub.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-8 text-center text-gray-500">
+                        No vendors on this plan yet
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* All Vendors by Plan */}
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <div className="p-4 border-b border-gray-100">
+                    <h3 className="font-semibold text-navy">All Vendors by Plan</h3>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {['free', 'starter', 'business', 'premium'].map((plan) => {
+                      const vendors = groupedSubscribers.grouped?.[plan] || [];
+                      if (vendors.length === 0) return null;
+                      return (
+                        <div key={plan}>
+                          <button
+                            onClick={() => setSelectedGroup(selectedGroup === plan ? null : plan)}
+                            className="w-full p-4 flex items-center justify-between hover:bg-gray-50"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl">
+                                {plan === 'free' ? '🆓' : plan === 'starter' ? '💡' : plan === 'business' ? '🚀' : '👑'}
+                              </span>
+                              <span className="font-medium text-navy capitalize">{plan}</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <span className="text-sm text-gray-500">{vendors.length} vendors</span>
+                              <FiTrendingUp className={`text-gray-400 transition-transform ${selectedGroup === plan ? 'rotate-90' : ''}`} />
+                            </div>
+                          </button>
+                          {selectedGroup === plan && (
+                            <div className="bg-gray-50 p-4">
+                              {vendors.map((sub) => (
+                                <div key={sub._id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+                                      {sub.logo ? (
+                                        <img src={sub.logo} alt="" className="w-full h-full object-cover" />
+                                      ) : (
+                                        <span>🏪</span>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium text-navy">{sub.businessName}</p>
+                                      <p className="text-xs text-gray-500">{sub.email}</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs text-gray-400">
+                                      Joined {new Date(sub.createdAt).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {subscribers.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FiUsers className="text-gray-400 text-4xl" />
+                    </div>
+                    <h3 className="font-sora font-bold text-xl text-navy mb-2">No Subscribers</h3>
+                    <p className="text-gray-500">No subscribers found for this filter.</p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Business</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {subscribers.map((sub) => (
+                          <tr key={sub._id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4">
+                              <div className="font-medium text-navy">{sub.businessName}</div>
+                            </td>
+                            <td className="px-6 py-4 text-gray-600">{sub.email}</td>
+                            <td className="px-6 py-4 text-gray-600">{sub.phone}</td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                sub.plan?.type === 'premium' ? 'bg-amber-100 text-amber-700' :
+                                sub.plan?.type === 'business' ? 'bg-blue-100 text-blue-700' :
+                                sub.plan?.type === 'starter' ? 'bg-green-100 text-green-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {sub.plan?.type || 'free'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-gray-600 text-sm">
+                              {new Date(sub.createdAt).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ) : null}

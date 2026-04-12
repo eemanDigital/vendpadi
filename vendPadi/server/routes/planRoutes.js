@@ -176,20 +176,58 @@ router.get('/admin/stats', protect, adminOnly, catchAsync(async (req, res) => {
 }));
 
 router.get('/admin/subscribers', protect, adminOnly, catchAsync(async (req, res) => {
-  const { plan } = req.query;
+  const { plan, format } = req.query;
   
   const query = {};
   if (plan && plan !== 'all') {
     query['plan.type'] = plan;
-  } else {
-    query['plan.type'] = { $ne: 'free' };
   }
 
-  const subscribers = await Vendor.find(query)
-    .select('businessName email phone plan.type plan.expiresAt createdAt')
-    .sort({ createdAt: -1 });
+  if (format === 'grouped') {
+    const grouped = {
+      free: [],
+      starter: [],
+      business: [],
+      premium: []
+    };
 
-  res.json(subscribers);
+    const subscribers = await Vendor.find(query)
+      .select('businessName email phone plan.type plan.expiresAt createdAt slug logo')
+      .sort({ createdAt: -1 });
+
+    subscribers.forEach(sub => {
+      const planType = sub.plan?.type || 'free';
+      if (grouped[planType]) {
+        grouped[planType].push(sub);
+      }
+    });
+
+    const counts = {
+      total: subscribers.length,
+      free: grouped.free.length,
+      starter: grouped.starter.length,
+      business: grouped.business.length,
+      premium: grouped.premium.length
+    };
+
+    const revenue = {
+      starter: grouped.starter.length * 1000,
+      business: grouped.business.length * 2500,
+      premium: grouped.premium.length * 5000
+    };
+
+    res.json({ grouped, counts, revenue });
+  } else {
+    if (!plan || plan === 'all') {
+      query['plan.type'] = { $ne: 'free' };
+    }
+
+    const subscribers = await Vendor.find(query)
+      .select('businessName email phone plan.type plan.expiresAt createdAt')
+      .sort({ createdAt: -1 });
+
+    res.json(subscribers);
+  }
 }));
 
 router.put('/admin/approve/:id', protect, adminOnly, catchAsync(async (req, res) => {

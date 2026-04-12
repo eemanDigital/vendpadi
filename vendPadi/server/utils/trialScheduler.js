@@ -6,7 +6,10 @@ const {
   sendTrialExpiredEmail,
   sendFirstOrderFollowUpEmail,
   sendFirstProductFollowUpEmail,
-  sendTrialStartedEmail
+  sendTrialStartedEmail,
+  sendAccountDeletionRequestedEmail,
+  sendAccountDeletionWarningEmail,
+  sendAccountPermanentlyDeletedEmail
 } = require('../utils/email');
 
 const TRIAL_REMINDER_DAYS = [2, 1];
@@ -171,6 +174,66 @@ const sendFirstProductFollowUps = async () => {
   }
 };
 
+const processPendingDeletions = async () => {
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    const vendorsToDelete = await Vendor.find({
+      deletionRequestedAt: { $lt: thirtyDaysAgo },
+      deletedAt: null
+    });
+
+    let deletedCount = 0;
+
+    for (const vendor of vendorsToDelete) {
+      await Product.deleteMany({ vendorId: vendor._id });
+      
+      vendor.deletedAt = new Date();
+      await vendor.save();
+      
+      deletedCount++;
+      log.info(`Permanently deleted account: ${vendor._id}`);
+    }
+
+    if (deletedCount > 0) {
+      log.info(`Processed ${deletedCount} permanent account deletions`);
+    }
+  } catch (error) {
+    log.error('Error processing pending deletions:', error);
+  }
+};
+
+const sendDeletionWarningEmails = async () => {
+  try {
+    const sevenDaysFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const sixDaysFromNow = new Date(Date.now() + 6 * 24 * 60 * 60 * 1000);
+    
+    const vendorsWithPendingDeletion = await Vendor.find({
+      deletionRequestedAt: { $exists: true },
+      deletedAt: null,
+      isActive: false
+    });
+
+    for (const vendor of vendorsWithPendingDeletion) {
+      const deletionDate = new Date(vendor.deletionRequestedAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+      
+      if (deletionDate > sixDaysFromNow && deletionDate <= sevenDaysFromNow) {
+        const daysRemaining = Math.ceil((deletionDate - Date.now()) / (1000 * 60 * 60 * 24));
+        
+        await sendAccountDeletionWarningEmail(
+          vendor.email,
+          vendor.businessName,
+          daysRemaining
+        );
+        
+        log.info(`Sent deletion warning email to ${vendor.email}`);
+      }
+    }
+  } catch (error) {
+    log.error('Error sending deletion warning emails:', error);
+  }
+};
+
 let isRunning = false;
 
 const runScheduler = async () => {
@@ -188,7 +251,9 @@ const runScheduler = async () => {
       sendTrialReminders(),
       processExpiredTrials(),
       sendFirstOrderFollowUps(),
-      sendFirstProductFollowUps()
+      sendFirstProductFollowUps(),
+      processPendingDeletions(),
+      sendDeletionWarningEmails()
     ]);
     
     log.info('Scheduled tasks completed');

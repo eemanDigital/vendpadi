@@ -25,7 +25,11 @@ export const authAPI = {
   login: (data) => api.post('/auth/login', data),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
-  changePassword: (currentPassword, newPassword) => api.put('/auth/change-password', { currentPassword, newPassword })
+  changePassword: (currentPassword, newPassword) => api.put('/auth/change-password', { currentPassword, newPassword }),
+  requestDeleteAccount: (password, reason) => api.post('/auth/request-delete', { password, reason }),
+  cancelDeleteAccount: (password) => api.post('/auth/cancel-delete', { password }),
+  getDeletionStatus: () => api.get('/auth/deletion-status'),
+  exportAccountData: () => api.get('/auth/export-data')
 };
 
 export const vendorAPI = {
@@ -75,7 +79,7 @@ export const planAPI = {
   }),
   getAdminRequests: () => api.get('/plans/admin/requests'),
   getAdminStats: () => api.get('/plans/admin/stats'),
-  getSubscribers: (plan) => api.get('/plans/admin/subscribers', { params: { plan } }),
+  getSubscribers: (plan = 'all', format = 'list') => api.get('/plans/admin/subscribers', { params: { plan, format } }),
   approveRequest: (id) => api.put(`/plans/admin/approve/${id}`),
   rejectRequest: (id, reason) => api.put(`/plans/admin/reject/${id}`, { reason })
 };

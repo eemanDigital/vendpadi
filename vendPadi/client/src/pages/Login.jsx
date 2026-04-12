@@ -50,7 +50,7 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
-            <Logo variant="icon" size="md" />
+            <Logo variant="icon" size="md" showText />
           </Link>
           <h1 className="font-sora font-bold text-2xl mt-6 text-navy">Welcome Back</h1>
           <p className="text-gray-500 mt-2">Login to manage your store</p>

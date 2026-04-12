@@ -106,6 +106,13 @@ exports.login = catchAsync(async (req, res) => {
     return res.status(401).json({ message: 'Invalid email or password' });
   }
 
+  if (vendor.deletedAt) {
+    return res.status(403).json({ 
+      message: 'This account has been deleted. Contact support if you wish to restore it.',
+      code: 'ACCOUNT_DELETED'
+    });
+  }
+
   if (!vendor.isActive) {
     return res.status(403).json({ message: 'Account has been deactivated' });
   }

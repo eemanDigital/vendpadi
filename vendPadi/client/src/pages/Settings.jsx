@@ -6,8 +6,9 @@ import { updateVendor } from '../store/authSlice';
 import PlanBadge from '../components/PlanBadge';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import Logo from '../components/Logo';
+import DeleteAccountModal from '../components/DeleteAccountModal';
 import toast from 'react-hot-toast';
-import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiImage, FiLink } from 'react-icons/fi';
+import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiImage, FiLink, FiTrash2 } from 'react-icons/fi';
 
 const CATEGORIES = ['food', 'fashion', 'phones', 'beauty', 'cakes', 'electronics', 'home', 'sports', 'books', 'toys', 'services', 'other'];
 
@@ -105,6 +106,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const currentFeatures = PLAN_FEATURES[vendor?.plan?.type || 'free'];
   const isCustomCategory = !CATEGORIES.includes(formData.category) && formData.category !== 'food';
@@ -256,7 +258,7 @@ const Settings = () => {
       <header className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <Logo variant="icon" size="sm" />
+            <Logo variant="icon" size="sm" showText />
           </Link>
           <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
         </div>
@@ -665,8 +667,34 @@ const Settings = () => {
               </p>
             </div>
 
+            {/* Delete Account */}
+            <div className="bg-white rounded-2xl border border-red-100 p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
+                  <FiTrash2 className="text-red-500" />
+                </div>
+                <div>
+                  <h2 className="font-sora font-semibold text-lg">Delete Account</h2>
+                  <p className="text-sm text-gray-500">Permanently remove your account and data</p>
+                </div>
+              </div>
+              
+              <p className="text-sm text-gray-600 mb-4">
+                Once you delete your account, there is no going back. All your products, orders, 
+                and store settings will be permanently removed.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="w-full py-3 border border-red-200 text-red-600 rounded-xl font-medium hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <FiTrash2 /> Delete My Account
+              </button>
+            </div>
+
             <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
-              {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Saving...</> : <><FiSave /> Save Changes</>}
+              {loading ? <><div className="w-5 h-5 border-2 border-padi-green border-t-transparent rounded-full animate-spin"></div> Saving...</> : <><FiSave /> Save Changes</>}
             </button>
           </form>
         </div>
@@ -691,6 +719,12 @@ const Settings = () => {
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
         onSuccess={() => setShowUpgradeModal(false)}
+      />
+
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        vendor={vendor}
       />
     </div>
   );

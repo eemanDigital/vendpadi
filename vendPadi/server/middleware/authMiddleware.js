@@ -31,6 +31,13 @@ const protect = catchAsync(async (req, res, next) => {
       return res.status(401).json({ message: 'Vendor account not found' });
     }
 
+    if (vendor.deletedAt) {
+      return res.status(403).json({ 
+        message: 'Account has been deleted',
+        code: 'ACCOUNT_DELETED'
+      });
+    }
+
     if (!vendor.isActive) {
       return res.status(403).json({ message: 'Account has been deactivated' });
     }

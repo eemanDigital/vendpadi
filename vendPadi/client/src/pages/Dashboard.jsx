@@ -285,7 +285,7 @@ const Dashboard = () => {
       <header className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <Logo variant="icon" size="sm" />
+            <Logo variant="icon" size="sm" showText />
           </Link>
           <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
         </div>

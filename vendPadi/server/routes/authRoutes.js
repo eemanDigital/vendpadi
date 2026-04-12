@@ -32,4 +32,15 @@ router.put('/change-password', protect, [
   body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
 ], authController.changePassword);
 
+router.post('/request-delete', protect, [
+  body('password').notEmpty().withMessage('Password confirmation is required')
+], authController.requestDeleteAccount);
+
+router.post('/cancel-delete', protect, [
+  body('password').notEmpty().withMessage('Password confirmation is required')
+], authController.cancelDeleteAccount);
+
+router.get('/deletion-status', protect, authController.getDeletionStatus);
+router.get('/export-data', protect, authController.exportAccountData);
+
 module.exports = router;

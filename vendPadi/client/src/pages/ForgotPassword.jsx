@@ -80,7 +80,7 @@ const ForgotPassword = () => {
         <div className="bg-white rounded-3xl shadow-2xl p-8">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <Logo variant="icon" size="lg" />
+              <Logo variant="icon" size="lg" showText />
             </div>
             <div className="w-16 h-16 bg-padi-green/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FiMail size={28} className="text-padi-green" />

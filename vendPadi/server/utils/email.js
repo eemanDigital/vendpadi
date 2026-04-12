@@ -728,3 +728,203 @@ exports.sendFirstProductFollowUpEmail = async (email, businessName) => {
     html,
   });
 };
+
+exports.sendAccountDeletionRequestedEmail = async (email, businessName) => {
+  const loginUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/login` : 'http://localhost:5173/login';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="${baseStyles}">
+      <div style="${cardStyles}">
+        <div style="background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); padding: 32px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">⚠️ Account Deletion Requested</h1>
+        </div>
+        <div style="${contentStyles}">
+          <h2 style="color: #1a1a2e; margin: 0 0 16px; font-size: 22px;">
+            Hi ${businessName},
+          </h2>
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            We received a request to delete your VendPadi account. Your account has been deactivated.
+          </p>
+
+          <div style="background: #FFF3E0; border: 1px solid #FF8E53; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="margin: 0 0 12px; color: #1a1a2e; font-size: 16px;">⏰ What happens next:</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+              <li>Your account will be <strong>disabled immediately</strong></li>
+              <li>Your data will be <strong>permanently deleted after 30 days</strong></li>
+              <li>You can <strong>restore your account</strong> by logging in within 30 days</li>
+            </ul>
+          </div>
+
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            If you didn't request this deletion, please contact us immediately.
+          </p>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${loginUrl}" style="${buttonStyles}">
+              Restore My Account
+            </a>
+          </div>
+        </div>
+        <div style="${footerStyles}">
+          <p style="color: #666; margin: 0 0 8px; font-size: 14px;">
+            <strong>VendPadi</strong> - Build your WhatsApp store in minutes
+          </p>
+          <p style="color: #999; margin: 0; font-size: 12px;">
+            <a href="${process.env.CLIENT_URL || '#'}" style="color: #25C675;">vendpadi.com</a>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `⚠️ Account Deletion Requested - VendPadi`,
+    html,
+  });
+};
+
+exports.sendAccountDeletionWarningEmail = async (email, businessName, daysRemaining) => {
+  const loginUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/login` : 'http://localhost:5173/login';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="${baseStyles}">
+      <div style="${cardStyles}">
+        <div style="background: linear-gradient(135deg, #FF6B6B 0%, #C0392B 100%); padding: 32px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">🚨 Final Warning - Account Deletion</h1>
+        </div>
+        <div style="${contentStyles}">
+          <h2 style="color: #1a1a2e; margin: 0 0 16px; font-size: 22px;">
+            Hi ${businessName},
+          </h2>
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            This is your <strong>final reminder</strong>. Your VendPadi account will be <strong>permanently deleted in ${daysRemaining} day${daysRemaining > 1 ? 's' : ''}</strong>.
+          </p>
+
+          <div style="background: #FFEBEE; border: 2px solid #FF6B6B; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
+            <p style="color: #C0392B; margin: 0; font-size: 20px; font-weight: bold;">
+              ${daysRemaining} day${daysRemaining > 1 ? 's' : ''} remaining before permanent deletion
+            </p>
+          </div>
+
+          <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="margin: 0 0 12px; color: #1a1a2e; font-size: 16px;">⚠️ What will be deleted:</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+              <li>All your products</li>
+              <li>Your store settings</li>
+              <li>Your store link</li>
+              <li>All analytics data</li>
+            </ul>
+          </div>
+
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            <strong>Important:</strong> Order records will be retained for legal compliance, but your personal information will be anonymized.
+          </p>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${loginUrl}" style="${buttonStyles}">
+              Restore My Account Now
+            </a>
+          </div>
+        </div>
+        <div style="${footerStyles}">
+          <p style="color: #666; margin: 0 0 8px; font-size: 14px;">
+            <strong>VendPadi</strong> - Build your WhatsApp store in minutes
+          </p>
+          <p style="color: #999; margin: 0; font-size: 12px;">
+            <a href="${process.env.CLIENT_URL || '#'}" style="color: #25C675;">vendpadi.com</a>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `🚨 Final Warning: VendPadi account deletion in ${daysRemaining} day${daysRemaining > 1 ? 's' : ''}`,
+    html,
+  });
+};
+
+exports.sendAccountPermanentlyDeletedEmail = async (email, businessName) => {
+  const signupUrl = process.env.CLIENT_URL ? `${process.env.CLIENT_URL}/register` : 'http://localhost:5173/register';
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="${baseStyles}">
+      <div style="${cardStyles}">
+        <div style="background: linear-gradient(135deg, #666 0%, #333 100%); padding: 32px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">Account Permanently Deleted</h1>
+        </div>
+        <div style="${contentStyles}">
+          <h2 style="color: #1a1a2e; margin: 0 0 16px; font-size: 22px;">
+            Hi ${businessName},
+          </h2>
+          <p style="color: #666; line-height: 1.7; margin: 0 0 20px;">
+            Your VendPadi account and all associated data have been <strong>permanently deleted</strong>. This action cannot be undone.
+          </p>
+
+          <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="margin: 0 0 12px; color: #1a1a2e; font-size: 16px;">📋 What was deleted:</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+              <li>All products</li>
+              <li>Store settings and customizations</li>
+              <li>Analytics and statistics</li>
+              <li>Personal information</li>
+            </ul>
+          </div>
+
+          <div style="background: #E3F2FD; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <p style="color: #1565C0; margin: 0; font-size: 14px;">
+              <strong>Note:</strong> Transaction records are retained for legal compliance but have been anonymized.
+            </p>
+          </div>
+
+          <p style="color: #666; line-height: 1.7; margin: 0 0 24px;">
+            Thank you for using VendPadi. We're sorry to see you go. If you'd like to start fresh, you can create a new account anytime.
+          </p>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${signupUrl}" style="${secondaryButtonStyles}">
+              Create New Account
+            </a>
+          </div>
+        </div>
+        <div style="${footerStyles}">
+          <p style="color: #666; margin: 0 0 8px; font-size: 14px;">
+            <strong>VendPadi</strong> - Build your WhatsApp store in minutes
+          </p>
+          <p style="color: #999; margin: 0; font-size: 12px;">
+            <a href="${process.env.CLIENT_URL || '#'}" style="color: #25C675;">vendpadi.com</a>
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `Your VendPadi account has been deleted`,
+    html,
+  });
+};
