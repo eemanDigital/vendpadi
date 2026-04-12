@@ -21,6 +21,8 @@ const { sanitizeBody } = require("./middleware/sanitizeMiddleware");
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 const logsDir = path.join(__dirname, "logs");
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
@@ -98,12 +100,16 @@ app.use(sanitizeBody);
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { message: "Too many requests, please try again later." },
 });
 
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: {
     message: "Too many authentication attempts, please try again later.",
   },
