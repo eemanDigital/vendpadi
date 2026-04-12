@@ -5,8 +5,35 @@ const catchAsync = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
+const VIEW_COOLDOWN_MS = 30 * 60 * 1000;
+const recentViews = new Map();
+
+setInterval(() => {
+  const now = Date.now();
+  const cutoff = now - VIEW_COOLDOWN_MS;
+  let deleted = 0;
+  for (const [key, timestamp] of recentViews) {
+    if (timestamp < cutoff) {
+      recentViews.delete(key);
+      deleted++;
+    }
+  }
+  if (deleted > 0) {
+    console.log(`Cleaned up ${deleted} expired view records. Remaining: ${recentViews.size}`);
+  }
+}, 10 * 60 * 1000);
+
 exports.trackView = catchAsync(async (req, res) => {
   const { slug } = req.params;
+  const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+  const cacheKey = `${slug}:${clientIp}`;
+
+  const now = Date.now();
+  const lastView = recentViews.get(cacheKey);
+  
+  if (lastView && (now - lastView) < VIEW_COOLDOWN_MS) {
+    return res.json({ success: true, message: 'View already counted' });
+  }
 
   const vendor = await Vendor.findOneAndUpdate(
     { slug: slug.toLowerCase() },
@@ -21,6 +48,7 @@ exports.trackView = catchAsync(async (req, res) => {
     return res.status(404).json({ message: 'Store not found' });
   }
 
+  recentViews.set(cacheKey, now);
   res.json({ success: true });
 });
 
@@ -31,7 +59,7 @@ exports.trackWhatsAppClick = catchAsync(async (req, res) => {
   const vendor = await Vendor.findOneAndUpdate(
     { slug: slug.toLowerCase() },
     { $inc: { 'analytics.whatsappClicks': 1 } },
-    { new: true }
+    { new: true, select: '_id' }
   );
 
   if (!vendor) {
@@ -40,7 +68,7 @@ exports.trackWhatsAppClick = catchAsync(async (req, res) => {
 
   if (productIds && Array.isArray(productIds) && productIds.length > 0) {
     await Product.updateMany(
-      { _id: { $in: productIds } },
+      { _id: { $in: productIds }, vendorId: vendor._id },
       { $inc: { clickCount: 1 } }
     );
   }
@@ -51,16 +79,20 @@ exports.trackWhatsAppClick = catchAsync(async (req, res) => {
 exports.trackProductView = catchAsync(async (req, res) => {
   const { slug, productId } = req.params;
 
-  const vendor = await Vendor.findOne({ slug: slug.toLowerCase() });
+  const vendor = await Vendor.findOne({ slug: slug.toLowerCase() }).select('_id');
 
   if (!vendor) {
     return res.status(404).json({ message: 'Store not found' });
   }
 
-  await Product.findByIdAndUpdate(
-    productId,
+  const product = await Product.findOneAndUpdate(
+    { _id: productId, vendorId: vendor._id },
     { $inc: { viewCount: 1 } }
   );
+
+  if (!product) {
+    return res.status(404).json({ message: 'Product not found in this store' });
+  }
 
   res.json({ success: true });
 });
@@ -86,25 +118,24 @@ exports.getAnalytics = catchAsync(async (req, res) => {
     const products = await Product.find({ vendorId })
       .sort({ clickCount: -1 })
       .limit(5)
-      .select('name clickCount images price');
+      .select('name clickCount viewCount images price');
 
     topProducts = products.map(p => ({
       id: p._id,
       name: p.name,
       clickCount: p.clickCount || 0,
+      viewCount: p.viewCount || 0,
       image: p.images?.[0] || null,
       price: p.price
     }));
 
     topProduct = topProducts.length > 0 ? topProducts[0] : null;
 
-    const today = new Date();
-    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const viewsThisWeek = vendor.analytics.viewsCount;
+    const viewsThisWeek = vendor.analytics.viewsCount || 0;
+    const clicks = vendor.analytics.whatsappClicks || 0;
     
-    conversionRate = viewsThisWeek > 0 
-      ? ((vendor.analytics.whatsappClicks / viewsThisWeek) * 100).toFixed(1)
-      : 0;
+    const rawRate = viewsThisWeek > 0 ? (clicks / viewsThisWeek) * 100 : 0;
+    conversionRate = Math.min(rawRate, 100).toFixed(1);
   }
 
   const totalProducts = await Product.countDocuments({ vendorId });

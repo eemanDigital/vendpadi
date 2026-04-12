@@ -17,6 +17,8 @@ const productSchema = new mongoose.Schema({
 productSchema.index({ vendorId: 1, createdAt: -1 });
 productSchema.index({ category: 1 });
 productSchema.index({ price: 1 });
+productSchema.index({ vendorId: 1, clickCount: -1 });
+productSchema.index({ vendorId: 1, viewCount: -1 });
 
 productSchema.virtual('isLowStock').get(function() {
   return this.stock > 0 && this.stock <= this.lowStockThreshold;
