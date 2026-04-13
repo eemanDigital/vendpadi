@@ -36,12 +36,15 @@ import {
   FiGift,
   FiSun,
   FiCoffee,
+  FiCopy,
+  FiLink,
 } from "react-icons/fi";
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/authSlice";
 import { clearCart } from "../store/cartSlice";
 import Logo from "../components/Logo";
+import { PLAN_DETAILS } from "../data/planConstants";
 
 const AnimatedCounter = ({ end, duration = 2000, suffix = "" }) => {
   const [count, setCount] = useState(0);
@@ -66,7 +69,7 @@ const AnimatedCounter = ({ end, duration = 2000, suffix = "" }) => {
           }, 16);
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
 
     if (ref.current) observer.observe(ref.current);
@@ -92,7 +95,7 @@ const ScrollReveal = ({ children, delay = 0, className = "" }) => {
           setTimeout(() => setIsVisible(true), delay);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (ref.current) observer.observe(ref.current);
@@ -133,7 +136,14 @@ const BentoCard = ({ children, className = "", span = "1x1" }) => {
   );
 };
 
-const SplitSection = ({ image, title, subtitle, points, reverse = false, badge }) => {
+const SplitSection = ({
+  image,
+  title,
+  subtitle,
+  points,
+  reverse = false,
+  badge,
+}) => {
   return (
     <div
       className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
@@ -361,8 +371,14 @@ const Landing = () => {
 
       {/* Hero */}
       <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 px-4 overflow-hidden bg-gradient-to-b from-navy via-navy to-navy-light">
-        <FloatingShape className="w-[500px] h-[500px] bg-padi-green -top-40 -left-40" delay={0} />
-        <FloatingShape className="w-[400px] h-[400px] bg-padi-green top-1/2 -right-20" delay={1} />
+        <FloatingShape
+          className="w-[500px] h-[500px] bg-padi-green -top-40 -left-40"
+          delay={0}
+        />
+        <FloatingShape
+          className="w-[400px] h-[400px] bg-padi-green top-1/2 -right-20"
+          delay={1}
+        />
 
         <div className="max-w-7xl mx-auto relative">
           <div className="max-w-4xl mx-auto text-center">
@@ -391,8 +407,9 @@ const Landing = () => {
 
             <ScrollReveal delay={200}>
               <p className="text-lg sm:text-xl text-gray-300 mb-12 max-w-2xl mx-auto px-4 leading-relaxed">
-                Create your online store in minutes. Share your link on WhatsApp,
-                Instagram, or anywhere. Customers order with a single tap.
+                Create your online store in minutes. Share your link on
+                WhatsApp, Instagram, or anywhere. Customers order with a single
+                tap.
               </p>
             </ScrollReveal>
 
@@ -433,32 +450,65 @@ const Landing = () => {
                       <div className="w-3 h-3 rounded-full bg-red-400"></div>
                       <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
                       <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                      <span className="ml-4 text-xs text-gray-400">vendpadi.com/store/fashionista</span>
+                      <span className="ml-4 text-xs text-gray-400">
+                        vendpadi.com/store/fashionista
+                      </span>
                     </div>
                     <div className="p-6 lg:p-10">
                       <div className="grid grid-cols-3 gap-4 mb-6">
                         {[
-                          { label: "Orders", value: "1,247", trend: "+12%", up: true },
-                          { label: "Views", value: "8,392", trend: "+24%", up: true },
-                          { label: "Revenue", value: "₦456K", trend: "+18%", up: true },
+                          {
+                            label: "Orders",
+                            value: "1,247",
+                            trend: "+12%",
+                            up: true,
+                          },
+                          {
+                            label: "Views",
+                            value: "8,392",
+                            trend: "+24%",
+                            up: true,
+                          },
+                          {
+                            label: "Revenue",
+                            value: "₦456K",
+                            trend: "+18%",
+                            up: true,
+                          },
                         ].map((stat, i) => (
-                          <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <p className="text-xs text-gray-500 mb-1">{stat.label}</p>
-                            <p className="text-xl font-bold text-navy">{stat.value}</p>
+                          <div
+                            key={i}
+                            className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <p className="text-xs text-gray-500 mb-1">
+                              {stat.label}
+                            </p>
+                            <p className="text-xl font-bold text-navy">
+                              {stat.value}
+                            </p>
                             <div className="flex items-center gap-1">
                               {stat.up ? (
-                                <FiArrowUpRight className="text-padi-green" size={12} />
+                                <FiArrowUpRight
+                                  className="text-padi-green"
+                                  size={12}
+                                />
                               ) : (
-                                <FiArrowDownRight className="text-red-400" size={12} />
+                                <FiArrowDownRight
+                                  className="text-red-400"
+                                  size={12}
+                                />
                               )}
-                              <span className="text-xs text-padi-green font-medium">{stat.trend}</span>
+                              <span className="text-xs text-padi-green font-medium">
+                                {stat.trend}
+                              </span>
                             </div>
                           </div>
                         ))}
                       </div>
                       <div className="grid grid-cols-4 gap-3">
                         {[1, 2, 3, 4].map((i) => (
-                          <div key={i} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                          <div
+                            key={i}
+                            className="bg-gray-50 rounded-lg p-3 border border-gray-100">
                             <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-20 mb-2"></div>
                             <div className="h-3 bg-gray-200 rounded w-3/4 mb-1"></div>
                             <div className="h-3 bg-gray-100 rounded w-1/2"></div>
@@ -518,16 +568,30 @@ const Landing = () => {
 
           <div className="grid md:grid-cols-3 gap-6 mb-16">
             {[
-              { icon: FiSmile, title: "Scattered Orders", desc: "Orders come through WhatsApp, Instagram DMs, phone calls... chaos." },
-              { icon: FiClock, title: "Wasted Time", desc: "Hours spent sending individual prices and updating product lists." },
-              { icon: FiTrendingDown, title: "Lost Sales", desc: "Customers forget what you offer or move to a competitor." },
+              {
+                icon: FiSmile,
+                title: "Scattered Orders",
+                desc: "Orders come through WhatsApp, Instagram DMs, phone calls... chaos.",
+              },
+              {
+                icon: FiClock,
+                title: "Wasted Time",
+                desc: "Hours spent sending individual prices and updating product lists.",
+              },
+              {
+                icon: FiTrendingDown,
+                title: "Lost Sales",
+                desc: "Customers forget what you offer or move to a competitor.",
+              },
             ].map((item, i) => (
               <ScrollReveal key={i} delay={i * 100}>
                 <div className="bg-red-50/50 border border-red-100 rounded-2xl p-6 text-center">
                   <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <item.icon className="text-red-500 text-2xl" />
                   </div>
-                  <h3 className="font-sora font-bold text-lg text-navy mb-2">{item.title}</h3>
+                  <h3 className="font-sora font-bold text-lg text-navy mb-2">
+                    {item.title}
+                  </h3>
                   <p className="text-gray-500 text-sm">{item.desc}</p>
                 </div>
               </ScrollReveal>
@@ -540,23 +604,38 @@ const Landing = () => {
                 The Solution
               </span>
               <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-navy mb-6">
-                One store. One link. <span className="text-padi-green">All orders on WhatsApp.</span>
+                One store. One link.{" "}
+                <span className="text-padi-green">All orders on WhatsApp.</span>
               </h2>
             </div>
           </ScrollReveal>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: FiGlobe, title: "Beautiful Store", desc: "Professional online store in minutes" },
-              { icon: FiShare2, title: "Easy Sharing", desc: "Share anywhere: WhatsApp, Instagram, SMS" },
-              { icon: FiMessageCircle, title: "Instant Orders", desc: "Customers order directly on WhatsApp" },
+              {
+                icon: FiGlobe,
+                title: "Beautiful Store",
+                desc: "Professional online store in minutes",
+              },
+              {
+                icon: FiShare2,
+                title: "Easy Sharing",
+                desc: "Share anywhere: WhatsApp, Instagram, SMS",
+              },
+              {
+                icon: FiMessageCircle,
+                title: "Instant Orders",
+                desc: "Customers order directly on WhatsApp",
+              },
             ].map((item, i) => (
               <ScrollReveal key={i} delay={i * 100}>
                 <div className="bg-gradient-to-br from-padi-green/5 to-padi-green/10 border border-padi-green/20 rounded-2xl p-6 text-center hover:shadow-lg transition-shadow">
                   <div className="w-14 h-14 bg-padi-green rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <item.icon className="text-white text-2xl" />
                   </div>
-                  <h3 className="font-sora font-bold text-lg text-navy mb-2">{item.title}</h3>
+                  <h3 className="font-sora font-bold text-lg text-navy mb-2">
+                    {item.title}
+                  </h3>
                   <p className="text-gray-500 text-sm">{item.desc}</p>
                 </div>
               </ScrollReveal>
@@ -566,7 +645,9 @@ const Landing = () => {
       </section>
 
       {/* Bento Grid Features */}
-      <section id="features" className="py-20 lg:py-28 px-4 bg-gradient-to-b from-gray-50 to-white">
+      <section
+        id="features"
+        className="py-20 lg:py-28 px-4 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -594,20 +675,27 @@ const Landing = () => {
                   Real-time Analytics
                 </h3>
                 <p className="text-gray-500 mb-6 flex-1">
-                  Track views, orders, and revenue in real-time. Know exactly what's
-                  selling and what's not. Make data-driven decisions to grow your business.
+                  Track views, orders, and revenue in real-time. Know exactly
+                  what's selling and what's not. Make data-driven decisions to
+                  grow your business.
                 </p>
                 <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-padi-green">2.5K</div>
+                    <div className="text-2xl font-bold text-padi-green">
+                      2.5K
+                    </div>
                     <div className="text-xs text-gray-500">Views this week</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-padi-green">156</div>
+                    <div className="text-2xl font-bold text-padi-green">
+                      156
+                    </div>
                     <div className="text-xs text-gray-500">Orders</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-padi-green">₦89K</div>
+                    <div className="text-2xl font-bold text-padi-green">
+                      ₦89K
+                    </div>
                     <div className="text-xs text-gray-500">Revenue</div>
                   </div>
                 </div>
@@ -683,13 +771,20 @@ const Landing = () => {
                       Reviews & Ratings
                     </h3>
                     <p className="text-gray-500 text-sm mb-3">
-                      Build trust with customer reviews. Customers can rate products and leave feedback.
+                      Build trust with customer reviews. Customers can rate
+                      products and leave feedback.
                     </p>
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((i) => (
-                        <FiStar key={i} className="text-yellow-400 fill-yellow-400" size={16} />
+                        <FiStar
+                          key={i}
+                          className="text-yellow-400 fill-yellow-400"
+                          size={16}
+                        />
                       ))}
-                      <span className="text-sm text-gray-500 ml-2">4.8 avg (234 reviews)</span>
+                      <span className="text-sm text-gray-500 ml-2">
+                        4.8 avg (234 reviews)
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -736,7 +831,9 @@ const Landing = () => {
       </section>
 
       {/* How It Works - Stepped Timeline */}
-      <section id="how-it-works" className="py-20 lg:py-28 px-4 bg-gradient-to-b from-gray-50 to-white">
+      <section
+        id="how-it-works"
+        className="py-20 lg:py-28 px-4 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -805,35 +902,71 @@ const Landing = () => {
 
       {/* Stats - Horizontal Cards */}
       <section className="py-20 lg:py-28 px-4 bg-navy text-white relative overflow-hidden">
-        <FloatingShape className="w-96 h-96 bg-padi-green top-0 left-0" delay={0} />
+        <FloatingShape
+          className="w-96 h-96 bg-padi-green top-0 left-0"
+          delay={0}
+        />
         <div className="max-w-7xl mx-auto relative">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl mb-6">
-                Trusted by{" "}
-                <span className="text-padi-green">thousands</span> of vendors
+                Trusted by <span className="text-padi-green">thousands</span> of
+                vendors
               </h2>
             </div>
           </ScrollReveal>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: FiZap, stat: "1000", suffix: "+", label: "Trials Started", color: "from-amber-400 to-orange-500" },
-              { icon: FiShoppingCart, stat: "5000", suffix: "+", label: "Orders Received", color: "from-padi-green to-emerald-400" },
-              { icon: FiHome, stat: "2000", suffix: "+", label: "Active Stores", color: "from-blue-400 to-indigo-500" },
-              { icon: FiStar, stat: "4.8", suffix: "/5", label: "Customer Rating", color: "from-pink-400 to-rose-500" },
+              {
+                icon: FiZap,
+                stat: "1000",
+                suffix: "+",
+                label: "Trials Started",
+                color: "from-amber-400 to-orange-500",
+              },
+              {
+                icon: FiShoppingCart,
+                stat: "5000",
+                suffix: "+",
+                label: "Orders Received",
+                color: "from-padi-green to-emerald-400",
+              },
+              {
+                icon: FiHome,
+                stat: "2000",
+                suffix: "+",
+                label: "Active Stores",
+                color: "from-blue-400 to-indigo-500",
+              },
+              {
+                icon: FiStar,
+                stat: "4.8",
+                suffix: "/5",
+                label: "Customer Rating",
+                color: "from-pink-400 to-rose-500",
+              },
             ].map((item, i) => (
               <ScrollReveal key={i} delay={i * 100}>
                 <div className="text-center p-8 bg-white/5 backdrop-blur rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br p-1" style={{ background: `linear-gradient(135deg, ${item.color.includes('amber') ? '#fbbf24, #ea580c' : item.color.includes('padi-green') ? '#25C866, #34d399' : item.color.includes('blue') ? '#60a5fa, #6366f1' : '#f472b6, #f43f5e'})` }}>
+                  <div
+                    className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br p-1"
+                    style={{
+                      background: `linear-gradient(135deg, ${item.color.includes("amber") ? "#fbbf24, #ea580c" : item.color.includes("padi-green") ? "#25C866, #34d399" : item.color.includes("blue") ? "#60a5fa, #6366f1" : "#f472b6, #f43f5e"})`,
+                    }}>
                     <div className="w-full h-full bg-white/10 rounded-xl flex items-center justify-center">
                       <item.icon className="text-white text-3xl" />
                     </div>
                   </div>
                   <div className="font-sora font-bold text-4xl lg:text-5xl text-padi-green mb-2">
-                    <AnimatedCounter end={parseFloat(item.stat)} suffix={item.suffix} />
+                    <AnimatedCounter
+                      end={parseFloat(item.stat)}
+                      suffix={item.suffix}
+                    />
                   </div>
-                  <div className="text-sm text-gray-400 font-medium">{item.label}</div>
+                  <div className="text-sm text-gray-400 font-medium">
+                    {item.label}
+                  </div>
                 </div>
               </ScrollReveal>
             ))}
@@ -878,12 +1011,19 @@ const Landing = () => {
                 <div className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-padi-green/20 hover:shadow-xl transition-all duration-300 h-full flex flex-col">
                   <div className="flex items-center gap-1 mb-6">
                     {[...Array(5)].map((_, j) => (
-                      <FiStar key={j} className="text-yellow-400 fill-yellow-400" size={20} />
+                      <FiStar
+                        key={j}
+                        className="text-yellow-400 fill-yellow-400"
+                        size={20}
+                      />
                     ))}
                   </div>
                   <div className="flex-1">
-                    <svg className="w-10 h-10 text-padi-green/20 mb-4" fill="currentColor" viewBox="0 0 32 32">
-                      <path d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-1.1.9-2 2-2V8zm14 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-1.1.9-2 2-2V8z"/>
+                    <svg
+                      className="w-10 h-10 text-padi-green/20 mb-4"
+                      fill="currentColor"
+                      viewBox="0 0 32 32">
+                      <path d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-1.1.9-2 2-2V8zm14 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-1.1.9-2 2-2V8z" />
                     </svg>
                     <p className="text-gray-700 text-lg leading-relaxed mb-6">
                       "{item.text}"
@@ -906,7 +1046,9 @@ const Landing = () => {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-20 lg:py-28 px-4 bg-gradient-to-b from-gray-50 to-white">
+      <section
+        id="pricing"
+        className="py-20 lg:py-28 px-4 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-12">
@@ -914,8 +1056,7 @@ const Landing = () => {
                 Simple Pricing
               </span>
               <h2 className="font-sora font-bold text-3xl sm:text-4xl lg:text-5xl text-navy mb-6">
-                Choose your{" "}
-                <span className="text-padi-green">plan</span>
+                Choose your <span className="text-padi-green">plan</span>
               </h2>
               <p className="text-gray-500 text-lg">
                 Start free. Upgrade when you start getting orders.
@@ -955,191 +1096,145 @@ const Landing = () => {
           </ScrollReveal>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {[
-              {
-                plan: "Free",
-                icon: FiGift,
-                monthlyPrice: "₦0",
-                yearlyPrice: "₦0",
-                period: billingCycle === "yearly" ? "/year" : "forever",
-                tagline: "Perfect to get started",
-                features: [
-                  "5 products",
-                  "1 image per product",
-                  "WhatsApp orders",
-                  "Basic store link",
-                  "Store QR code",
-                  "Stock tracking",
-                  "Low stock alerts",
-                  "Product filtering",
-                  "Wishlist",
-                  "Reviews",
-                ],
-                cta: "Get Started",
-                highlight: false,
-              },
-              {
-                plan: "Starter",
-                icon: FiSun,
-                monthlyPrice: "₦1,000",
-                yearlyPrice: "₦10,000",
-                period: billingCycle === "yearly" ? "/year" : "/month",
-                tagline: "Look professional",
-                features: [
-                  "30 products",
-                  "3 images per product",
-                  "Remove branding",
-                  "Logo upload",
-                  "Store analytics",
-                  "Share store link",
-                  "Stock tracking",
-                  "Low stock alerts",
-                  "Wishlist",
-                  "Reviews",
-                ],
-                cta: "Upgrade",
-                highlight: false,
-                badge: billingCycle === "yearly" ? "Save 17%" : null,
-                yearlySavings: "₦2,000",
-              },
-              {
-                plan: "Business",
-                icon: FiTrendingUp,
-                monthlyPrice: "₦2,500",
-                yearlyPrice: "₦25,000",
-                period: billingCycle === "yearly" ? "/year" : "/month",
-                tagline: "Grow faster",
-                features: [
-                  "100 products",
-                  "5 images per product",
-                  "Remove branding",
-                  "Logo upload",
-                  "PDF invoices",
-                  "Full analytics",
-                  "Top products",
-                  "QR codes",
-                  "Wishlist",
-                  "Reviews",
-                ],
-                cta: "Go Business",
-                highlight: true,
-                badge: "Most Popular",
-                yearlySavings: "₦5,000",
-              },
-              {
-                plan: "Premium",
-                icon: FiAward,
-                monthlyPrice: "₦5,000",
-                yearlyPrice: "₦50,000",
-                period: billingCycle === "yearly" ? "/year" : "/month",
-                tagline: "Run like a brand",
-                trialNote: "7 DAYS FREE",
-                features: [
-                  "Unlimited products",
-                  "8 images per product",
-                  "Remove branding",
-                  "Logo + cover",
-                  "PDF invoices",
-                  "Full analytics",
-                  "Custom domain",
-                  "Priority support",
-                  "Wishlist",
-                  "Reviews",
-                ],
-                cta: "Start Free Trial",
-                highlight: false,
-                badge: billingCycle === "yearly" ? "Save 17%" : "Try Free 7 Days",
-                yearlySavings: "₦10,000",
-              },
-            ].map((item, i) => (
-              <ScrollReveal key={i} delay={i * 75}>
-                <div
-                  className={`relative flex flex-col rounded-3xl transition-all duration-500 hover:-translate-y-2 ${
-                    item.highlight
-                      ? "bg-gradient-to-br from-navy to-navy-light text-white ring-2 ring-padi-green shadow-2xl shadow-padi-green/20 scale-[1.02]"
-                      : item.plan === "Premium"
-                        ? "bg-gradient-to-br from-padi-green/5 to-padi-green/10 border-2 border-padi-green/30 hover:border-padi-green/50 hover:shadow-xl"
-                        : "bg-white border border-gray-200 hover:border-padi-green/30 hover:shadow-xl"
-                  }`}>
-                  {item.badge && (
-                    <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-sm font-bold whitespace-nowrap shadow-lg z-10 ${
-                      item.plan === "Premium"
-                        ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white"
-                        : item.highlight
-                          ? "bg-gradient-to-r from-padi-green to-padi-green-dark text-white"
-                          : "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+            {Object.entries(PLAN_DETAILS).map(([planKey, plan]) => {
+              const displayPrice =
+                billingCycle === "yearly" ? plan.yearlyPrice : plan.price;
+              const period =
+                plan.price === 0
+                  ? billingCycle === "yearly"
+                    ? "/year"
+                    : "forever"
+                  : billingCycle === "yearly"
+                    ? "/year"
+                    : "/month";
+              const isBusiness = planKey === "business";
+              const isPremium = planKey === "premium";
+              const cardTextColor = isBusiness ? "text-white" : "text-navy";
+              const cardSubtextColor = isBusiness ? "text-gray-300" : "text-gray-500";
+              const cardSecondaryTextColor = isBusiness ? "text-gray-200" : "text-gray-600";
+              const badgeBgColor = isBusiness || isPremium ? "bg-white/20" : "bg-padi-green/10";
+              const checkmarkColor = "text-padi-green";
+              const iconColor = isBusiness ? "text-white" : isPremium ? "text-amber-600" : "text-padi-green";
+
+              return (
+                <ScrollReveal
+                  key={planKey}
+                  delay={Object.keys(PLAN_DETAILS).indexOf(planKey) * 75}>
+                  <div
+                    className={`relative flex flex-col rounded-3xl transition-all duration-500 hover:-translate-y-2 ${
+                      isBusiness
+                        ? "bg-gradient-to-br from-navy to-navy-light text-white ring-2 ring-padi-green shadow-2xl shadow-padi-green/20 scale-[1.02]"
+                        : planKey === "premium"
+                          ? "bg-white border-2 border-gray-200 hover:border-padi-green/30 hover:shadow-xl"
+                          : "bg-white border border-gray-200 hover:border-padi-green/30 hover:shadow-xl"
                     }`}>
-                      {item.badge}
-                    </div>
-                  )}
-                  <div className="p-8 flex-1 flex flex-col">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${
-                      item.highlight || item.plan === "Premium"
-                        ? "bg-white/20"
-                        : "bg-gradient-to-br from-padi-green/10 to-padi-green/5"
-                    }`}>
-                      <item.icon className={`text-3xl ${item.highlight || item.plan === "Premium" ? 'text-white' : 'text-padi-green'}`} />
-                    </div>
-                    <h3 className="font-sora font-bold text-2xl mb-1">{item.plan}</h3>
-                    
-                    {/* Trial Note for Premium */}
-                    {item.trialNote && (
-                      <div className={`mt-2 mb-2 inline-flex items-center gap-1.5 text-xs font-bold ${
-                        item.highlight ? "text-yellow-300" : "text-amber-600"
-                      }`}>
-                        <FiZap size={12} />
-                        {item.trialNote}
+                    {plan.popular && !isBusiness && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-sm font-bold whitespace-nowrap shadow-lg z-10 bg-gradient-to-r from-padi-green to-padi-green-dark text-white">
+                        Most Popular
                       </div>
                     )}
-                    
-                    <div className="mt-4 mb-1">
-                      <span className="text-5xl font-bold">
-                        {billingCycle === "yearly" ? item.yearlyPrice : item.monthlyPrice}
-                      </span>
-                      <span className={`text-sm ml-1 ${item.highlight ? "text-gray-300" : "text-gray-500"}`}>
-                        {item.period}
-                      </span>
-                    </div>
-                    
-                    {/* Yearly Savings */}
-                    {billingCycle === "yearly" && item.yearlySavings && (
-                      <p className={`text-sm font-semibold mb-2 ${item.highlight ? "text-green-400" : "text-green-600"}`}>
-                        Save {item.yearlySavings}/year
-                      </p>
+                    {planKey === "premium" && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-sm font-bold whitespace-nowrap shadow-lg z-10 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                        {billingCycle === "yearly"
+                          ? "Save 17%"
+                          : "Try Free 7 Days"}
+                      </div>
                     )}
-                    
-                    <p className={`text-sm mb-6 ${item.highlight ? "text-gray-300" : "text-gray-500"}`}>
-                      {item.tagline}
-                    </p>
-                    <ul className="space-y-3 mb-8 flex-1">
-                      {item.features.map((f, j) => (
-                        <li key={j} className="flex items-start gap-3 text-sm">
-                          <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${
-                            item.highlight || item.plan === "Premium" ? "bg-white/20" : "bg-padi-green/10"
-                          }`}>
-                            <FiCheck className={`${item.highlight || item.plan === "Premium" ? 'text-padi-green' : 'text-padi-green'}`} size={12} />
-                          </div>
-                          <span className={item.highlight || item.plan === "Premium" ? "text-gray-200" : "text-gray-600"}>
-                            {f}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link
-                      to="/register"
-                      className={`block text-center py-4 px-6 rounded-2xl font-bold transition-all mt-auto ${
-                        item.plan === "Premium"
-                          ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/30"
-                          : item.highlight
-                            ? "bg-padi-green text-white hover:bg-padi-green-dark shadow-xl shadow-padi-green/30"
-                            : "bg-navy text-white hover:bg-navy-light"
-                      }`}>
-                      {item.cta}
-                    </Link>
+                    {billingCycle === "yearly" &&
+                      plan.price > 0 &&
+                      planKey !== "premium" && (
+                        <div className="absolute -top-4 right-2 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap shadow-lg z-10 bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                          Save 17%
+                        </div>
+                      )}
+                    <div className="p-8 flex-1 flex flex-col">
+                      <div
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${
+                          isBusiness
+                            ? "bg-white/20"
+                            : isPremium
+                              ? "bg-amber-100"
+                              : "bg-gradient-to-br from-padi-green/10 to-padi-green/5"
+                        }`}>
+                        <span
+                          className={`text-3xl ${iconColor}`}>
+                          {plan.icon}
+                        </span>
+                      </div>
+                      <h3 className={`font-sora font-bold text-2xl mb-1 ${cardTextColor}`}>
+                        {plan.name}
+                      </h3>
+
+                      {/* Trial Note for Premium */}
+                      {planKey === "premium" && (
+                        <div className="mt-2 mb-2 inline-flex items-center gap-1.5 text-xs font-bold text-amber-600">
+                          <FiZap size={12} />7 DAYS FREE
+                        </div>
+                      )}
+
+                      <div className="mt-4 mb-1">
+                        <span className={`text-5xl font-bold ${cardTextColor}`}>
+                          {displayPrice === 0
+                            ? "₦0"
+                            : `₦${displayPrice.toLocaleString()}`}
+                        </span>
+                        <span className={`text-sm ml-1 ${cardSubtextColor}`}>
+                          {period}
+                        </span>
+                      </div>
+
+                      {/* Yearly Savings */}
+                      {billingCycle === "yearly" && plan.price > 0 && (
+                        <p className={`text-sm font-semibold mb-2 ${isBusiness ? "text-green-400" : "text-green-600"}`}>
+                          Save ₦
+                          {(
+                            plan.price * 12 -
+                            plan.yearlyPrice
+                          ).toLocaleString()}
+                          /year
+                        </p>
+                      )}
+
+                      <p className={`text-sm mb-6 ${cardSubtextColor}`}>
+                        {plan.tagline}
+                      </p>
+                      <ul className="space-y-3 mb-8 flex-1">
+                        {plan.features
+                          .filter((f) => f.included)
+                          .map((f, j) => (
+                            <li
+                              key={j}
+                              className="flex items-start gap-3 text-sm">
+                              <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${isBusiness ? "bg-white/20" : "bg-padi-green/10"}`}>
+                                <FiCheck
+                                  className={isBusiness ? "text-padi-green" : "text-padi-green"}
+                                  size={12}
+                                />
+                              </div>
+                              <span className={cardSecondaryTextColor}>{f.text}</span>
+                            </li>
+                          ))}
+                      </ul>
+                      <Link
+                        to="/register"
+                        className={`block text-center py-4 px-6 rounded-2xl font-bold transition-all mt-auto ${
+                          planKey === "premium"
+                            ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/30"
+                            : isBusiness
+                              ? "bg-padi-green text-white hover:bg-padi-green-dark shadow-xl shadow-padi-green/30"
+                              : "bg-navy text-white hover:bg-navy-light"
+                        }`}>
+                        {planKey === "premium"
+                          ? "Start Free Trial"
+                          : planKey === "free"
+                            ? "Get Started"
+                            : "Upgrade"}
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </ScrollReveal>
-            ))}
+                </ScrollReveal>
+              );
+            })}
           </div>
 
           {/* Yearly Savings & Trial Info */}
@@ -1150,17 +1245,21 @@ const Landing = () => {
                 <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-amber-800 px-6 py-4 rounded-2xl text-sm font-medium">
                   <FiZap className="text-amber-600" size={20} />
                   <span>
-                    <strong>Premium comes with 7 DAYS FREE TRIAL.</strong> No credit card required. After trial, automatically reverts to Free plan — upgrade anytime.
+                    <strong>Premium comes with 7 DAYS FREE TRIAL.</strong> No
+                    credit card required. After trial, automatically reverts to
+                    Free plan — upgrade anytime.
                   </span>
                 </div>
               </div>
-              
+
               {/* Yearly Savings */}
               <div className="text-center">
                 <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-700 px-6 py-4 rounded-2xl text-sm font-medium">
                   <FiPercent className="text-green-600" size={20} />
                   <span>
-                    <strong>Yearly plans save you up to 17%!</strong> Starter saves ₦2,000/yr, Business saves ₦5,000/yr, Premium saves ₦10,000/yr.
+                    <strong>Yearly plans save you up to 17%!</strong> Starter
+                    saves ₦2,000/yr, Business saves ₦5,000/yr, Premium saves
+                    ₦10,000/yr.
                   </span>
                 </div>
               </div>
@@ -1190,10 +1289,14 @@ const Landing = () => {
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
                     className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 transition-colors">
-                    <span className="font-semibold text-navy pr-4">{faq.q}</span>
+                    <span className="font-semibold text-navy pr-4">
+                      {faq.q}
+                    </span>
                     <span
                       className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
-                        openFaq === i ? "bg-padi-green text-white" : "bg-gray-100 text-gray-500"
+                        openFaq === i
+                          ? "bg-padi-green text-white"
+                          : "bg-gray-100 text-gray-500"
                       }`}>
                       {openFaq === i ? (
                         <FiX size={14} />
@@ -1228,15 +1331,23 @@ const Landing = () => {
 
       {/* Final CTA - Split */}
       <section className="py-20 lg:py-28 px-4 bg-gradient-to-br from-padi-green via-padi-green-dark to-padi-green relative overflow-hidden">
-        <FloatingShape className="w-96 h-96 bg-white top-0 right-0 opacity-10" delay={0} />
-        <FloatingShape className="w-64 h-64 bg-white bottom-0 left-1/4 opacity-10" delay={1} />
+        <FloatingShape
+          className="w-96 h-96 bg-white top-0 right-0 opacity-10"
+          delay={0}
+        />
+        <FloatingShape
+          className="w-64 h-64 bg-white bottom-0 left-1/4 opacity-10"
+          delay={1}
+        />
         <div className="max-w-7xl mx-auto relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <ScrollReveal>
                 <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-5 py-2.5 rounded-full mb-6">
                   <FiZap className="text-yellow-300" />
-                  <span className="text-white font-medium">7-Day Premium Trial</span>
+                  <span className="text-white font-medium">
+                    7-Day Premium Trial
+                  </span>
                 </div>
               </ScrollReveal>
 
@@ -1248,8 +1359,8 @@ const Landing = () => {
 
               <ScrollReveal delay={200}>
                 <p className="text-white/90 text-lg mb-8 leading-relaxed">
-                  Stop sending price lists manually. Let customers browse your store
-                  and order instantly on WhatsApp.
+                  Stop sending price lists manually. Let customers browse your
+                  store and order instantly on WhatsApp.
                 </p>
               </ScrollReveal>
 
@@ -1282,15 +1393,36 @@ const Landing = () => {
                 <div className="bg-white/10 backdrop-blur rounded-3xl p-8 border border-white/20">
                   <div className="grid grid-cols-2 gap-6">
                     {[
-                      { icon: FiClock, label: "Setup Time", value: "2 minutes" },
-                      { icon: FiUsers, label: "Happy Customers", value: "2000+" },
-                      { icon: FiDollarSign, label: "Money Saved", value: "₦10K/year" },
+                      {
+                        icon: FiClock,
+                        label: "Setup Time",
+                        value: "2 minutes",
+                      },
+                      {
+                        icon: FiUsers,
+                        label: "Happy Customers",
+                        value: "2000+",
+                      },
+                      {
+                        icon: FiDollarSign,
+                        label: "Money Saved",
+                        value: "₦10K/year",
+                      },
                       { icon: FiAward, label: "Satisfaction", value: "4.8/5" },
                     ].map((item, i) => (
-                      <div key={i} className="text-center p-4 bg-white/10 rounded-2xl">
-                        <item.icon className="text-yellow-300 mx-auto mb-2" size={24} />
-                        <div className="text-white font-bold text-lg">{item.value}</div>
-                        <div className="text-white/70 text-sm">{item.label}</div>
+                      <div
+                        key={i}
+                        className="text-center p-4 bg-white/10 rounded-2xl">
+                        <item.icon
+                          className="text-yellow-300 mx-auto mb-2"
+                          size={24}
+                        />
+                        <div className="text-white font-bold text-lg">
+                          {item.value}
+                        </div>
+                        <div className="text-white/70 text-sm">
+                          {item.label}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1337,8 +1469,8 @@ const Landing = () => {
                 <Logo variant="icon-light" size="md" />
               </Link>
               <p className="text-gray-400 mb-6 max-w-sm leading-relaxed">
-                Build your online store in minutes. Share on WhatsApp. Track your
-                growth. Sell more with VendPadi.
+                Build your online store in minutes. Share on WhatsApp. Track
+                your growth. Sell more with VendPadi.
               </p>
               <div className="flex items-center gap-4">
                 <a
@@ -1358,17 +1490,23 @@ const Landing = () => {
               <h4 className="font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-3">
                 <li>
-                  <a href="#features" className="text-sm hover:text-padi-green transition-colors">
+                  <a
+                    href="#features"
+                    className="text-sm hover:text-padi-green transition-colors">
                     Features
                   </a>
                 </li>
                 <li>
-                  <a href="#pricing" className="text-sm hover:text-padi-green transition-colors">
+                  <a
+                    href="#pricing"
+                    className="text-sm hover:text-padi-green transition-colors">
                     Pricing
                   </a>
                 </li>
                 <li>
-                  <a href="#how-it-works" className="text-sm hover:text-padi-green transition-colors">
+                  <a
+                    href="#how-it-works"
+                    className="text-sm hover:text-padi-green transition-colors">
                     How It Works
                   </a>
                 </li>
@@ -1405,7 +1543,8 @@ const Landing = () => {
 
           <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm flex items-center gap-2">
-              © {new Date().getFullYear()} VendPadi. Made with <FiHeart className="text-red-400" /> in Nigeria
+              © {new Date().getFullYear()} VendPadi. Made with{" "}
+              <FiHeart className="text-red-400" /> in Nigeria
             </p>
             <div className="flex items-center gap-2 text-sm">
               <FiShield className="text-padi-green" />

@@ -1,123 +1,35 @@
-import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { planAPI } from '../api/axiosInstance';
-import toast from 'react-hot-toast';
-import { FiX, FiCheck, FiUpload, FiClock, FiAlertCircle, FiCreditCard, FiSmartphone, FiTrendingUp, FiZap, FiStar, FiMail, FiBarChart2, FiGrid, FiMaximize, FiPackage, FiSearch, FiHeart, FiMessageSquare, FiAlertTriangle, FiShare2, FiEye, FiLink, FiCalendar, FiPercent } from 'react-icons/fi';
-
-const PLAN_DETAILS = {
-  free: {
-    name: 'Free',
-    icon: '🆓',
-    price: 0,
-    yearlyPrice: 0,
-    color: 'gray',
-    tagline: 'Perfect to get started',
-    features: [
-      { text: '5 products', included: true, icon: FiGrid },
-      { text: '1 image per product', included: true, icon: FiMaximize },
-      { text: 'Stock tracking', included: true, icon: FiPackage },
-      { text: 'Low stock alerts', included: true, icon: FiAlertTriangle },
-      { text: 'Product search & filter', included: true, icon: FiSearch },
-      { text: 'Wishlist for customers', included: true, icon: FiHeart },
-      { text: 'Customer reviews', included: true, icon: FiMessageSquare },
-      { text: 'WhatsApp orders', included: true, icon: FiSmartphone },
-      { text: 'Store QR code', included: true, icon: FiZap },
-      { text: 'VendPadi branding', included: true, icon: FiStar },
-      { text: 'Logo upload', included: false, icon: FiStar },
-      { text: 'Analytics & sharing', included: false, icon: FiBarChart2 }
-    ]
-  },
-  starter: {
-    name: 'Starter',
-    icon: '💡',
-    price: 1000,
-    yearlyPrice: 10000,
-    color: 'blue',
-    tagline: 'Look professional and get more orders',
-    features: [
-      { text: '30 products', included: true, icon: FiGrid },
-      { text: '3 images per product', included: true, icon: FiMaximize },
-      { text: 'Remove VendPadi branding', included: true, icon: FiStar },
-      { text: 'Logo upload', included: true, icon: FiStar },
-      { text: 'Store analytics', included: true, icon: FiBarChart2 },
-      { text: 'Share store link', included: true, icon: FiShare2 },
-      { text: 'Stock tracking', included: true, icon: FiPackage },
-      { text: 'Low stock alerts', included: true, icon: FiAlertTriangle },
-      { text: 'Product search & filter', included: true, icon: FiSearch },
-      { text: 'Wishlist for customers', included: true, icon: FiHeart },
-      { text: 'Customer reviews', included: true, icon: FiMessageSquare },
-      { text: 'Priority support', included: false, icon: FiMail }
-    ]
-  },
-  business: {
-    name: 'Business',
-    icon: '🚀',
-    price: 2500,
-    yearlyPrice: 25000,
-    color: 'green',
-    tagline: 'Grow faster and track what sells best',
-    popular: true,
-    features: [
-      { text: '100 products', included: true, icon: FiGrid },
-      { text: '5 images per product', included: true, icon: FiMaximize },
-      { text: 'Logo upload', included: true, icon: FiStar },
-      { text: 'Store analytics (views, orders)', included: true, icon: FiBarChart2 },
-      { text: 'Top products tracking', included: true, icon: FiTrendingUp },
-      { text: 'Share store link', included: true, icon: FiShare2 },
-      { text: 'Product QR codes', included: true, icon: FiZap },
-      { text: 'Stock tracking', included: true, icon: FiPackage },
-      { text: 'Low stock alerts', included: true, icon: FiAlertTriangle },
-      { text: 'Advanced filtering & sorting', included: true, icon: FiGrid },
-      { text: 'Wishlist for customers', included: true, icon: FiHeart },
-      { text: 'Customer reviews', included: true, icon: FiMessageSquare }
-    ]
-  },
-  premium: {
-    name: 'Premium',
-    icon: '👑',
-    price: 5000,
-    yearlyPrice: 50000,
-    color: 'gold',
-    tagline: 'Run your business like a brand',
-    features: [
-      { text: 'Unlimited products', included: true, icon: FiGrid },
-      { text: '8 images per product', included: true, icon: FiMaximize },
-      { text: 'Logo + cover image', included: true, icon: FiStar },
-      { text: 'Full analytics dashboard', included: true, icon: FiBarChart2 },
-      { text: 'Top products tracking', included: true, icon: FiTrendingUp },
-      { text: 'Custom store link', included: true, icon: FiLink },
-      { text: 'Share store link', included: true, icon: FiShare2 },
-      { text: 'Stock tracking', included: true, icon: FiPackage },
-      { text: 'Low stock alerts', included: true, icon: FiAlertTriangle },
-      { text: 'Advanced filtering & sorting', included: true, icon: FiGrid },
-      { text: 'Wishlist for customers', included: true, icon: FiHeart },
-      { text: 'Priority support', included: true, icon: FiMail }
-    ]
-  }
-};
-
-const FALLBACK_PAYMENT = {
-  bankName: 'First Bank of Nigeria',
-  accountName: 'VendPadi Ltd',
-  accountNumber: '3084721938'
-};
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { planAPI } from "../api/axiosInstance";
+import toast from "react-hot-toast";
+import {
+  FiX,
+  FiCheck,
+  FiUpload,
+  FiClock,
+  FiAlertCircle,
+  FiCreditCard,
+  FiCalendar,
+  FiPercent,
+} from "react-icons/fi";
+import { PLAN_DETAILS, FALLBACK_PAYMENT } from "../data/planConstants";
 
 const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
   const { vendor } = useSelector((state) => state.auth);
-  const [step, setStep] = useState('select');
+  const [step, setStep] = useState("select");
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [billingCycle, setBillingCycle] = useState('monthly');
+  const [billingCycle, setBillingCycle] = useState("monthly");
   const [paymentDetails, setPaymentDetails] = useState(FALLBACK_PAYMENT);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [proofFile, setProofFile] = useState(null);
-  const [proofPreview, setProofPreview] = useState('');
-  const [paymentRef, setPaymentRef] = useState('');
+  const [proofPreview, setProofPreview] = useState("");
+  const [paymentRef, setPaymentRef] = useState("");
 
-  const currentPlan = vendor?.plan?.type || 'free';
-  const currentBillingCycle = vendor?.plan?.billingCycle || 'monthly';
+  const currentPlan = vendor?.plan?.type || "free";
+  const currentBillingCycle = vendor?.plan?.billingCycle || "monthly";
   const isOnTrial = vendor?.trial?.active === true;
-  
+
   // Calculate days remaining from endDate
   const getTrialDaysRemaining = () => {
     if (vendor?.trial?.endDate) {
@@ -136,7 +48,7 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
       fetchPlans();
       fetchRequests();
       // Force re-render to get latest vendor data
-      setStep('select');
+      setStep("select");
       setSelectedPlan(null);
     }
   }, [isOpen, vendor?.trial?.active]);
@@ -155,36 +67,40 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
       const { data } = await planAPI.getMyRequests();
       setRequests(data);
     } catch (error) {
-      console.error('Failed to load requests');
+      console.error("Failed to load requests");
     }
   };
 
   const handleSelectPlan = (plan) => {
     if (plan === currentPlan) return;
-    if (plan === 'free') return;
-    
+    if (plan === "free") return;
+
     // Premium trial activation (only if not already on trial)
-    if (plan === 'premium' && !isOnTrial && currentPlan === 'free') {
+    if (plan === "premium" && !isOnTrial && currentPlan === "free") {
       handleStartTrial();
       return;
     }
-    
+
     setSelectedPlan(plan);
-    setBillingCycle('monthly');
-    setStep('payment');
+    setStep("payment");
   };
 
   const handleStartTrial = async () => {
     setLoading(true);
     try {
       await planAPI.startTrial();
-      toast.success('7-Day Premium Trial activated! Enjoy all Premium features.');
+      toast.success(
+        "7-Day Premium Trial activated! Enjoy all Premium features.",
+      );
       onSuccess?.();
       onClose();
       // Refresh vendor data to update trial state
       window.location.reload();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to start trial. You may have already used your trial.');
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to start trial. You may have already used your trial.",
+      );
     } finally {
       setLoading(false);
     }
@@ -192,18 +108,26 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
 
   const handleProofUpload = async () => {
     if (!proofFile && !paymentRef.trim()) {
-      toast.error('Please enter the transfer reference from your bank app');
+      toast.error("Please enter the transfer reference from your bank app");
       return;
     }
 
     setLoading(true);
     try {
       let requestId;
-      
-      const existingRequest = requests.find(r => r.requestedPlan === selectedPlan && r.billingCycle === billingCycle && r.status === 'pending');
-      
+
+      const existingRequest = requests.find(
+        (r) =>
+          r.requestedPlan === selectedPlan &&
+          r.billingCycle === billingCycle &&
+          r.status === "pending",
+      );
+
       if (!existingRequest) {
-        const { data } = await planAPI.requestUpgrade(selectedPlan, billingCycle);
+        const { data } = await planAPI.requestUpgrade(
+          selectedPlan,
+          billingCycle,
+        );
         requestId = data._id;
       } else {
         requestId = existingRequest._id;
@@ -211,35 +135,39 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
 
       const formData = new FormData();
       if (proofFile) {
-        formData.append('proof', proofFile);
+        formData.append("proof", proofFile);
       }
       if (paymentRef.trim()) {
-        formData.append('paymentReference', paymentRef.trim());
+        formData.append("paymentReference", paymentRef.trim());
       }
 
       await planAPI.uploadProof(requestId, formData);
-      toast.success('Payment proof submitted! We will verify and activate your plan shortly.');
+      toast.success(
+        "Payment proof submitted! We will verify and activate your plan shortly.",
+      );
       setProofFile(null);
-      setProofPreview('');
-      setPaymentRef('');
-      setStep('success');
+      setProofPreview("");
+      setPaymentRef("");
+      setStep("success");
       fetchRequests();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to submit. Please try again.');
+      toast.error(
+        error.response?.data?.message || "Failed to submit. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancelRequest = async (id) => {
-    if (!confirm('Cancel this upgrade request?')) return;
-    
+    if (!confirm("Cancel this upgrade request?")) return;
+
     try {
       await planAPI.cancelRequest(id);
-      toast.success('Request cancelled');
+      toast.success("Request cancelled");
       fetchRequests();
     } catch (error) {
-      toast.error('Failed to cancel request');
+      toast.error("Failed to cancel request");
     }
   };
 
@@ -247,7 +175,7 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('File too large. Max 5MB.');
+        toast.error("File too large. Max 5MB.");
         return;
       }
       setProofFile(file);
@@ -255,7 +183,9 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
     }
   };
 
-  const pendingRequest = requests.find(r => r.requestedPlan === selectedPlan && r.status === 'pending');
+  const pendingRequest = requests.find(
+    (r) => r.requestedPlan === selectedPlan && r.status === "pending",
+  );
 
   if (!isOpen) return null;
 
@@ -264,40 +194,50 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="font-sora font-bold text-xl">
-            {step === 'select' && 'Choose Your Plan'}
-            {step === 'payment' && `Upgrade to ${PLAN_DETAILS[selectedPlan]?.name}`}
-            {step === 'success' && 'Payment Submitted'}
+            {step === "select" && "Choose Your Plan"}
+            {step === "payment" &&
+              `Upgrade to ${PLAN_DETAILS[selectedPlan]?.name}`}
+            {step === "success" && "Payment Submitted"}
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <FiX size={20} />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
-          {step === 'select' && (
+          {step === "select" && (
             <div className="space-y-4">
               {/* Billing Cycle Toggle */}
               <div className="bg-gradient-to-r from-padi-green/10 to-emerald-50 rounded-2xl p-4">
                 <div className="flex items-center justify-center gap-3">
-                  <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-navy' : 'text-gray-400'}`}>
+                  <span
+                    className={`text-sm font-medium ${billingCycle === "monthly" ? "text-navy" : "text-gray-400"}`}>
                     Monthly
                   </span>
                   <button
-                    onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
+                    onClick={() =>
+                      setBillingCycle(
+                        billingCycle === "monthly" ? "yearly" : "monthly",
+                      )
+                    }
                     className={`relative w-14 h-7 rounded-full transition-colors ${
-                      billingCycle === 'yearly' ? 'bg-padi-green' : 'bg-gray-300'
-                    }`}
-                  >
+                      billingCycle === "yearly"
+                        ? "bg-padi-green"
+                        : "bg-gray-300"
+                    }`}>
                     <span
                       className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                        billingCycle === 'yearly' ? 'left-8' : 'left-1'
+                        billingCycle === "yearly" ? "left-8" : "left-1"
                       }`}
                     />
                   </button>
-                  <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'text-navy' : 'text-gray-400'}`}>
+                  <span
+                    className={`text-sm font-medium ${billingCycle === "yearly" ? "text-navy" : "text-gray-400"}`}>
                     Yearly
                   </span>
-                  {billingCycle === 'yearly' && (
+                  {billingCycle === "yearly" && (
                     <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">
                       Save ~17%
                     </span>
@@ -307,101 +247,132 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
 
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(PLAN_DETAILS).map(([planKey, plan]) => {
-                  const isCurrentPlan = currentPlan === planKey && currentBillingCycle === billingCycle;
-                  const planOrder = ['free', 'starter', 'business', 'premium'];
+                  const isCurrentPlan =
+                    currentPlan === planKey &&
+                    currentBillingCycle === billingCycle;
+                  const planOrder = ["free", "starter", "business", "premium"];
                   const currentPlanIndex = planOrder.indexOf(currentPlan);
                   const thisPlanIndex = planOrder.indexOf(planKey);
-                  const isDowngrade = thisPlanIndex <= currentPlanIndex && !isCurrentPlan;
-                  const displayPrice = billingCycle === 'yearly' ? plan.yearlyPrice : plan.price;
-                  
+                  const isDowngrade =
+                    thisPlanIndex <= currentPlanIndex && !isCurrentPlan;
+                  const displayPrice =
+                    billingCycle === "yearly" ? plan.yearlyPrice : plan.price;
+
                   // Determine card styling
-                  let cardClass = 'border-gray-100 hover:border-gray-200';
+                  let cardClass = "border-gray-100 hover:border-gray-200";
                   if (isCurrentPlan) {
-                    cardClass = 'border-padi-green bg-padi-green/5';
-                  } else if (planKey === 'premium') {
+                    cardClass = "border-padi-green bg-padi-green/5";
+                  } else if (planKey === "premium") {
                     if (isOnTrial) {
-                      cardClass = 'border-amber-400 bg-amber-50';
-                    } else if (currentPlan === 'free') {
-                      cardClass = 'border-amber-400 bg-gradient-to-br from-amber-50 to-orange-50 shadow-lg shadow-amber-200';
+                      cardClass = "border-amber-400 bg-amber-50";
+                    } else if (currentPlan === "free") {
+                      cardClass =
+                        "border-amber-400 bg-gradient-to-br from-amber-50 to-orange-50 shadow-lg shadow-amber-200";
                     } else {
-                      cardClass = 'border-padi-green/50 hover:border-padi-green shadow-lg';
+                      cardClass =
+                        "border-padi-green/50 hover:border-padi-green shadow-lg";
                     }
-                  } else if (plan.popular && billingCycle === 'monthly') {
-                    cardClass = 'border-padi-green/50 hover:border-padi-green shadow-lg';
+                  } else if (plan.popular && billingCycle === "monthly") {
+                    cardClass =
+                      "border-padi-green/50 hover:border-padi-green shadow-lg";
                   }
-                  
+
                   return (
                     <div
                       key={planKey}
-                      className={`relative p-4 rounded-2xl border-2 transition-all ${cardClass} ${isDowngrade && planKey !== 'free' ? 'opacity-50' : ''}`}
-                    >
+                      className={`relative p-4 rounded-2xl border-2 transition-all ${cardClass} ${isDowngrade && planKey !== "free" ? "opacity-50" : ""}`}>
                       {/* Trial Active Badge */}
-                      {isOnTrial && currentPlan === 'premium' && (
+                      {isOnTrial && currentPlan === "premium" && (
                         <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-xs font-medium px-3 py-0.5 rounded-full flex items-center gap-1">
-                          <FiZap size={10} /> Trial Active ({trialDaysRemaining} days left)
+                          <FiZap size={10} /> Trial Active ({trialDaysRemaining}{" "}
+                          days left)
                         </span>
                       )}
-                      
+
                       {/* Popular Badge - only show if not trial and not free user */}
-                      {plan.popular && !isCurrentPlan && !isOnTrial && planKey !== 'premium' && billingCycle === 'monthly' && (
-                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-padi-green text-white text-xs font-medium px-3 py-0.5 rounded-full">
-                          Most Popular
-                        </span>
-                      )}
-                      
+                      {plan.popular &&
+                        !isCurrentPlan &&
+                        !isOnTrial &&
+                        planKey !== "premium" &&
+                        billingCycle === "monthly" && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-padi-green text-white text-xs font-medium px-3 py-0.5 rounded-full">
+                            Most Popular
+                          </span>
+                        )}
+
                       {/* Free Trial Badge for Premium */}
-                      {planKey === 'premium' && !isOnTrial && currentPlan === 'free' && (
-                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
-                          <FiZap size={10} /> Try Free 7 Days
-                        </span>
-                      )}
-                      
+                      {planKey === "premium" &&
+                        !isOnTrial &&
+                        currentPlan === "free" && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                            <FiZap size={10} /> Try Free 7 Days
+                          </span>
+                        )}
+
                       {/* Current Plan Badge */}
                       {isCurrentPlan && (
                         <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-medium px-3 py-0.5 rounded-full">
                           Current Plan
                         </span>
                       )}
-                      
+
                       {/* Yearly Best Value */}
-                      {billingCycle === 'yearly' && planKey !== 'free' && !isOnTrial && (
-                        <span className="absolute -top-2 right-2 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full">
-                          Best Value
-                        </span>
-                      )}
-                      
+                      {billingCycle === "yearly" &&
+                        planKey !== "free" &&
+                        !isOnTrial && (
+                          <span className="absolute -top-2 right-2 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                            Best Value
+                          </span>
+                        )}
+
                       <div className="text-center mb-3">
                         <span className="text-3xl">{plan.icon}</span>
-                        <h3 className="font-sora font-bold text-lg mt-1">{plan.name}</h3>
+                        <h3 className="font-sora font-bold text-lg mt-1">
+                          {plan.name}
+                        </h3>
                         {plan.tagline && (
-                          <p className="text-xs text-gray-400 mt-0.5">{plan.tagline}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {plan.tagline}
+                          </p>
                         )}
-                        
+
                         {/* Trial Notice for Premium */}
-                        {planKey === 'premium' && !isOnTrial && currentPlan === 'free' && (
-                          <div className="mt-2 bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-full inline-flex items-center gap-1">
-                            <FiZap size={10} /> 7 DAYS FREE
-                          </div>
-                        )}
-                        
-                        <p className={`text-xl font-bold mt-2 ${planKey === 'premium' && !isOnTrial && currentPlan === 'free' ? 'text-amber-600' : 'text-padi-green'}`}>
-                          {displayPrice === 0 ? 'Free' : `₦${displayPrice.toLocaleString()}`}
+                        {planKey === "premium" &&
+                          !isOnTrial &&
+                          currentPlan === "free" && (
+                            <div className="mt-2 bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-full inline-flex items-center gap-1">
+                              <FiZap size={10} /> 7 DAYS FREE
+                            </div>
+                          )}
+
+                        <p
+                          className={`text-xl font-bold mt-2 ${planKey === "premium" && !isOnTrial && currentPlan === "free" ? "text-amber-600" : "text-padi-green"}`}>
+                          {displayPrice === 0
+                            ? "Free"
+                            : `₦${displayPrice.toLocaleString()}`}
                           {displayPrice > 0 && (
                             <span className="text-xs text-gray-400 font-normal">
-                              /{billingCycle === 'yearly' ? 'yr' : 'mo'}
+                              /{billingCycle === "yearly" ? "yr" : "mo"}
                             </span>
                           )}
                         </p>
-                        {billingCycle === 'yearly' && plan.price > 0 && (
+                        {billingCycle === "yearly" && plan.price > 0 && (
                           <p className="text-xs text-gray-400 mt-1">
-                            Save ₦{(plan.price * 12 - plan.yearlyPrice).toLocaleString()}/year
+                            Save ₦
+                            {(
+                              plan.price * 12 -
+                              plan.yearlyPrice
+                            ).toLocaleString()}
+                            /year
                           </p>
                         )}
                       </div>
 
                       <ul className="space-y-1.5 mb-4">
-                        {plan.features.slice(0, 6).map((feature, i) => (
-                          <li key={i} className={`flex items-center gap-2 text-xs ${feature.included ? 'text-gray-700' : 'text-gray-400'}`}>
+                        {plan.features.filter(f => f.included).slice(0, 8).map((feature, i) => (
+                          <li
+                            key={i}
+                            className={`flex items-center gap-2 text-xs ${feature.included ? "text-gray-700" : "text-gray-400"}`}>
                             {feature.included ? (
                               <FiCheck className="text-padi-green flex-shrink-0 w-3.5 h-3.5" />
                             ) : (
@@ -413,27 +384,33 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                       </ul>
 
                       {/* Trial Button for Free users */}
-                      {planKey === 'premium' && !isOnTrial && currentPlan === 'free' ? (
+                      {planKey === "premium" &&
+                      !isOnTrial &&
+                      currentPlan === "free" ? (
                         <button
                           onClick={handleStartTrial}
                           disabled={loading}
-                          className="w-full py-2.5 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-lg"
-                        >
-                          {loading ? 'Activating...' : 'Start Free Trial'}
+                          className="w-full py-2.5 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-lg">
+                          {loading ? "Activating..." : "Start Free Trial"}
                         </button>
                       ) : (
                         <button
                           onClick={() => handleSelectPlan(planKey)}
-                          disabled={isCurrentPlan || isDowngrade || planKey === 'free'}
+                          disabled={
+                            isCurrentPlan || isDowngrade || planKey === "free"
+                          }
                           className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all ${
                             isCurrentPlan
-                              ? 'bg-green-100 text-green-700 cursor-default'
-                              : planKey === 'free'
-                              ? 'bg-gray-100 text-gray-400 cursor-default'
-                              : 'bg-padi-green text-white hover:bg-padi-green-dark'
-                          }`}
-                        >
-                          {isCurrentPlan ? 'Active' : planKey === 'free' ? 'Free Plan' : 'Upgrade'}
+                              ? "bg-green-100 text-green-700 cursor-default"
+                              : planKey === "free"
+                                ? "bg-gray-100 text-gray-400 cursor-default"
+                                : "bg-padi-green text-white hover:bg-padi-green-dark"
+                          }`}>
+                          {isCurrentPlan
+                            ? "Active"
+                            : planKey === "free"
+                              ? "Free Plan"
+                              : "Upgrade"}
                         </button>
                       )}
                     </div>
@@ -443,64 +420,92 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
 
               {requests.length > 0 && (
                 <div className="mt-6 pt-6 border-t">
-                  <h4 className="font-semibold text-sm text-gray-500 mb-3">Pending Requests</h4>
+                  <h4 className="font-semibold text-sm text-gray-500 mb-3">
+                    Pending Requests
+                  </h4>
                   <div className="space-y-2">
-                    {requests.filter(r => r.status === 'pending').map((req) => (
-                      <div key={req._id} className="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-200">
-                        <div className="flex items-center gap-3">
-                          <FiClock className="text-amber-600" />
-                          <div>
-                            <p className="font-medium text-sm">
-                              {PLAN_DETAILS[req.requestedPlan]?.name} ({req.billingCycle || 'monthly'})
-                            </p>
-                            <p className="text-xs text-gray-500">₦{req.amount.toLocaleString()} - {req.paymentProof ? 'Proof uploaded' : 'Awaiting payment proof'}</p>
+                    {requests
+                      .filter((r) => r.status === "pending")
+                      .map((req) => (
+                        <div
+                          key={req._id}
+                          className="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-200">
+                          <div className="flex items-center gap-3">
+                            <FiClock className="text-amber-600" />
+                            <div>
+                              <p className="font-medium text-sm">
+                                {PLAN_DETAILS[req.requestedPlan]?.name} (
+                                {req.billingCycle || "monthly"})
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                ₦{req.amount.toLocaleString()} -{" "}
+                                {req.paymentProof
+                                  ? "Proof uploaded"
+                                  : "Awaiting payment proof"}
+                              </p>
+                            </div>
                           </div>
+                          <button
+                            onClick={() => handleCancelRequest(req._id)}
+                            className="text-xs text-red-500 hover:text-red-600">
+                            Cancel
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleCancelRequest(req._id)}
-                          className="text-xs text-red-500 hover:text-red-600"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
               )}
             </div>
           )}
 
-          {step === 'payment' && paymentDetails && (
+          {step === "payment" && paymentDetails && (
             <div className="space-y-5">
               <div className="bg-gradient-to-r from-padi-green/10 to-padi-green/5 border border-padi-green/20 rounded-2xl p-5">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="text-3xl">{PLAN_DETAILS[selectedPlan]?.icon}</span>
+                  <span className="text-3xl">
+                    {PLAN_DETAILS[selectedPlan]?.icon}
+                  </span>
                   <div>
-                    <p className="font-bold text-lg">{PLAN_DETAILS[selectedPlan]?.name} Plan</p>
+                    <p className="font-bold text-lg">
+                      {PLAN_DETAILS[selectedPlan]?.name} Plan
+                    </p>
                     <div className="flex items-center gap-2">
                       <span className="text-padi-green font-bold text-xl">
-                        ₦{(billingCycle === 'yearly' ? PLAN_DETAILS[selectedPlan]?.yearlyPrice : PLAN_DETAILS[selectedPlan]?.price).toLocaleString()}
+                        ₦
+                        {(billingCycle === "yearly"
+                          ? PLAN_DETAILS[selectedPlan]?.yearlyPrice
+                          : PLAN_DETAILS[selectedPlan]?.price
+                        ).toLocaleString()}
                       </span>
-                      <span className="text-sm text-gray-500">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
+                      <span className="text-sm text-gray-500">
+                        /{billingCycle === "yearly" ? "year" : "month"}
+                      </span>
                     </div>
-                    {billingCycle === 'yearly' && PLAN_DETAILS[selectedPlan]?.price > 0 && (
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <FiCalendar className="text-padi-green" size={14} />
-                        <span className="text-xs text-green-600">
-                          12 months included
-                        </span>
-                      </div>
-                    )}
+                    {billingCycle === "yearly" &&
+                      PLAN_DETAILS[selectedPlan]?.price > 0 && (
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <FiCalendar className="text-padi-green" size={14} />
+                          <span className="text-xs text-green-600">
+                            12 months included
+                          </span>
+                        </div>
+                      )}
                   </div>
                 </div>
-                {billingCycle === 'yearly' && PLAN_DETAILS[selectedPlan]?.price > 0 && (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2">
-                    <FiPercent className="text-green-600" size={16} />
-                    <p className="text-sm text-green-700">
-                      Yearly subscription saves you ₦{(PLAN_DETAILS[selectedPlan].price * 12 - PLAN_DETAILS[selectedPlan].yearlyPrice).toLocaleString()} compared to monthly!
-                    </p>
-                  </div>
-                )}
+                {billingCycle === "yearly" &&
+                  PLAN_DETAILS[selectedPlan]?.price > 0 && (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2">
+                      <FiPercent className="text-green-600" size={16} />
+                      <p className="text-sm text-green-700">
+                        Yearly subscription saves you ₦
+                        {(
+                          PLAN_DETAILS[selectedPlan].price * 12 -
+                          PLAN_DETAILS[selectedPlan].yearlyPrice
+                        ).toLocaleString()}{" "}
+                        compared to monthly!
+                      </p>
+                    </div>
+                  )}
               </div>
 
               <div className="bg-navy text-white rounded-2xl p-5">
@@ -510,25 +515,36 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-300">Bank</span>
-                    <span className="font-medium">{paymentDetails.bankName}</span>
+                    <span className="font-medium">
+                      {paymentDetails.bankName}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-300">Account Name</span>
-                    <span className="font-medium">{paymentDetails.accountName}</span>
+                    <span className="font-medium">
+                      {paymentDetails.accountName}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Account Number</span>
-                    <span className="font-bold text-xl tracking-wider">{paymentDetails.accountNumber}</span>
+                    <span className="font-bold text-xl tracking-wider">
+                      {paymentDetails.accountNumber}
+                    </span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-white/20">
                     <span className="text-gray-300">Amount</span>
                     <span className="font-bold text-padi-green text-lg">
-                      ₦{(billingCycle === 'yearly' ? PLAN_DETAILS[selectedPlan]?.yearlyPrice : PLAN_DETAILS[selectedPlan]?.price).toLocaleString()}
+                      ₦
+                      {(billingCycle === "yearly"
+                        ? PLAN_DETAILS[selectedPlan]?.yearlyPrice
+                        : PLAN_DETAILS[selectedPlan]?.price
+                      ).toLocaleString()}
                     </span>
                   </div>
                 </div>
                 <p className="text-xs text-gray-400 mt-4 leading-relaxed">
-                  Transfer the exact amount. After payment, copy the reference from your bank app and paste it below.
+                  Transfer the exact amount. After payment, copy the reference
+                  from your bank app and paste it below.
                 </p>
               </div>
 
@@ -536,14 +552,16 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                 <h4 className="font-semibold mb-4 flex items-center gap-2">
                   <FiCreditCard /> Confirm Your Payment
                 </h4>
-                
+
                 <div className="space-y-4">
                   <div className="p-4 bg-white rounded-xl border-2 border-padi-green/30">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Bank Transfer Reference <span className="text-red-500">*</span>
+                      Bank Transfer Reference{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <p className="text-xs text-gray-500 mb-3">
-                      Copy the reference from your bank app after making the transfer
+                      Copy the reference from your bank app after making the
+                      transfer
                     </p>
                     <input
                       type="text"
@@ -556,17 +574,26 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
 
                   <div>
                     <p className="text-sm font-medium text-gray-700 mb-2">
-                      Upload Screenshot <span className="text-gray-400 font-normal">(optional)</span>
+                      Upload Screenshot{" "}
+                      <span className="text-gray-400 font-normal">
+                        (optional)
+                      </span>
                     </p>
                     <div className="relative">
                       {proofPreview ? (
                         <div className="relative">
-                          <img src={proofPreview} alt="Receipt" className="w-full h-40 object-cover rounded-xl border-2 border-padi-green" />
+                          <img
+                            src={proofPreview}
+                            alt="Receipt"
+                            className="w-full h-40 object-cover rounded-xl border-2 border-padi-green"
+                          />
                           <button
                             type="button"
-                            onClick={() => { setProofFile(null); setProofPreview(''); }}
-                            className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
-                          >
+                            onClick={() => {
+                              setProofFile(null);
+                              setProofPreview("");
+                            }}
+                            className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg">
                             <FiX size={16} />
                           </button>
                           <div className="absolute bottom-2 left-2 flex items-center gap-1.5 text-xs text-white bg-padi-green px-2 py-1 rounded-lg">
@@ -580,16 +607,20 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-2">
                             <FiUpload className="text-gray-400" size={20} />
                           </div>
-                          <span className="text-sm font-medium text-gray-600">Tap to add screenshot</span>
-                          <span className="text-xs text-gray-400 mt-1">JPG, PNG (max 5MB)</span>
+                          <span className="text-sm font-medium text-gray-600">
+                            Tap to add screenshot
+                          </span>
+                          <span className="text-xs text-gray-400 mt-1">
+                            JPG, PNG (max 5MB)
+                          </span>
                         </label>
                       )}
-                      <input 
+                      <input
                         id="proof-input"
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleProofChange} 
-                        className="hidden" 
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProofChange}
+                        className="hidden"
                       />
                     </div>
                   </div>
@@ -599,50 +630,61 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
                 <FiAlertCircle className="text-amber-600 flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-amber-800">What happens next?</p>
+                  <p className="font-medium text-amber-800">
+                    What happens next?
+                  </p>
                   <p className="text-amber-700 mt-1">
-                    After you submit, our team will verify your payment within 24 hours and activate your {PLAN_DETAILS[selectedPlan]?.name} plan automatically.
+                    After you submit, our team will verify your payment within
+                    24 hours and activate your{" "}
+                    {PLAN_DETAILS[selectedPlan]?.name} plan automatically.
                   </p>
                 </div>
               </div>
             </div>
           )}
 
-          {step === 'success' && (
+          {step === "success" && (
             <div className="text-center py-8">
               <div className="w-20 h-20 bg-padi-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FiCheck className="text-padi-green text-4xl" />
               </div>
-              <h3 className="font-sora font-bold text-xl mb-2">Payment Submitted!</h3>
+              <h3 className="font-sora font-bold text-xl mb-2">
+                Payment Submitted!
+              </h3>
               <p className="text-gray-500 mb-6">
-                We have received your payment proof. Your plan will be activated within 24 hours after verification.
+                We have received your payment proof. Your plan will be activated
+                within 24 hours after verification.
               </p>
               <p className="text-sm text-gray-400">
-                You can close this window. We'll notify you once your plan is active.
+                You can close this window. We'll notify you once your plan is
+                active.
               </p>
             </div>
           )}
         </div>
 
         <div className="p-5 border-t bg-gray-50">
-          {step === 'select' && (
+          {step === "select" && (
             <div className="flex gap-3">
-              <button onClick={onClose} className="flex-1 py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-100 transition-colors">
+              <button
+                onClick={onClose}
+                className="flex-1 py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-100 transition-colors">
                 Maybe Later
               </button>
             </div>
           )}
 
-          {step === 'payment' && (
+          {step === "payment" && (
             <div className="flex gap-3">
-              <button onClick={() => setStep('select')} className="flex-1 py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-100 transition-colors">
+              <button
+                onClick={() => setStep("select")}
+                className="flex-1 py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-100 transition-colors">
                 Back
               </button>
               <button
                 onClick={handleProofUpload}
                 disabled={loading}
-                className="flex-1 btn-primary flex items-center justify-center gap-2"
-              >
+                className="flex-1 btn-primary flex items-center justify-center gap-2">
                 {loading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -657,7 +699,7 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
           )}
 
-          {step === 'success' && (
+          {step === "success" && (
             <button onClick={onClose} className="w-full btn-primary py-3">
               Done
             </button>
