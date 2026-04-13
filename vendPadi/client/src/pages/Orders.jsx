@@ -331,7 +331,9 @@ const Orders = () => {
   const [loadingAction, setLoadingAction] = useState(null);
   const [downloadingPdf, setDownloadingPdf] = useState(null);
 
-  const planType = vendor?.plan?.type || 'free';
+  const isOnTrial = vendor?.trial?.active === true;
+  const trialPlan = vendor?.trial?.plan || 'premium';
+  const planType = isOnTrial ? trialPlan : (vendor?.plan?.type || 'free');
   const canDownloadPdf = planType === 'business' || planType === 'premium';
 
   useEffect(() => {

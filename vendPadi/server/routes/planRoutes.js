@@ -79,6 +79,28 @@ router.get('/', (req, res) => {
   });
 });
 
+// Start Premium Trial
+router.post('/trial', protect, catchAsync(async (req, res) => {
+  // Check if trial was already used
+  if (req.vendor.trial?.used) {
+    return res.status(400).json({ message: 'Trial has already been used. Please upgrade to a paid plan.' });
+  }
+
+  // Check if trial is already active
+  if (req.vendor.trial?.active) {
+    return res.status(400).json({ message: 'Trial is already active.', trial: req.vendor.trial });
+  }
+
+  // Start the trial
+  req.vendor.startTrial('premium');
+  await req.vendor.save();
+
+  res.json({
+    message: '7-Day Premium Trial activated successfully!',
+    trial: req.vendor.trial
+  });
+}));
+
 router.post('/upgrade', protect, catchAsync(async (req, res) => {
   const { requestedPlan, billingCycle } = req.body;
   

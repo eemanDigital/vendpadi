@@ -116,13 +116,30 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
 
   const currentPlan = vendor?.plan?.type || 'free';
   const currentBillingCycle = vendor?.plan?.billingCycle || 'monthly';
+  const isOnTrial = vendor?.trial?.active === true;
+  
+  // Calculate days remaining from endDate
+  const getTrialDaysRemaining = () => {
+    if (vendor?.trial?.endDate) {
+      const now = new Date();
+      const endDate = new Date(vendor.trial.endDate);
+      const diff = endDate - now;
+      if (diff <= 0) return 0;
+      return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    }
+    return 0;
+  };
+  const trialDaysRemaining = getTrialDaysRemaining();
 
   useEffect(() => {
     if (isOpen) {
       fetchPlans();
       fetchRequests();
+      // Force re-render to get latest vendor data
+      setStep('select');
+      setSelectedPlan(null);
     }
-  }, [isOpen]);
+  }, [isOpen, vendor?.trial?.active]);
 
   const fetchPlans = async () => {
     try {
@@ -145,19 +162,29 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
   const handleSelectPlan = (plan) => {
     if (plan === currentPlan) return;
     if (plan === 'free') return;
+    
+    // Premium trial activation (only if not already on trial)
+    if (plan === 'premium' && !isOnTrial && currentPlan === 'free') {
+      handleStartTrial();
+      return;
+    }
+    
     setSelectedPlan(plan);
     setBillingCycle('monthly');
     setStep('payment');
   };
 
-  const handleRequestUpgrade = async () => {
+  const handleStartTrial = async () => {
     setLoading(true);
     try {
-      await planAPI.requestUpgrade(selectedPlan, billingCycle);
-      toast.success('Upgrade request submitted! Proceed to payment.');
-      fetchRequests();
+      await planAPI.startTrial();
+      toast.success('7-Day Premium Trial activated! Enjoy all Premium features.');
+      onSuccess?.();
+      onClose();
+      // Refresh vendor data to update trial state
+      window.location.reload();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to submit request');
+      toast.error(error.response?.data?.message || 'Failed to start trial. You may have already used your trial.');
     } finally {
       setLoading(false);
     }
@@ -287,28 +314,57 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                   const isDowngrade = thisPlanIndex <= currentPlanIndex && !isCurrentPlan;
                   const displayPrice = billingCycle === 'yearly' ? plan.yearlyPrice : plan.price;
                   
+                  // Determine card styling
+                  let cardClass = 'border-gray-100 hover:border-gray-200';
+                  if (isCurrentPlan) {
+                    cardClass = 'border-padi-green bg-padi-green/5';
+                  } else if (planKey === 'premium') {
+                    if (isOnTrial) {
+                      cardClass = 'border-amber-400 bg-amber-50';
+                    } else if (currentPlan === 'free') {
+                      cardClass = 'border-amber-400 bg-gradient-to-br from-amber-50 to-orange-50 shadow-lg shadow-amber-200';
+                    } else {
+                      cardClass = 'border-padi-green/50 hover:border-padi-green shadow-lg';
+                    }
+                  } else if (plan.popular && billingCycle === 'monthly') {
+                    cardClass = 'border-padi-green/50 hover:border-padi-green shadow-lg';
+                  }
+                  
                   return (
                     <div
                       key={planKey}
-                      className={`relative p-4 rounded-2xl border-2 transition-all ${
-                        isCurrentPlan
-                          ? 'border-padi-green bg-padi-green/5'
-                          : plan.popular && billingCycle === 'monthly'
-                          ? 'border-padi-green/50 hover:border-padi-green shadow-lg'
-                          : 'border-gray-100 hover:border-gray-200'
-                      } ${isDowngrade && planKey !== 'free' ? 'opacity-50' : ''}`}
+                      className={`relative p-4 rounded-2xl border-2 transition-all ${cardClass} ${isDowngrade && planKey !== 'free' ? 'opacity-50' : ''}`}
                     >
-                      {plan.popular && !isCurrentPlan && billingCycle === 'monthly' && (
+                      {/* Trial Active Badge */}
+                      {isOnTrial && currentPlan === 'premium' && (
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-xs font-medium px-3 py-0.5 rounded-full flex items-center gap-1">
+                          <FiZap size={10} /> Trial Active ({trialDaysRemaining} days left)
+                        </span>
+                      )}
+                      
+                      {/* Popular Badge - only show if not trial and not free user */}
+                      {plan.popular && !isCurrentPlan && !isOnTrial && planKey !== 'premium' && billingCycle === 'monthly' && (
                         <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-padi-green text-white text-xs font-medium px-3 py-0.5 rounded-full">
                           Most Popular
                         </span>
                       )}
+                      
+                      {/* Free Trial Badge for Premium */}
+                      {planKey === 'premium' && !isOnTrial && currentPlan === 'free' && (
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                          <FiZap size={10} /> Try Free 7 Days
+                        </span>
+                      )}
+                      
+                      {/* Current Plan Badge */}
                       {isCurrentPlan && (
                         <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-medium px-3 py-0.5 rounded-full">
                           Current Plan
                         </span>
                       )}
-                      {billingCycle === 'yearly' && planKey !== 'free' && (
+                      
+                      {/* Yearly Best Value */}
+                      {billingCycle === 'yearly' && planKey !== 'free' && !isOnTrial && (
                         <span className="absolute -top-2 right-2 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full">
                           Best Value
                         </span>
@@ -320,7 +376,15 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                         {plan.tagline && (
                           <p className="text-xs text-gray-400 mt-0.5">{plan.tagline}</p>
                         )}
-                        <p className="text-xl font-bold text-padi-green mt-2">
+                        
+                        {/* Trial Notice for Premium */}
+                        {planKey === 'premium' && !isOnTrial && currentPlan === 'free' && (
+                          <div className="mt-2 bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-full inline-flex items-center gap-1">
+                            <FiZap size={10} /> 7 DAYS FREE
+                          </div>
+                        )}
+                        
+                        <p className={`text-xl font-bold mt-2 ${planKey === 'premium' && !isOnTrial && currentPlan === 'free' ? 'text-amber-600' : 'text-padi-green'}`}>
                           {displayPrice === 0 ? 'Free' : `₦${displayPrice.toLocaleString()}`}
                           {displayPrice > 0 && (
                             <span className="text-xs text-gray-400 font-normal">
@@ -348,19 +412,30 @@ const PlanUpgradeModal = ({ isOpen, onClose, onSuccess }) => {
                         ))}
                       </ul>
 
-                      <button
-                        onClick={() => handleSelectPlan(planKey)}
-                        disabled={isCurrentPlan || isDowngrade || planKey === 'free'}
-                        className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                          isCurrentPlan
-                            ? 'bg-green-100 text-green-700 cursor-default'
-                            : planKey === 'free'
-                            ? 'bg-gray-100 text-gray-400 cursor-default'
-                            : 'bg-padi-green text-white hover:bg-padi-green-dark'
-                        }`}
-                      >
-                        {isCurrentPlan ? 'Active' : planKey === 'free' ? 'Free Plan' : 'Upgrade'}
-                      </button>
+                      {/* Trial Button for Free users */}
+                      {planKey === 'premium' && !isOnTrial && currentPlan === 'free' ? (
+                        <button
+                          onClick={handleStartTrial}
+                          disabled={loading}
+                          className="w-full py-2.5 rounded-xl font-semibold text-sm transition-all bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-lg"
+                        >
+                          {loading ? 'Activating...' : 'Start Free Trial'}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleSelectPlan(planKey)}
+                          disabled={isCurrentPlan || isDowngrade || planKey === 'free'}
+                          className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all ${
+                            isCurrentPlan
+                              ? 'bg-green-100 text-green-700 cursor-default'
+                              : planKey === 'free'
+                              ? 'bg-gray-100 text-gray-400 cursor-default'
+                              : 'bg-padi-green text-white hover:bg-padi-green-dark'
+                          }`}
+                        >
+                          {isCurrentPlan ? 'Active' : planKey === 'free' ? 'Free Plan' : 'Upgrade'}
+                        </button>
+                      )}
                     </div>
                   );
                 })}

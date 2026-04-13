@@ -71,9 +71,10 @@ export const orderAPI = {
 
 export const planAPI = {
   getPlans: () => api.get('/plans'),
-  requestUpgrade: (requestedPlan) => api.post('/plans/upgrade', { requestedPlan }),
+  requestUpgrade: (requestedPlan, billingCycle = 'monthly', isTrial = false) => 
+    api.post('/plans/upgrade', { requestedPlan, billingCycle, isTrial }),
   getMyRequests: () => api.get('/plans/my-requests'),
-  cancelRequest: (id) => api.delete('/plans/request/${id}'),
+  cancelRequest: (id) => api.delete(`/plans/request/${id}`),
   uploadProof: (id, formData) => api.post(`/plans/upload-proof/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
@@ -81,7 +82,8 @@ export const planAPI = {
   getAdminStats: () => api.get('/plans/admin/stats'),
   getSubscribers: (plan = 'all', format = 'list', billingCycle = 'all') => api.get('/plans/admin/subscribers', { params: { plan, format, billingCycle } }),
   approveRequest: (id) => api.put(`/plans/admin/approve/${id}`),
-  rejectRequest: (id, reason) => api.put(`/plans/admin/reject/${id}`, { reason })
+  rejectRequest: (id, reason) => api.put(`/plans/admin/reject/${id}`, { reason }),
+  startTrial: () => api.post('/plans/trial')
 };
 
 export const adminAPI = {

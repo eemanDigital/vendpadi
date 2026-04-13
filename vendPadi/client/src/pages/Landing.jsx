@@ -999,7 +999,8 @@ const Landing = () => {
                 ],
                 cta: "Upgrade",
                 highlight: false,
-                badge: billingCycle === "yearly" ? "Save ₦2K" : null,
+                badge: billingCycle === "yearly" ? "Save 17%" : null,
+                yearlySavings: "₦2,000",
               },
               {
                 plan: "Business",
@@ -1023,6 +1024,7 @@ const Landing = () => {
                 cta: "Go Business",
                 highlight: true,
                 badge: "Most Popular",
+                yearlySavings: "₦5,000",
               },
               {
                 plan: "Premium",
@@ -1031,6 +1033,7 @@ const Landing = () => {
                 yearlyPrice: "₦50,000",
                 period: billingCycle === "yearly" ? "/year" : "/month",
                 tagline: "Run like a brand",
+                trialNote: "7 DAYS FREE",
                 features: [
                   "Unlimited products",
                   "8 images per product",
@@ -1043,9 +1046,10 @@ const Landing = () => {
                   "Wishlist",
                   "Reviews",
                 ],
-                cta: "Start Trial",
+                cta: "Start Free Trial",
                 highlight: false,
-                badge: billingCycle === "yearly" ? "Save ₦10K" : "Try Free 7 Days",
+                badge: billingCycle === "yearly" ? "Save 17%" : "Try Free 7 Days",
+                yearlySavings: "₦10,000",
               },
             ].map((item, i) => (
               <ScrollReveal key={i} delay={i * 75}>
@@ -1053,22 +1057,41 @@ const Landing = () => {
                   className={`relative flex flex-col rounded-3xl transition-all duration-500 hover:-translate-y-2 ${
                     item.highlight
                       ? "bg-gradient-to-br from-navy to-navy-light text-white ring-2 ring-padi-green shadow-2xl shadow-padi-green/20 scale-[1.02]"
-                      : "bg-white border border-gray-200 hover:border-padi-green/30 hover:shadow-xl"
+                      : item.plan === "Premium"
+                        ? "bg-gradient-to-br from-padi-green/5 to-padi-green/10 border-2 border-padi-green/30 hover:border-padi-green/50 hover:shadow-xl"
+                        : "bg-white border border-gray-200 hover:border-padi-green/30 hover:shadow-xl"
                   }`}>
                   {item.badge && (
-                    <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-sm font-bold whitespace-nowrap shadow-lg ${
-                      item.highlight
-                        ? "bg-gradient-to-r from-padi-green to-padi-green-dark text-white"
-                        : "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                    <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-sm font-bold whitespace-nowrap shadow-lg z-10 ${
+                      item.plan === "Premium"
+                        ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+                        : item.highlight
+                          ? "bg-gradient-to-r from-padi-green to-padi-green-dark text-white"
+                          : "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
                     }`}>
-                  {item.badge}
-                  </div>
+                      {item.badge}
+                    </div>
                   )}
                   <div className="p-8 flex-1 flex flex-col">
-                    <div className="w-14 h-14 bg-gradient-to-br from-padi-green/10 to-padi-green/5 rounded-2xl flex items-center justify-center mb-4">
-                      <item.icon className={`text-3xl ${item.highlight ? 'text-padi-green' : 'text-padi-green'}`} />
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${
+                      item.highlight || item.plan === "Premium"
+                        ? "bg-white/20"
+                        : "bg-gradient-to-br from-padi-green/10 to-padi-green/5"
+                    }`}>
+                      <item.icon className={`text-3xl ${item.highlight || item.plan === "Premium" ? 'text-white' : 'text-padi-green'}`} />
                     </div>
                     <h3 className="font-sora font-bold text-2xl mb-1">{item.plan}</h3>
+                    
+                    {/* Trial Note for Premium */}
+                    {item.trialNote && (
+                      <div className={`mt-2 mb-2 inline-flex items-center gap-1.5 text-xs font-bold ${
+                        item.highlight ? "text-yellow-300" : "text-amber-600"
+                      }`}>
+                        <FiZap size={12} />
+                        {item.trialNote}
+                      </div>
+                    )}
+                    
                     <div className="mt-4 mb-1">
                       <span className="text-5xl font-bold">
                         {billingCycle === "yearly" ? item.yearlyPrice : item.monthlyPrice}
@@ -1077,6 +1100,14 @@ const Landing = () => {
                         {item.period}
                       </span>
                     </div>
+                    
+                    {/* Yearly Savings */}
+                    {billingCycle === "yearly" && item.yearlySavings && (
+                      <p className={`text-sm font-semibold mb-2 ${item.highlight ? "text-green-400" : "text-green-600"}`}>
+                        Save {item.yearlySavings}/year
+                      </p>
+                    )}
+                    
                     <p className={`text-sm mb-6 ${item.highlight ? "text-gray-300" : "text-gray-500"}`}>
                       {item.tagline}
                     </p>
@@ -1084,11 +1115,11 @@ const Landing = () => {
                       {item.features.map((f, j) => (
                         <li key={j} className="flex items-start gap-3 text-sm">
                           <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${
-                            item.highlight ? "bg-padi-green/30" : "bg-padi-green/10"
+                            item.highlight || item.plan === "Premium" ? "bg-white/20" : "bg-padi-green/10"
                           }`}>
-                            <FiCheck className="text-padi-green" size={12} />
+                            <FiCheck className={`${item.highlight || item.plan === "Premium" ? 'text-padi-green' : 'text-padi-green'}`} size={12} />
                           </div>
-                          <span className={item.highlight ? "text-gray-200" : "text-gray-600"}>
+                          <span className={item.highlight || item.plan === "Premium" ? "text-gray-200" : "text-gray-600"}>
                             {f}
                           </span>
                         </li>
@@ -1097,9 +1128,11 @@ const Landing = () => {
                     <Link
                       to="/register"
                       className={`block text-center py-4 px-6 rounded-2xl font-bold transition-all mt-auto ${
-                        item.highlight
-                          ? "bg-padi-green text-white hover:bg-padi-green-dark shadow-xl shadow-padi-green/30"
-                          : "bg-navy text-white hover:bg-navy-light"
+                        item.plan === "Premium"
+                          ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/30"
+                          : item.highlight
+                            ? "bg-padi-green text-white hover:bg-padi-green-dark shadow-xl shadow-padi-green/30"
+                            : "bg-navy text-white hover:bg-navy-light"
                       }`}>
                       {item.cta}
                     </Link>
@@ -1109,14 +1142,27 @@ const Landing = () => {
             ))}
           </div>
 
-          {/* Yearly Savings */}
+          {/* Yearly Savings & Trial Info */}
           <ScrollReveal delay={400}>
-            <div className="mt-12 text-center">
-              <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-700 px-6 py-4 rounded-2xl text-sm font-medium">
-                <FiPercent className="text-green-600" size={20} />
-                <span>
-                  <strong>Yearly plans save you money!</strong> Starter saves ₦2,000, Business saves ₦5,000, Premium saves ₦10,000.
-                </span>
+            <div className="mt-12 space-y-4">
+              {/* Trial Callout */}
+              <div className="text-center">
+                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-amber-800 px-6 py-4 rounded-2xl text-sm font-medium">
+                  <FiZap className="text-amber-600" size={20} />
+                  <span>
+                    <strong>Premium comes with 7 DAYS FREE TRIAL.</strong> No credit card required. After trial, automatically reverts to Free plan — upgrade anytime.
+                  </span>
+                </div>
+              </div>
+              
+              {/* Yearly Savings */}
+              <div className="text-center">
+                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-700 px-6 py-4 rounded-2xl text-sm font-medium">
+                  <FiPercent className="text-green-600" size={20} />
+                  <span>
+                    <strong>Yearly plans save you up to 17%!</strong> Starter saves ₦2,000/yr, Business saves ₦5,000/yr, Premium saves ₦10,000/yr.
+                  </span>
+                </div>
               </div>
             </div>
           </ScrollReveal>

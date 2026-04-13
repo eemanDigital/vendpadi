@@ -8,7 +8,7 @@ import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import Logo from '../components/Logo';
 import DeleteAccountModal from '../components/DeleteAccountModal';
 import toast from 'react-hot-toast';
-import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiImage, FiLink, FiTrash2 } from 'react-icons/fi';
+import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiImage, FiLink, FiTrash2, FiZap } from 'react-icons/fi';
 
 const CATEGORIES = ['food', 'fashion', 'phones', 'beauty', 'cakes', 'electronics', 'home', 'sports', 'books', 'toys', 'services', 'other'];
 
@@ -108,7 +108,10 @@ const Settings = () => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const currentFeatures = PLAN_FEATURES[vendor?.plan?.type || 'free'];
+  const isOnTrial = vendor?.trial?.active === true;
+  const trialPlan = vendor?.trial?.plan || 'premium';
+  const effectivePlan = isOnTrial ? trialPlan : (vendor?.plan?.type || 'free');
+  const currentFeatures = PLAN_FEATURES[effectivePlan];
   const isCustomCategory = !CATEGORIES.includes(formData.category) && formData.category !== 'food';
 
   useEffect(() => {
@@ -313,17 +316,30 @@ const Settings = () => {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-3xl">
-                  {vendor?.plan?.type === 'free' && '🆓'}
-                  {vendor?.plan?.type === 'starter' && '💡'}
-                  {vendor?.plan?.type === 'business' && '🚀'}
-                  {vendor?.plan?.type === 'premium' && '👑'}
+                  {effectivePlan === 'free' && '🆓'}
+                  {effectivePlan === 'starter' && '💡'}
+                  {effectivePlan === 'business' && '🚀'}
+                  {effectivePlan === 'premium' && '👑'}
                 </span>
-                {vendor?.plan?.type !== 'premium' && (
+                {isOnTrial && (
+                  <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                    <FiZap size={10} /> Trial Active
+                  </span>
+                )}
+                {!isOnTrial && effectivePlan !== 'premium' && (
                   <button
                     onClick={() => setShowUpgradeModal(true)}
                     className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
                   >
                     <FiTrendingUp size={14} /> Upgrade
+                  </button>
+                )}
+                {isOnTrial && (
+                  <button
+                    onClick={() => setShowUpgradeModal(true)}
+                    className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
+                  >
+                    <FiTrendingUp size={14} /> Upgrade Now
                   </button>
                 )}
               </div>

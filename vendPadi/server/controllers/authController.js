@@ -56,22 +56,13 @@ exports.register = catchAsync(async (req, res) => {
     isAdmin
   });
 
-  vendor.startTrial('premium');
+  // Trial is NOT auto-started - user must manually start from dashboard
   await vendor.save();
 
   const token = generateToken(vendor._id);
 
   sendWelcomeEmail(vendor.email, vendor.businessName).catch(err => {
     console.error('Failed to send welcome email:', err);
-  });
-
-  sendTrialStartedEmail(
-    vendor.email, 
-    vendor.businessName, 
-    vendor.trial.plan, 
-    vendor.trial.endDate
-  ).catch(err => {
-    console.error('Failed to send trial start email:', err);
   });
 
   res.status(201).json({

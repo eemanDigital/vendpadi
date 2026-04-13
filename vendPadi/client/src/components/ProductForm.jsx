@@ -16,7 +16,10 @@ const PLAN_IMAGE_LIMITS = {
 const ProductForm = ({ product, onSuccess, onCancel }) => {
   const { vendor } = useSelector((state) => state.auth);
   const isEditing = Boolean(product?._id);
-  const maxImages = PLAN_IMAGE_LIMITS[vendor?.plan?.type || 'free'];
+  const isOnTrial = vendor?.trial?.active === true;
+  const trialPlan = vendor?.trial?.plan || 'premium';
+  const effectivePlan = isOnTrial ? trialPlan : (vendor?.plan?.type || 'free');
+  const maxImages = PLAN_IMAGE_LIMITS[effectivePlan];
   
   const [formData, setFormData] = useState({
     name: product?.name || '',

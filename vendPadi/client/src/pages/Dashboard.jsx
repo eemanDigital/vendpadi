@@ -57,7 +57,12 @@ const Dashboard = () => {
     lowStock: false
   });
 
-  const planType = vendor?.plan?.type || 'free';
+  // Get effective plan - trial takes priority over paid plan
+  const isOnTrial = vendor?.trial?.active === true;
+  const trialPlan = vendor?.trial?.plan || 'premium';
+  const planType = isOnTrial ? trialPlan : (vendor?.plan?.type || 'free');
+  const effectivePlan = planType;
+  
   const PLANS = { free: 0, starter: 1, business: 2, premium: 3 };
   const planLimits = PLAN_LIMITS[planType];
   const hasAnalytics = PLANS[planType] >= PLANS.starter;
@@ -159,7 +164,8 @@ const Dashboard = () => {
 
   const handleAddNew = () => {
     if (isAtLimit) {
-      toast.error(`Your ${vendor?.plan?.type} plan allows only ${currentLimit} products. Upgrade to add more.`);
+      const displayPlan = isOnTrial ? `Premium (Trial)` : vendor?.plan?.type;
+      toast.error(`Your ${displayPlan} plan allows only ${currentLimit} products. Upgrade to add more.`);
       return;
     }
     setEditingProduct(null);
@@ -264,7 +270,7 @@ const Dashboard = () => {
           </button>
         </div>
 
-        {vendor?.plan?.type !== 'premium' && (
+        {!isOnTrial && planType !== 'premium' && (
           <div className="mt-4 p-4 bg-gold/20 rounded-xl border border-gold/30">
             <p className="text-xs text-gold font-medium mb-2">👑 Upgrade Your Plan</p>
             <p className="text-xs text-gray-400 mb-3">Unlock more features & products</p>
@@ -359,7 +365,7 @@ const Dashboard = () => {
               <h1 className="font-sora font-bold text-2xl text-navy">Products</h1>
               <p className="text-gray-500 text-sm">
                 {filteredProducts.length} of {products.length} products
-                {vendor?.plan?.type !== 'free' && ` • ${planLimits.images} images max`}
+                {effectivePlan !== 'free' && ` • ${planLimits.images} images max`}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -433,7 +439,7 @@ const Dashboard = () => {
                 <span className="text-2xl">⚠️</span>
                 <div>
                   <p className="font-medium text-gold">Product limit reached</p>
-                  <p className="text-sm text-gray-600">Your {vendor?.plan?.type} plan allows {currentLimit} products.</p>
+                  <p className="text-sm text-gray-600">Your {isOnTrial ? 'Premium (Trial)' : vendor?.plan?.type} plan allows {currentLimit} products.</p>
                 </div>
               </div>
               <Link to="/settings" className="bg-gold hover:bg-gold/90 text-white px-5 py-2 rounded-xl font-medium transition-colors whitespace-nowrap">
