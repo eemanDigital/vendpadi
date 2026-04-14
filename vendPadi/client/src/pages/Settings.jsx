@@ -256,7 +256,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 lg:pb-6">
+    <div className="min-h-screen bg-gray-50 pb-20 lg:pb-6 overflow-x-hidden">
       {/* Mobile Header */}
       <header className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20">
         <div className="flex items-center justify-between">
@@ -305,16 +305,16 @@ const Settings = () => {
         <div className="max-w-2xl mx-auto p-4 lg:p-6">
           <h1 className="font-sora font-bold text-2xl text-navy mb-6">Store Settings</h1>
 
-          {/* Plan Overview */}
+            {/* Plan Overview */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
               <div>
                 <h2 className="font-sora font-semibold text-lg">Current Plan</h2>
                 <div className="flex items-center gap-2 mt-1">
                   <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="md" />
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <span className="text-3xl">
                   {effectivePlan === 'free' && '🆓'}
                   {effectivePlan === 'starter' && '💡'}
@@ -368,48 +368,48 @@ const Settings = () => {
             <div className="mt-4 pt-4 border-t border-gray-100">
               <p className="text-xs text-gray-500 mb-3 font-medium">Included Features:</p>
               <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-medium whitespace-nowrap">
                   <FiPackage size={12} /> Stock Tracking
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium whitespace-nowrap">
                   <FiAlertTriangle size={12} /> Low Stock ({currentFeatures.lowStockAlert})
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium whitespace-nowrap">
                   <FiSearch size={12} /> Search & Filter
                 </span>
                 {currentFeatures.sorting && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium whitespace-nowrap">
                     <FiGrid size={12} /> Advanced Sorting
                   </span>
                 )}
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-pink-50 text-pink-700 rounded-lg text-xs font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-pink-50 text-pink-700 rounded-lg text-xs font-medium whitespace-nowrap">
                   <FiHeart size={12} /> Wishlist
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-medium whitespace-nowrap">
                   <FiMessageSquare size={12} /> Reviews
                 </span>
                 {currentFeatures.analytics && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-medium whitespace-nowrap">
                     📊 Analytics ({currentFeatures.analytics === 'full' ? 'Full' : 'Basic'})
                   </span>
                 )}
                 {currentFeatures.topProducts && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium whitespace-nowrap">
                     📈 Top Products
                   </span>
                 )}
                 {currentFeatures.shareTools && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium whitespace-nowrap">
                     🔗 Share Tools
                   </span>
                 )}
                 {currentFeatures.coverImage && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gold/20 text-gold rounded-lg text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-gold/20 text-gold rounded-lg text-xs font-medium whitespace-nowrap">
                     🖼️ Cover Image
                   </span>
                 )}
                 {currentFeatures.customLink && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gold/20 text-gold rounded-lg text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-gold/20 text-gold rounded-lg text-xs font-medium whitespace-nowrap">
                     🔗 Custom Link
                   </span>
                 )}
@@ -420,7 +420,7 @@ const Settings = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Logo Upload */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <h2 className="font-sora font-semibold text-lg">Store Logo</h2>
                 {!currentFeatures.logo && (
                   <button onClick={() => setShowUpgradeModal(true)} className="text-xs text-gold hover:text-gold/80 flex items-center gap-1">
@@ -428,8 +428,8 @@ const Settings = () => {
                   </button>
                 )}
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
                   {logoPreview ? (
                     <img src={logoPreview} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -457,12 +457,12 @@ const Settings = () => {
             {/* Cover Image - Premium Only */}
             {currentFeatures.coverImage && (
               <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                   <h2 className="font-sora font-semibold text-lg">Store Cover Image</h2>
-                  <span className="text-xs bg-gold/20 text-gold px-2 py-1 rounded-full">Premium</span>
+                  <span className="text-xs bg-gold/20 text-gold px-2 py-1 rounded-full shrink-0">Premium</span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-32 h-16 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <div className="w-full sm:w-32 h-16 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
                     {coverPreview ? (
                       <img src={coverPreview} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -499,30 +499,32 @@ const Settings = () => {
                   </h2>
                   <span className="text-xs bg-gold/20 text-gold px-2 py-1 rounded-full">Premium</span>
                 </div>
-                <form onSubmit={handleCustomLinkSubmit} className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl">
-                  <span className="flex-1 text-gray-600 text-sm">vendpadi.com/</span>
-                  <input 
-                    type="text" 
-                    value={customLink}
-                    onChange={(e) => setCustomLink(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                    placeholder="your-store"
-                    className="flex-1 bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm"
-                  />
-                  <button 
-                    type="submit"
-                    disabled={customLinkLoading}
-                    className="px-4 py-2 bg-padi-green text-white text-sm rounded-lg hover:bg-padi-green-dark disabled:opacity-50"
-                  >
-                    {customLinkLoading ? 'Saving...' : 'Save'}
-                  </button>
+                <form onSubmit={handleCustomLinkSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gray-50 p-4 rounded-xl">
+                  <span className="text-gray-600 text-sm shrink-0">vendpadi.com/</span>
+                  <div className="flex flex-col sm:flex-row gap-2 flex-1">
+                    <input 
+                      type="text" 
+                      value={customLink}
+                      onChange={(e) => setCustomLink(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                      placeholder="your-store"
+                      className="flex-1 bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm min-w-0"
+                    />
+                    <button 
+                      type="submit"
+                      disabled={customLinkLoading}
+                      className="px-4 py-2 bg-padi-green text-white text-sm rounded-lg hover:bg-padi-green-dark disabled:opacity-50 shrink-0"
+                    >
+                      {customLinkLoading ? 'Saving...' : 'Save'}
+                    </button>
+                  </div>
                 </form>
                 {vendor?.customLink && (
-                  <div className="mt-3 flex items-center gap-2">
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
                     <button 
                       onClick={() => navigator.clipboard.writeText(`https://vendpadi.com/store/custom/${vendor.customLink}`)}
                       className="text-padi-green text-sm hover:underline flex items-center gap-1"
                     >
-                      <FiCopy size={14} /> Copy custom link
+                      <FiCopy size={14} /> Copy
                     </button>
                     <span className="text-gray-400">•</span>
                     <a 
@@ -531,7 +533,7 @@ const Settings = () => {
                       rel="noopener noreferrer"
                       className="text-padi-green text-sm hover:underline flex items-center gap-1"
                     >
-                      <FiExternalLink size={14} /> View store
+                      <FiExternalLink size={14} /> View
                     </a>
                   </div>
                 )}
@@ -596,14 +598,16 @@ const Settings = () => {
             {/* Store Link */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <h2 className="font-sora font-semibold text-lg mb-4">Your Store Link</h2>
-              <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl">
-                <span className="flex-1 text-gray-600 break-all text-sm">{window.location.origin}/store/{vendor?.slug}</span>
-                <button type="button" onClick={copyStoreLink} className="flex items-center gap-2 text-padi-green hover:text-padi-green-dark transition-colors whitespace-nowrap text-sm font-medium">
-                  {copied ? <FiCheck /> : <FiCopy />} {copied ? 'Copied!' : 'Copy'}
-                </button>
-                <a href={`/store/${vendor?.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-500 hover:text-padi-green transition-colors whitespace-nowrap text-sm font-medium">
-                  <FiExternalLink /> Preview
-                </a>
+              <div className="bg-gray-50 p-4 rounded-xl">
+                <p className="text-gray-600 break-all text-sm mb-3">{window.location.origin}/store/{vendor?.slug}</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button type="button" onClick={copyStoreLink} className="flex items-center gap-2 text-padi-green hover:text-padi-green-dark transition-colors whitespace-nowrap text-sm font-medium">
+                    {copied ? <FiCheck /> : <FiCopy />} {copied ? 'Copied!' : 'Copy'}
+                  </button>
+                  <a href={`/store/${vendor?.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-500 hover:text-padi-green transition-colors whitespace-nowrap text-sm font-medium">
+                    <FiExternalLink /> Preview
+                  </a>
+                </div>
               </div>
             </div>
 

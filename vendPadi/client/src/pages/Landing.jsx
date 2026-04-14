@@ -172,7 +172,7 @@ const SplitSection = ({
         <Link
           to="/register"
           className="inline-flex items-center gap-2 text-padi-green font-semibold mt-8 hover:gap-4 transition-all">
-          Get started free <FiArrowRight />
+          Start for Free <FiArrowRight />
         </Link>
       </div>
       <div className={`relative ${reverse ? "lg:order-1" : ""}`}>
@@ -251,15 +251,6 @@ const Landing = () => {
     },
   ];
 
-  const trustedLogos = [
-    "Paystack",
-    "Flutterwave",
-    "Jumia",
-    "Konga",
-    "Andela",
-    "Piggyvest",
-  ];
-
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Nav */}
@@ -304,7 +295,7 @@ const Landing = () => {
                   <Link
                     to="/register"
                     className="bg-padi-green hover:bg-padi-green-dark text-white font-semibold py-2.5 px-5 rounded-full transition-all duration-300 text-sm flex items-center gap-2 hover:shadow-lg hover:shadow-padi-green/30">
-                    <FiZap size={14} /> Free Trial
+                    <FiZap size={14} /> Start for Free
                   </Link>
                 </>
               )}
@@ -324,13 +315,13 @@ const Landing = () => {
             <div className="flex flex-col gap-1 pt-2 border-t border-white/10">
               <a
                 href="#features"
-                className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium text-sm"
+                className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium text-sm text-white"
                 onClick={() => setMobileMenuOpen(false)}>
                 Features
               </a>
               <a
                 href="#pricing"
-                className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium text-sm"
+                className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium text-sm text-white"
                 onClick={() => setMobileMenuOpen(false)}>
                 Pricing
               </a>
@@ -338,7 +329,7 @@ const Landing = () => {
                 <>
                   <Link
                     to="/dashboard"
-                    className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-3"
+                    className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium flex items-center gap-3 text-white"
                     onClick={() => setMobileMenuOpen(false)}>
                     <FiLayout size={20} /> Dashboard
                   </Link>
@@ -352,15 +343,15 @@ const Landing = () => {
                 <>
                   <Link
                     to="/login"
-                    className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium"
+                    className="px-3 py-2.5 hover:bg-white/10 rounded-lg transition-colors font-medium text-white"
                     onClick={() => setMobileMenuOpen(false)}>
                     Login
                   </Link>
                   <Link
                     to="/register"
-                    className="mt-2 mx-1 bg-padi-green text-center py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
+                    className="mt-2 mx-1 bg-padi-green text-center py-3 rounded-xl font-semibold flex items-center justify-center gap-2 text-white"
                     onClick={() => setMobileMenuOpen(false)}>
-                    <FiZap size={14} /> Start Free Trial
+                    <FiZap size={14} /> Start for Free
                   </Link>
                 </>
               )}
@@ -414,14 +405,18 @@ const Landing = () => {
             </ScrollReveal>
 
             <ScrollReveal delay={300}>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex flex-col items-center justify-center gap-4">
                 <Link
                   to="/register"
-                  className="group relative inline-flex items-center gap-3 bg-padi-green hover:bg-padi-green-dark text-white font-bold py-4 px-10 rounded-full text-lg transition-all duration-300 shadow-xl shadow-padi-green/30 hover:shadow-padi-green/50 hover:-translate-y-1">
+                  className="group relative inline-flex items-center justify-center gap-3 bg-padi-green hover:bg-padi-green-dark text-white font-bold py-4 px-8 sm:px-10 rounded-full text-lg transition-all duration-300 shadow-xl shadow-padi-green/30 hover:shadow-padi-green/50 hover:-translate-y-1 w-full sm:w-auto">
                   <FiZap className="group-hover:rotate-12 transition-transform" />
-                  Start 7-Day Premium Trial — Free
+                  Start for Free
                   <FiArrowRight className="opacity-0 -ml-8 group-hover:opacity-100 group-hover:ml-0 transition-all" />
                 </Link>
+                <span className="inline-flex items-center gap-2 text-sm text-gray-300">
+                  <FiZap className="text-amber-400" size={14} /> 7-Day Premium
+                  Trial included
+                </span>
               </div>
             </ScrollReveal>
 
@@ -523,30 +518,6 @@ const Landing = () => {
           </ScrollReveal>
         </div>
       </section>
-
-      {/* Trusted By - Logo Cloud */}
-      {/* 
-      <section className="py-20 px-4 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto">
-          <ScrollReveal>
-            <p className="text-center text-sm text-gray-400 mb-10 font-medium uppercase tracking-widest">
-              Powering Nigerian businesses
-            </p>
-          </ScrollReveal>
-          <ScrollReveal delay={100}>
-            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-60">
-              {trustedLogos.map((logo, i) => (
-                <span
-                  key={i}
-                  className="text-2xl font-bold text-gray-700 font-sora hover:text-navy transition-colors cursor-default">
-                  {logo}
-                </span>
-              ))}
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-      */}
 
       {/* Problem/Solution - Split Section */}
       <section className="py-20 lg:py-28 px-4">
@@ -1110,11 +1081,20 @@ const Landing = () => {
               const isBusiness = planKey === "business";
               const isPremium = planKey === "premium";
               const cardTextColor = isBusiness ? "text-white" : "text-navy";
-              const cardSubtextColor = isBusiness ? "text-gray-300" : "text-gray-500";
-              const cardSecondaryTextColor = isBusiness ? "text-gray-200" : "text-gray-600";
-              const badgeBgColor = isBusiness || isPremium ? "bg-white/20" : "bg-padi-green/10";
+              const cardSubtextColor = isBusiness
+                ? "text-gray-300"
+                : "text-gray-500";
+              const cardSecondaryTextColor = isBusiness
+                ? "text-gray-200"
+                : "text-gray-600";
+              const badgeBgColor =
+                isBusiness || isPremium ? "bg-white/20" : "bg-padi-green/10";
               const checkmarkColor = "text-padi-green";
-              const iconColor = isBusiness ? "text-white" : isPremium ? "text-amber-600" : "text-padi-green";
+              const iconColor = isBusiness
+                ? "text-white"
+                : isPremium
+                  ? "text-amber-600"
+                  : "text-padi-green";
 
               return (
                 <ScrollReveal
@@ -1156,12 +1136,12 @@ const Landing = () => {
                               ? "bg-amber-100"
                               : "bg-gradient-to-br from-padi-green/10 to-padi-green/5"
                         }`}>
-                        <span
-                          className={`text-3xl ${iconColor}`}>
+                        <span className={`text-3xl ${iconColor}`}>
                           {plan.icon}
                         </span>
                       </div>
-                      <h3 className={`font-sora font-bold text-2xl mb-1 ${cardTextColor}`}>
+                      <h3
+                        className={`font-sora font-bold text-2xl mb-1 ${cardTextColor}`}>
                         {plan.name}
                       </h3>
 
@@ -1185,7 +1165,8 @@ const Landing = () => {
 
                       {/* Yearly Savings */}
                       {billingCycle === "yearly" && plan.price > 0 && (
-                        <p className={`text-sm font-semibold mb-2 ${isBusiness ? "text-green-400" : "text-green-600"}`}>
+                        <p
+                          className={`text-sm font-semibold mb-2 ${isBusiness ? "text-green-400" : "text-green-600"}`}>
                           Save ₦
                           {(
                             plan.price * 12 -
@@ -1205,13 +1186,20 @@ const Landing = () => {
                             <li
                               key={j}
                               className="flex items-start gap-3 text-sm">
-                              <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${isBusiness ? "bg-white/20" : "bg-padi-green/10"}`}>
+                              <div
+                                className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${isBusiness ? "bg-white/20" : "bg-padi-green/10"}`}>
                                 <FiCheck
-                                  className={isBusiness ? "text-padi-green" : "text-padi-green"}
+                                  className={
+                                    isBusiness
+                                      ? "text-padi-green"
+                                      : "text-padi-green"
+                                  }
                                   size={12}
                                 />
                               </div>
-                              <span className={cardSecondaryTextColor}>{f.text}</span>
+                              <span className={cardSecondaryTextColor}>
+                                {f.text}
+                              </span>
                             </li>
                           ))}
                       </ul>
@@ -1224,10 +1212,10 @@ const Landing = () => {
                               ? "bg-padi-green text-white hover:bg-padi-green-dark shadow-xl shadow-padi-green/30"
                               : "bg-navy text-white hover:bg-navy-light"
                         }`}>
-                        {planKey === "premium"
-                          ? "Start Free Trial"
-                          : planKey === "free"
-                            ? "Get Started"
+                        {planKey === "free"
+                          ? "Start for Free"
+                          : planKey === "premium"
+                            ? "Start for Free"
                             : "Upgrade"}
                       </Link>
                     </div>
@@ -1365,12 +1353,12 @@ const Landing = () => {
               </ScrollReveal>
 
               <ScrollReveal delay={300}>
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col items-center sm:items-start gap-4">
                   <Link
                     to="/register"
-                    className="group inline-flex items-center justify-center gap-3 bg-white text-padi-green font-bold py-4 px-10 rounded-full text-lg hover:bg-gray-100 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1">
+                    className="group inline-flex items-center justify-center gap-3 bg-white text-padi-green font-bold py-4 px-8 sm:px-10 rounded-full text-lg hover:bg-gray-100 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 w-full sm:w-auto">
                     <FiZap className="group-hover:rotate-12 transition-transform" />
-                    Start Your Free Trial
+                    Start for Free
                     <FiArrowRight className="opacity-0 -ml-6 group-hover:opacity-100 group-hover:ml-0 transition-all" />
                   </Link>
                 </div>
