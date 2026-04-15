@@ -6,6 +6,10 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "start:prod": "pm2 start ecosystem.config.js",
+    "stop:prod": "pm2 stop vendpadi-server",
+    "restart:prod": "pm2 restart vendpadi-server",
+    "logs:prod": "pm2 logs vendpadi-server",
     "migrate:trials": "node scripts/migrateTrials.js"
   },
   "dependencies": {
