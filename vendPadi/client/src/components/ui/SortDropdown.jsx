@@ -13,11 +13,11 @@ const SORT_OPTIONS = [
 
 const SortDropdown = ({ value, onChange, className = '' }) => {
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className}`} style={{ minWidth: '160px' }}>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-padi-green/20 focus:border-padi-green transition-all cursor-pointer hover:border-gray-300"
+        className="appearance-none w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-padi-green/20 focus:border-padi-green transition-all cursor-pointer hover:border-gray-300"
       >
         {SORT_OPTIONS.map((opt) => (
           <option key={opt.value} value={opt.value}>

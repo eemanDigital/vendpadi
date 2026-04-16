@@ -107,8 +107,35 @@ const Dashboard = () => {
       result = result.filter(p => p.lowStockAlert);
     }
 
+    switch (sortBy) {
+      case 'newest':
+        result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        break;
+      case 'oldest':
+        result.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+        break;
+      case 'price_asc':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price_desc':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'name_asc':
+        result.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'name_desc':
+        result.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'stock_low':
+        result.sort((a, b) => (a.stock || 0) - (b.stock || 0));
+        break;
+      case 'stock_high':
+        result.sort((a, b) => (b.stock || 0) - (a.stock || 0));
+        break;
+    }
+
     return result;
-  }, [products, searchQuery, filters]);
+  }, [products, searchQuery, filters, sortBy]);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -402,7 +429,7 @@ const Dashboard = () => {
                   placeholder="Search products..."
                 />
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 relative z-10">
                 <SortDropdown
                   value={sortBy}
                   onChange={setSortBy}
