@@ -71,8 +71,6 @@ const vendorSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 vendorSchema.index({ deletedAt: 1 });
-vendorSchema.index({ email: 1 });
-vendorSchema.index({ slug: 1 });
 
 vendorSchema.methods.generateResetToken = function() {
   const resetToken = crypto.randomBytes(32).toString('hex');

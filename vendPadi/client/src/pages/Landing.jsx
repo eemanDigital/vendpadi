@@ -38,6 +38,8 @@ import {
   FiCoffee,
   FiCopy,
   FiLink,
+  FiTruck,
+  FiTarget,
 } from "react-icons/fi";
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -635,8 +637,8 @@ const Landing = () => {
             </div>
           </ScrollReveal>
 
-          <div className="grid md:grid-cols-4 gap-4 auto-rows-[minmax(200px,auto)]">
-            {/* Large featured card */}
+          <div className="grid md:grid-cols-4 gap-4 auto-rows-[minmax(180px,auto)]">
+            {/* Large featured card - Analytics */}
             <ScrollReveal className="md:col-span-2 md:row-span-2">
               <BentoCard span="2x2" className="h-full flex flex-col">
                 <div className="w-16 h-16 bg-gradient-to-br from-padi-green to-emerald-400 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-padi-green/20">
@@ -673,8 +675,80 @@ const Landing = () => {
               </BentoCard>
             </ScrollReveal>
 
-            {/* Small cards */}
+            {/* Verified Badge - Business+ */}
+            <ScrollReveal delay={50}>
+              <BentoCard className="h-full relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-gradient-to-br from-blue-500 to-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                  Business+
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                  <FiShield className="text-blue-600 text-xl" />
+                </div>
+                <h3 className="font-sora font-semibold text-lg text-navy mb-2">
+                  Verified Badge
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Build trust with a verified vendor badge
+                </p>
+              </BentoCard>
+            </ScrollReveal>
+
+            {/* Flash Sales - Premium */}
             <ScrollReveal delay={100}>
+              <BentoCard className="h-full relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-gradient-to-br from-red-500 to-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                  Premium
+                </div>
+                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
+                  <FiZap className="text-red-600 text-xl" />
+                </div>
+                <h3 className="font-sora font-semibold text-lg text-navy mb-2">
+                  Flash Sales
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Create FOMO with 24hr deals & countdowns
+                </p>
+              </BentoCard>
+            </ScrollReveal>
+
+            {/* Delivery Zones - Business+ */}
+            <ScrollReveal delay={150}>
+              <BentoCard className="h-full relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-gradient-to-br from-orange-500 to-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                  Business+
+                </div>
+                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
+                  <FiTruck className="text-orange-600 text-xl" />
+                </div>
+                <h3 className="font-sora font-semibold text-lg text-navy mb-2">
+                  Delivery Zones
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Set delivery fees by area in Nigeria
+                </p>
+              </BentoCard>
+            </ScrollReveal>
+
+            {/* Product Bundles - Premium */}
+            <ScrollReveal delay={200}>
+              <BentoCard className="h-full relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-gradient-to-br from-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                  Premium
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                  <FiGift className="text-purple-600 text-xl" />
+                </div>
+                <h3 className="font-sora font-semibold text-lg text-navy mb-2">
+                  Product Bundles
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Bundle items to boost average order value
+                </p>
+              </BentoCard>
+            </ScrollReveal>
+
+            {/* One-Click Share */}
+            <ScrollReveal delay={250}>
               <BentoCard className="h-full">
                 <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
                   <FiShare2 className="text-padi-green text-xl" />
@@ -683,15 +757,16 @@ const Landing = () => {
                   One-Click Share
                 </h3>
                 <p className="text-gray-500 text-sm">
-                  Share on WhatsApp, Instagram, or anywhere instantly
+                  Share on WhatsApp, Instagram, or anywhere
                 </p>
               </BentoCard>
             </ScrollReveal>
 
-            <ScrollReveal delay={150}>
+            {/* Stock Alerts */}
+            <ScrollReveal delay={300}>
               <BentoCard className="h-full">
                 <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
-                  <FiPackage className="text-padi-green text-xl" />
+                  <FiAlertTriangle className="text-padi-green text-xl" />
                 </div>
                 <h3 className="font-sora font-semibold text-lg text-navy mb-2">
                   Stock Alerts
@@ -702,7 +777,8 @@ const Landing = () => {
               </BentoCard>
             </ScrollReveal>
 
-            <ScrollReveal delay={200}>
+            {/* Smart Filters */}
+            <ScrollReveal delay={350}>
               <BentoCard className="h-full">
                 <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
                   <FiGrid className="text-padi-green text-xl" />
@@ -716,7 +792,8 @@ const Landing = () => {
               </BentoCard>
             </ScrollReveal>
 
-            <ScrollReveal delay={250}>
+            {/* Wishlist */}
+            <ScrollReveal delay={400}>
               <BentoCard className="h-full">
                 <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
                   <FiHeart className="text-padi-green text-xl" />
@@ -730,35 +807,18 @@ const Landing = () => {
               </BentoCard>
             </ScrollReveal>
 
-            {/* Wide card */}
-            <ScrollReveal delay={300} className="md:col-span-2">
-              <BentoCard span="2x1" className="h-full">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <FiMessageSquare className="text-padi-green text-xl" />
-                  </div>
-                  <div>
-                    <h3 className="font-sora font-semibold text-lg text-navy mb-2">
-                      Reviews & Ratings
-                    </h3>
-                    <p className="text-gray-500 text-sm mb-3">
-                      Build trust with customer reviews. Customers can rate
-                      products and leave feedback.
-                    </p>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <FiStar
-                          key={i}
-                          className="text-yellow-400 fill-yellow-400"
-                          size={16}
-                        />
-                      ))}
-                      <span className="text-sm text-gray-500 ml-2">
-                        4.8 avg (234 reviews)
-                      </span>
-                    </div>
-                  </div>
+            {/* Reviews */}
+            <ScrollReveal delay={450}>
+              <BentoCard className="h-full">
+                <div className="w-12 h-12 bg-padi-green/10 rounded-xl flex items-center justify-center mb-4">
+                  <FiMessageSquare className="text-padi-green text-xl" />
                 </div>
+                <h3 className="font-sora font-semibold text-lg text-navy mb-2">
+                  Reviews & Ratings
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Build trust with customer feedback
+                </p>
               </BentoCard>
             </ScrollReveal>
           </div>

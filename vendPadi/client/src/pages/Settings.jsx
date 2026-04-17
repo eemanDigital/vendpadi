@@ -7,117 +7,19 @@ import PlanBadge from '../components/PlanBadge';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import Logo from '../components/Logo';
 import DeleteAccountModal from '../components/DeleteAccountModal';
+import DeliveryZonesSection from '../components/settings/DeliveryZonesSection';
+import VerificationSection from '../components/settings/VerificationSection';
 import toast from 'react-hot-toast';
-import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiImage, FiLink, FiTrash2, FiZap, FiShield, FiTruck, FiPlus, FiTrash, FiClock, FiFileText, FiX } from 'react-icons/fi';
+import { FiSave, FiUpload, FiCopy, FiExternalLink, FiCheck, FiPackage, FiShoppingBag, FiTrendingUp, FiLock, FiAlertCircle, FiGrid, FiHeart, FiMessageSquare, FiAlertTriangle, FiSearch, FiImage, FiLink, FiTrash2, FiZap, FiShield, FiTruck, FiPlus, FiGift } from 'react-icons/fi';
 
 const CATEGORIES = ['food', 'fashion', 'phones', 'beauty', 'cakes', 'electronics', 'home', 'sports', 'books', 'toys', 'services', 'other'];
 
 const PLAN_FEATURES = {
-  free: { 
-    products: 5, 
-    images: 1, 
-    logo: false, 
-    coverImage: false,
-    customLink: false,
-    pdf: false,
-    removeBranding: false,
-    analytics: 'basic',
-    topProducts: false,
-    stockTracking: true,
-    lowStockAlert: '10 items',
-    filtering: true,
-    sorting: false,
-    wishlist: true,
-    reviews: true,
-    shareTools: false,
-    verifiedBadge: false,
-    flashSales: false,
-    deliveryZones: false,
-    bundles: false
-  },
-  starter: { 
-    products: 30, 
-    images: 3, 
-    logo: true, 
-    coverImage: false,
-    customLink: false,
-    pdf: false,
-    removeBranding: true,
-    analytics: 'basic',
-    topProducts: false,
-    stockTracking: true,
-    lowStockAlert: '8 items',
-    filtering: true,
-    sorting: false,
-    wishlist: true,
-    reviews: true,
-    shareTools: true,
-    verifiedBadge: false,
-    flashSales: false,
-    deliveryZones: false,
-    bundles: false
-  },
-  business: { 
-    products: 100, 
-    images: 5, 
-    logo: true, 
-    coverImage: false,
-    customLink: false,
-    pdf: true,
-    removeBranding: true,
-    analytics: 'full',
-    topProducts: true,
-    stockTracking: true,
-    lowStockAlert: '5 items',
-    filtering: true,
-    sorting: true,
-    wishlist: true,
-    reviews: true,
-    shareTools: true,
-    verifiedBadge: true,
-    flashSales: false,
-    deliveryZones: true,
-    bundles: false
-  },
-  premium: { 
-    products: '∞', 
-    images: 8, 
-    logo: true, 
-    coverImage: true,
-    customLink: true,
-    pdf: true,
-    removeBranding: true,
-    analytics: 'full',
-    topProducts: true,
-    stockTracking: true,
-    lowStockAlert: '3 items',
-    filtering: true,
-    sorting: true,
-    wishlist: true,
-    reviews: true,
-    shareTools: true,
-    verifiedBadge: true,
-    flashSales: true,
-    deliveryZones: true,
-    bundles: true
-  }
+  free: { products: 5, images: 1, logo: false, coverImage: false, customLink: false, pdf: false, removeBranding: false, analytics: 'basic', topProducts: false, stockTracking: true, lowStockAlert: '10 items', filtering: true, sorting: false, wishlist: true, reviews: true, shareTools: false, verifiedBadge: false, flashSales: false, deliveryZones: false, bundles: false },
+  starter: { products: 30, images: 3, logo: true, coverImage: false, customLink: false, pdf: false, removeBranding: true, analytics: 'basic', topProducts: false, stockTracking: true, lowStockAlert: '8 items', filtering: true, sorting: false, wishlist: true, reviews: true, shareTools: true, verifiedBadge: false, flashSales: false, deliveryZones: false, bundles: false },
+  business: { products: 100, images: 5, logo: true, coverImage: false, customLink: false, pdf: true, removeBranding: true, analytics: 'full', topProducts: true, stockTracking: true, lowStockAlert: '5 items', filtering: true, sorting: true, wishlist: true, reviews: true, shareTools: true, verifiedBadge: true, flashSales: false, deliveryZones: true, bundles: false },
+  premium: { products: '∞', images: 8, logo: true, coverImage: true, customLink: true, pdf: true, removeBranding: true, analytics: 'full', topProducts: true, stockTracking: true, lowStockAlert: '3 items', filtering: true, sorting: true, wishlist: true, reviews: true, shareTools: true, verifiedBadge: true, flashSales: true, deliveryZones: true, bundles: true }
 };
-
-const DOCUMENT_TYPES = [
-  { value: 'cac', label: 'CAC Certificate', description: 'Corporate Affairs Commission registration' },
-  { value: 'nin', label: 'National ID (NIN)', description: "Nigeria National Identification Number" },
-  { value: 'passport', label: 'International Passport', description: 'Valid international passport' },
-  { value: 'drivers_license', label: "Driver's License", description: 'Valid Nigerian drivers license' }
-];
-
-const COMMON_ZONES = [
-  'Lagos - Mainland',
-  'Lagos - Island',
-  'Abuja',
-  'Port Harcourt',
-  'Kano',
-  'Ibadan'
-];
 
 const Settings = () => {
   const dispatch = useDispatch();
@@ -140,17 +42,6 @@ const Settings = () => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
-  const [verificationData, setVerificationData] = useState({
-    documentType: '',
-    documentFile: null,
-    documentPreview: ''
-  });
-  const [verificationLoading, setVerificationLoading] = useState(false);
-  
-  const [deliveryZones, setDeliveryZones] = useState([]);
-  const [deliveryEnabled, setDeliveryEnabled] = useState(false);
-  const [deliveryLoading, setDeliveryLoading] = useState(false);
-
   const isOnTrial = vendor?.trial?.active === true;
   const trialPlan = vendor?.trial?.plan || 'premium';
   const effectivePlan = isOnTrial ? trialPlan : (vendor?.plan?.type || 'free');
@@ -169,22 +60,8 @@ const Settings = () => {
       setLogoPreview(vendor.logo || '');
       setCoverPreview(vendor.coverImage || '');
       setCustomLink(vendor.customLink || '');
-      
-      if (vendor.deliveryZones) {
-        setDeliveryZones(vendor.deliveryZones.zones || []);
-        setDeliveryEnabled(vendor.deliveryZones.enabled || false);
-      }
     }
   }, [vendor]);
-  
-  useEffect(() => {
-    if (vendor?.verification) {
-      setVerificationData(prev => ({
-        ...prev,
-        documentType: vendor.verification.documentType || ''
-      }));
-    }
-  }, [vendor?.verification]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -313,96 +190,9 @@ const Settings = () => {
     }
   };
   
-  const handleVerificationDocumentChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('Document must be less than 10MB');
-        return;
-      }
-      setVerificationData({
-        ...verificationData,
-        documentFile: file,
-        documentPreview: URL.createObjectURL(file)
-      });
-    }
-  };
-  
-  const handleVerificationSubmit = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!verificationData.documentType || !verificationData.documentFile) {
-      toast.error('Please select a document type and upload a document');
-      return;
-    }
-    
-    setVerificationLoading(true);
-    try {
-      const formDataUpload = new FormData();
-      formDataUpload.append('documentType', verificationData.documentType);
-      formDataUpload.append('document', verificationData.documentFile);
-      
-      await vendorAPI.submitVerification(verificationData.documentType, formDataUpload);
-      toast.success('Verification documents submitted! We will review within 24-48 hours.');
-      
-      const { data: vendorData } = await vendorAPI.getMe();
-      dispatch(updateVendor(vendorData));
-      
-      setVerificationData({
-        documentType: '',
-        documentFile: null,
-        documentPreview: ''
-      });
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to submit verification');
-    } finally {
-      setVerificationLoading(false);
-    }
-  };
-  
-  const handleAddZone = () => {
-    setDeliveryZones([...deliveryZones, { name: '', fee: '', estimatedDays: '1-2 days', isActive: true }]);
-  };
-  
-  const handleRemoveZone = (index) => {
-    setDeliveryZones(deliveryZones.filter((_, i) => i !== index));
-  };
-  
-  const handleZoneChange = (index, field, value) => {
-    const updated = [...deliveryZones];
-    updated[index][field] = value;
-    setDeliveryZones(updated);
-  };
-  
-  const handleDeliveryZonesSubmit = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDeliveryLoading(true);
-    try {
-      const validZones = deliveryZones.filter(z => z.name.trim()).map(z => ({
-        name: z.name.trim(),
-        fee: Number(z.fee) || 0,
-        estimatedDays: z.estimatedDays || '1-2 days',
-        isActive: z.isActive
-      }));
-      
-      await vendorAPI.updateDeliveryZones({
-        enabled: deliveryEnabled,
-        zones: validZones
-      });
-      
-      const { data: vendorData } = await vendorAPI.getMe();
-      dispatch(updateVendor(vendorData));
-      
-      setDeliveryZones(vendorData.deliveryZones?.zones || []);
-      setDeliveryEnabled(vendorData.deliveryZones?.enabled || false);
-      
-      toast.success('Delivery zones updated!');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update delivery zones');
-    } finally {
-      setDeliveryLoading(false);
-    }
+  const handleRefreshVendor = async () => {
+    const { data } = await vendorAPI.getMe();
+    dispatch(updateVendor(data));
   };
 
   return (
@@ -804,97 +594,7 @@ const Settings = () => {
                   <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">Business+</span>
                 </div>
                 
-                {vendor?.verification?.status === 'pending' ? (
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-                    <FiClock className="text-amber-500 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-amber-800">Verification Pending</p>
-                      <p className="text-sm text-amber-600">Your documents are being reviewed. This usually takes 24-48 hours.</p>
-                    </div>
-                  </div>
-                ) : vendor?.verification?.status === 'rejected' ? (
-                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
-                    <div className="flex items-start gap-3">
-                      <FiX className="text-red-500 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-red-800">Verification Rejected</p>
-                        {vendor?.verification?.rejectionReason && (
-                          <p className="text-sm text-red-600">Reason: {vendor.verification.rejectionReason}</p>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-sm text-red-600">Please submit new verification documents.</p>
-                  </div>
-                ) : vendor?.verification?.isVerified ? (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
-                    <FiCheckCircle className="text-green-500 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-green-800">You're Verified!</p>
-                      <p className="text-sm text-green-600">Your store now displays a verified badge to build customer trust.</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <p className="text-sm text-gray-600">Submit your business document to get verified. This helps customers trust your business.</p>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Document Type</label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {DOCUMENT_TYPES.map(doc => (
-                          <label key={doc.value} className={`flex items-start gap-3 p-3 border rounded-xl cursor-pointer transition-all ${verificationData.documentType === doc.value ? 'border-padi-green bg-padi-green/5' : 'border-gray-200 hover:border-gray-300'}`}>
-                            <input
-                              type="radio"
-                              name="documentType"
-                              value={doc.value}
-                              checked={verificationData.documentType === doc.value}
-                              onChange={(e) => setVerificationData({ ...verificationData, documentType: e.target.value })}
-                              className="mt-1"
-                            />
-                            <div>
-                              <p className="font-medium text-sm">{doc.label}</p>
-                              <p className="text-xs text-gray-500">{doc.description}</p>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Upload Document</label>
-                      <div className={`border-2 border-dashed rounded-xl p-6 text-center ${verificationData.documentPreview ? 'border-padi-green' : 'border-gray-300'}`}>
-                        {verificationData.documentPreview ? (
-                          <div className="space-y-3">
-                            <FiFileText className="text-padi-green text-4xl mx-auto" />
-                            <p className="text-sm text-gray-600">{verificationData.documentFile?.name}</p>
-                            <button type="button" onClick={() => setVerificationData({ ...verificationData, documentFile: null, documentPreview: '' })} className="text-sm text-red-500 hover:text-red-600">
-                              Remove
-                            </button>
-                          </div>
-                        ) : (
-                          <label className="cursor-pointer">
-                            <FiUpload className="text-gray-400 text-3xl mx-auto mb-2" />
-                            <p className="text-sm text-gray-600">Click to upload document</p>
-                            <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP or PDF (max 10MB)</p>
-                            <input type="file" accept="image/*,.pdf" onChange={handleVerificationDocumentChange} className="hidden" />
-                          </label>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <button type="button" onClick={handleVerificationSubmit} disabled={verificationLoading || !verificationData.documentType || !verificationData.documentFile} className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50">
-                      {verificationLoading ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Submitting...
-                        </>
-                      ) : (
-                        <>
-                          <FiShield /> Submit for Verification
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
+                <VerificationSection verification={vendor?.verification} onUpdate={handleRefreshVendor} />
               </div>
             ) : (
               <div className="bg-white rounded-2xl border border-gray-100 p-5 opacity-75">
@@ -935,86 +635,11 @@ const Settings = () => {
                   <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-medium">Business+</span>
                 </div>
                 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                    <div>
-                      <p className="font-medium text-sm">Enable Delivery Calculator</p>
-                      <p className="text-xs text-gray-500">Show delivery fees before checkout</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setDeliveryEnabled(!deliveryEnabled)}
-                      className={`relative w-12 h-7 rounded-full transition-colors ${deliveryEnabled ? 'bg-padi-green' : 'bg-gray-300'}`}>
-                      <span className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${deliveryEnabled ? 'right-1' : 'left-1'}`} />
-                    </button>
-                  </div>
-                  
-                  {deliveryEnabled && (
-                    <>
-                      <div className="space-y-3">
-                        {deliveryZones.map((zone, index) => (
-                          <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                            <input
-                              type="text"
-                              value={zone.name}
-                              onChange={(e) => handleZoneChange(index, 'name', e.target.value)}
-                              placeholder="Zone name (e.g., Lagos Island)"
-                              className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm"
-                            />
-                            <div className="flex items-center gap-1">
-                              <span className="text-gray-500 text-sm">₦</span>
-                              <input
-                                type="number"
-                                value={zone.fee}
-                                onChange={(e) => handleZoneChange(index, 'fee', e.target.value)}
-                                placeholder="Fee"
-                                className="w-20 px-3 py-2 rounded-lg border border-gray-200 text-sm"
-                              />
-                            </div>
-                            <input
-                              type="text"
-                              value={zone.estimatedDays}
-                              onChange={(e) => handleZoneChange(index, 'estimatedDays', e.target.value)}
-                              placeholder="ETA"
-                              className="w-24 px-3 py-2 rounded-lg border border-gray-200 text-sm"
-                            />
-                            <button type="button" onClick={() => handleRemoveZone(index)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">
-                              <FiTrash size={16} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <button type="button" onClick={handleAddZone} className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-padi-green hover:text-padi-green transition-colors flex items-center justify-center gap-2">
-                        <FiPlus /> Add Delivery Zone
-                      </button>
-                      
-                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                        <p className="text-xs text-blue-700 font-medium mb-2">Quick add common zones:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {COMMON_ZONES.filter(z => !deliveryZones.find(dz => dz.name === z)).map(zone => (
-                            <button key={zone} type="button" onClick={() => setDeliveryZones([...deliveryZones, { name: zone, fee: '', estimatedDays: '1-2 days', isActive: true }])} className="px-3 py-1 bg-white border border-blue-200 rounded-full text-xs text-blue-700 hover:bg-blue-100">
-                              {zone}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  
-                  <button type="button" onClick={handleDeliveryZonesSubmit} disabled={deliveryLoading} className="w-full btn-primary flex items-center justify-center gap-2">
-                    {deliveryLoading ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <FiSave /> Save Delivery Zones
-                      </>
-                    )}
-                  </button>
-                </div>
+                <DeliveryZonesSection 
+                  deliveryZones={vendor?.deliveryZones?.zones || []}
+                  deliveryEnabled={vendor?.deliveryZones?.enabled || false}
+                  onUpdate={handleRefreshVendor}
+                />
               </div>
             ) : (
               <div className="bg-white rounded-2xl border border-gray-100 p-5 opacity-75">
