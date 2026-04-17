@@ -22,7 +22,9 @@ import {
   FiSend,
   FiStar,
   FiGift,
-  FiAward
+  FiAward,
+  FiFileText,
+  FiAlertCircle
 } from 'react-icons/fi';
 
 const GREETING_TYPES = [
@@ -57,6 +59,10 @@ const AdminPanel = () => {
   const [subscriberView, setSubscriberView] = useState('grouped');
   const [groupedSubscribers, setGroupedSubscribers] = useState({ grouped: {}, counts: {}, revenue: {} });
   const [selectedGroup, setSelectedGroup] = useState(null);
+  
+  const [pendingVerifications, setPendingVerifications] = useState([]);
+  const [selectedVerification, setSelectedVerification] = useState(null);
+  const [verificationsLoading, setVerificationsLoading] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -83,7 +89,66 @@ const AdminPanel = () => {
 
   useEffect(() => {
     fetchData();
-  }, [subscriberFilter, subscriberView]);
+    if (activeTab === 'verifications') {
+      fetchVerifications();
+    }
+  }, [subscriberFilter, subscriberView, activeTab]);
+  
+  const fetchVerifications = async () => {
+    setVerificationsLoading(true);
+    try {
+      const res = await adminAPI.getPendingVerifications();
+      console.log('Pending verifications:', res.data);
+      setPendingVerifications(res.data || []);
+    } catch (error) {
+      console.error('Failed to fetch verifications:', error);
+      toast.error('Failed to load verifications');
+    } finally {
+      setVerificationsLoading(false);
+    }
+  };
+  
+  const handleApproveVerification = async (vendorId) => {
+    if (!confirm('Approve this vendor verification? They will receive a verified badge.')) return;
+    
+    setActionLoading(vendorId);
+    try {
+      await adminAPI.approveVerification(vendorId);
+      toast.success('Verification approved! Vendor is now verified.');
+      fetchVerifications();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to approve verification');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+  
+  const handleRejectVerification = async () => {
+    if (!selectedVerification) return;
+    
+    setActionLoading(selectedVerification._id);
+    try {
+      await adminAPI.rejectVerification(selectedVerification._id, rejectReason);
+      toast.success('Verification rejected');
+      setShowRejectModal(false);
+      setSelectedVerification(null);
+      setRejectReason('');
+      fetchVerifications();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to reject verification');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+  
+  const openRejectModal = (vendor, isVerification = false) => {
+    if (isVerification) {
+      setSelectedVerification(vendor);
+    } else {
+      setSelectedRequest(vendor);
+    }
+    setShowRejectModal(true);
+  };
 
   useEffect(() => {
     if (subscriberView === 'table') {
@@ -233,6 +298,22 @@ const AdminPanel = () => {
             {(stats.byPlan.starter || 0) + (stats.byPlan.business || 0) + (stats.byPlan.premium || 0) > 0 && (
               <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
                 {(stats.byPlan.starter || 0) + (stats.byPlan.business || 0) + (stats.byPlan.premium || 0)}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('verifications')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+              activeTab === 'verifications' 
+                ? 'bg-padi-green text-white' 
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <FiShield size={16} />
+            <span className="hidden sm:inline">Verifications</span>
+            {pendingVerifications.length > 0 && (
+              <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">
+                {pendingVerifications.length}
               </span>
             )}
           </button>
@@ -847,51 +928,189 @@ const AdminPanel = () => {
             )}
           </div>
         ) : null}
+        
+        {activeTab === 'verifications' ? (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <FiShield className="text-white text-xl" />
+                  </div>
+                  <div>
+                    <h2 className="font-sora font-bold text-xl text-navy">Vendor Verifications</h2>
+                    <p className="text-sm text-gray-500">Review and approve vendor verification requests</p>
+                  </div>
+                </div>
+                <button
+                  onClick={fetchVerifications}
+                  disabled={verificationsLoading}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  <FiRefreshCw className={verificationsLoading ? 'animate-spin' : ''} size={16} />
+                  Refresh
+                </button>
+              </div>
+              
+              {verificationsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : pendingVerifications.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FiShield className="text-gray-300 text-3xl" />
+                  </div>
+                  <h3 className="font-semibold text-navy mb-2">No Pending Verifications</h3>
+                  <p className="text-gray-500 text-sm">All vendor verification requests have been processed.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pendingVerifications.map((vendor) => (
+                    <div key={vendor._id} className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                        <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center overflow-hidden border-2 border-gray-200 flex-shrink-0">
+                          {vendor.logo ? (
+                            <img src={vendor.logo} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-2xl">🏪</span>
+                          )}
+                        </div>
+                        
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h4 className="font-semibold text-navy text-lg">{vendor.businessName}</h4>
+                              <p className="text-sm text-gray-500">{vendor.email}</p>
+                              <p className="text-sm text-gray-400">Store: /store/{vendor.slug}</p>
+                            </div>
+                            <div className="flex items-center gap-2 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-medium">
+                              <FiClock size={12} />
+                              Pending Review
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                            <div className="bg-white rounded-lg p-3">
+                              <p className="text-gray-500 text-xs mb-1">Document Type</p>
+                              <p className="font-medium text-navy capitalize">
+                                {vendor.verification?.documentType === 'cac' ? 'CAC Certificate' :
+                                 vendor.verification?.documentType === 'nin' ? 'National ID (NIN)' :
+                                 vendor.verification?.documentType === 'passport' ? 'International Passport' :
+                                 vendor.verification?.documentType === 'drivers_license' ? "Driver's License" :
+                                 vendor.verification?.documentType || 'Not specified'}
+                              </p>
+                            </div>
+                            <div className="bg-white rounded-lg p-3">
+                              <p className="text-gray-500 text-xs mb-1">Submitted</p>
+                              <p className="font-medium text-navy">
+                                {vendor.verification?.submittedAt ? formatDate(vendor.verification.submittedAt) : 'Unknown'}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {vendor.verification?.documentUrl && (
+                            <div className="mt-4">
+                              <a 
+                                href={vendor.verification.documentUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                              >
+                                <FiFileText size={16} />
+                                View Submitted Document
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-3 mt-4 pt-4 border-t border-gray-200">
+                        <button
+                          onClick={() => handleApproveVerification(vendor._id)}
+                          disabled={actionLoading === vendor._id}
+                          className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium transition-all disabled:opacity-50 shadow-lg shadow-green-500/20"
+                        >
+                          {actionLoading === vendor._id ? (
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <>
+                              <FiCheck size={18} />
+                              Approve Verification
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => openRejectModal(vendor, true)}
+                          disabled={actionLoading === vendor._id}
+                          className="px-6 flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 py-3 rounded-xl font-medium transition-colors disabled:opacity-50"
+                        >
+                          <FiX size={18} />
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : null}
       </main>
 
       {/* Reject Modal */}
-      {showRejectModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowRejectModal(false)}>
+      {showRejectModal && (selectedRequest || selectedVerification) && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => { setShowRejectModal(false); setSelectedRequest(null); setSelectedVerification(null); setRejectReason(''); }}>
           <div className="bg-white rounded-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                 <FiX className="text-red-500 text-xl" />
               </div>
               <div>
-                <h3 className="font-sora font-bold text-lg text-navy">Reject Request</h3>
-                <p className="text-sm text-gray-500">{selectedRequest.vendorId?.businessName}</p>
+                <h3 className="font-sora font-bold text-lg text-navy">
+                  {selectedVerification ? 'Reject Verification' : 'Reject Request'}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {selectedVerification?.businessName || selectedRequest?.vendorId?.businessName}
+                </p>
               </div>
             </div>
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reason for rejection (optional)
+                Reason for rejection
               </label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 resize-none"
                 rows={3}
-                placeholder="e.g., Payment amount doesn't match, Unable to verify transfer..."
+                placeholder={selectedVerification ? "e.g., Document is illegible, Name doesn't match..." : "e.g., Payment amount doesn't match, Unable to verify transfer..."}
               />
             </div>
 
             <div className="flex gap-3">
               <button
-                onClick={() => { setShowRejectModal(false); setSelectedRequest(null); setRejectReason(''); }}
+                onClick={() => { setShowRejectModal(false); setSelectedRequest(null); setSelectedVerification(null); setRejectReason(''); }}
                 className="flex-1 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={handleReject}
-                disabled={actionLoading === selectedRequest._id}
+                onClick={() => {
+                  if (selectedVerification) {
+                    handleRejectVerification();
+                  } else {
+                    handleReject();
+                  }
+                }}
+                disabled={actionLoading === (selectedRequest?._id || selectedVerification?._id)}
                 className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {actionLoading === selectedRequest._id ? (
+                {actionLoading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  'Reject Request'
+                  selectedVerification ? 'Reject Verification' : 'Reject Request'
                 )}
               </button>
             </div>

@@ -253,6 +253,7 @@ const Settings = () => {
 
   const handleCustomLinkSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!customLink.trim()) return;
     
     setCustomLinkLoading(true);
@@ -329,6 +330,7 @@ const Settings = () => {
   
   const handleVerificationSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!verificationData.documentType || !verificationData.documentFile) {
       toast.error('Please select a document type and upload a document');
       return;
@@ -345,6 +347,12 @@ const Settings = () => {
       
       const { data: vendorData } = await vendorAPI.getMe();
       dispatch(updateVendor(vendorData));
+      
+      setVerificationData({
+        documentType: '',
+        documentFile: null,
+        documentPreview: ''
+      });
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to submit verification');
     } finally {
@@ -368,6 +376,7 @@ const Settings = () => {
   
   const handleDeliveryZonesSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     setDeliveryLoading(true);
     try {
       const validZones = deliveryZones.filter(z => z.name.trim()).map(z => ({
@@ -381,6 +390,12 @@ const Settings = () => {
         enabled: deliveryEnabled,
         zones: validZones
       });
+      
+      const { data: vendorData } = await vendorAPI.getMe();
+      dispatch(updateVendor(vendorData));
+      
+      setDeliveryZones(vendorData.deliveryZones?.zones || []);
+      setDeliveryEnabled(vendorData.deliveryZones?.enabled || false);
       
       toast.success('Delivery zones updated!');
     } catch (error) {
@@ -797,6 +812,19 @@ const Settings = () => {
                       <p className="text-sm text-amber-600">Your documents are being reviewed. This usually takes 24-48 hours.</p>
                     </div>
                   </div>
+                ) : vendor?.verification?.status === 'rejected' ? (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <FiX className="text-red-500 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-red-800">Verification Rejected</p>
+                        {vendor?.verification?.rejectionReason && (
+                          <p className="text-sm text-red-600">Reason: {vendor.verification.rejectionReason}</p>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-sm text-red-600">Please submit new verification documents.</p>
+                  </div>
                 ) : vendor?.verification?.isVerified ? (
                   <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
                     <FiCheckCircle className="text-green-500 mt-0.5" />
@@ -806,7 +834,7 @@ const Settings = () => {
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleVerificationSubmit} className="space-y-4">
+                  <div className="space-y-4">
                     <p className="text-sm text-gray-600">Submit your business document to get verified. This helps customers trust your business.</p>
                     
                     <div>
@@ -853,7 +881,7 @@ const Settings = () => {
                       </div>
                     </div>
                     
-                    <button type="submit" disabled={verificationLoading || !verificationData.documentType || !verificationData.documentFile} className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50">
+                    <button type="button" onClick={handleVerificationSubmit} disabled={verificationLoading || !verificationData.documentType || !verificationData.documentFile} className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50">
                       {verificationLoading ? (
                         <>
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -865,7 +893,7 @@ const Settings = () => {
                         </>
                       )}
                     </button>
-                  </form>
+                  </div>
                 )}
               </div>
             ) : (
@@ -907,7 +935,7 @@ const Settings = () => {
                   <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-medium">Business+</span>
                 </div>
                 
-                <form onSubmit={handleDeliveryZonesSubmit} className="space-y-4">
+                <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <div>
                       <p className="font-medium text-sm">Enable Delivery Calculator</p>
@@ -974,7 +1002,7 @@ const Settings = () => {
                     </>
                   )}
                   
-                  <button type="submit" disabled={deliveryLoading} className="w-full btn-primary flex items-center justify-center gap-2">
+                  <button type="button" onClick={handleDeliveryZonesSubmit} disabled={deliveryLoading} className="w-full btn-primary flex items-center justify-center gap-2">
                     {deliveryLoading ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -986,7 +1014,7 @@ const Settings = () => {
                       </>
                     )}
                   </button>
-                </form>
+                </div>
               </div>
             ) : (
               <div className="bg-white rounded-2xl border border-gray-100 p-5 opacity-75">
