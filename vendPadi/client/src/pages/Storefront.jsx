@@ -16,6 +16,7 @@ import StoreProducts from "../components/store/StoreProducts";
 import StoreBottomBar from "../components/store/StoreBottomBar";
 import StoreSkeleton from "../components/store/StoreSkeleton";
 import StoreBranding from "../components/store/StoreBranding";
+import StoreBundles from "../components/store/StoreBundles";
 import ProductDetailModal from "../components/store/ProductDetailModal";
 import CartDrawer from "../components/store/CartDrawer";
 import WhatsAppQRModal from "../components/WhatsAppQRModal";
@@ -45,6 +46,8 @@ const Storefront = () => {
   const [copied, setCopied] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+
+  const bundles = store?.bundles || [];
 
   const whatsappLink = useMemo(() => {
     if (!store?.vendor) return "";
@@ -197,6 +200,10 @@ const Storefront = () => {
 
       <StoreHero vendor={vendor} />
 
+      {bundles.length > 0 && (
+        <StoreBundles bundles={bundles} />
+      )}
+
       <StoreToolbar
         search={search}
         setSearch={setSearch}
@@ -223,6 +230,7 @@ const Storefront = () => {
         isOpen={showCart}
         onClose={() => setShowCart(false)}
         onOrder={handleOrder}
+        deliveryZones={store?.vendor?.deliveryZones}
       />
 
       <WishlistDrawer

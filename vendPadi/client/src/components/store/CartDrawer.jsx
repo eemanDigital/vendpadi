@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearCart } from "../../store/cartSlice";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiX, FiShoppingCart, FiMessageCircle, FiInfo, FiTrash2 } from "react-icons/fi";
+import { FiX, FiShoppingCart, FiMessageCircle, FiInfo, FiTrash2, FiChevronDown, FiCheck } from "react-icons/fi";
 import toast from "react-hot-toast";
 import CartItemRow from "./CartItemRow";
 
@@ -23,11 +24,19 @@ const drawerSlide = {
   exit: { x: "100%" },
 };
 
-const CartDrawer = ({ isOpen, onClose, onOrder }) => {
+const CartDrawer = ({ isOpen, onClose, onOrder, deliveryZones }) => {
   const dispatch = useDispatch();
   const cartItems = useSelector((s) => s.cart.items);
   const cartTotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
   const cartCount = cartItems.reduce((s, i) => s + i.qty, 0);
+  
+  const hasDeliveryZones = deliveryZones?.enabled && deliveryZones?.zones?.length > 0;
+  const [selectedZone, setSelectedZone] = useState(deliveryZones?.defaultZone || '');
+  const [showZoneSelector, setShowZoneSelector] = useState(false);
+  
+  const selectedDeliveryZone = deliveryZones?.zones?.find(z => z.name === selectedZone);
+  const deliveryFee = selectedDeliveryZone?.fee || 0;
+  const totalWithDelivery = cartTotal + deliveryFee;
 
   return (
     <AnimatePresence>
@@ -104,16 +113,79 @@ const CartDrawer = ({ isOpen, onClose, onOrder }) => {
                       NGN{cartTotal.toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Delivery Fee</span>
-                    <span className="text-padi-green font-medium">
-                      To be confirmed
-                    </span>
-                  </div>
+                  
+                  {hasDeliveryZones ? (
+                    <>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-500">Delivery Zone</span>
+                        </div>
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowZoneSelector(!showZoneSelector)}
+                            className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm"
+                          >
+                            <span className={selectedZone ? 'text-navy font-medium' : 'text-gray-400'}>
+                              {selectedZone || 'Select delivery zone'}
+                            </span>
+                            <FiChevronDown className={`text-gray-400 transition-transform ${showZoneSelector ? 'rotate-180' : ''}`} />
+                          </button>
+                          
+                          <AnimatePresence>
+                            {showZoneSelector && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-48 overflow-y-auto"
+                              >
+                                {deliveryZones.zones.filter(z => z.isActive).map((zone) => (
+                                  <button
+                                    key={zone.name}
+                                    onClick={() => {
+                                      setSelectedZone(zone.name);
+                                      setShowZoneSelector(false);
+                                    }}
+                                    className={`w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors ${selectedZone === zone.name ? 'bg-padi-green/5' : ''}`}
+                                  >
+                                    <div className="text-left">
+                                      <p className="font-medium text-sm text-navy">{zone.name}</p>
+                                      <p className="text-xs text-gray-500">{zone.estimatedDays}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-semibold text-sm">₦{zone.fee.toLocaleString()}</span>
+                                      {selectedZone === zone.name && (
+                                        <FiCheck className="text-padi-green" size={16} />
+                                      )}
+                                    </div>
+                                  </button>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">Delivery Fee</span>
+                        <span className={deliveryFee > 0 ? 'text-padi-green font-medium' : 'text-green-600 font-medium'}>
+                          {deliveryFee > 0 ? `₦${deliveryFee.toLocaleString()}` : 'Free'}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Delivery Fee</span>
+                      <span className="text-padi-green font-medium">
+                        To be confirmed
+                      </span>
+                    </div>
+                  )}
+                  
                   <div className="pt-3 border-t border-gray-200 flex justify-between items-center">
                     <span className="font-bold text-navy">Total</span>
                     <span className="font-bold text-padi-green text-xl">
-                      NGN{cartTotal.toLocaleString()}
+                      ₦{totalWithDelivery.toLocaleString()}
                     </span>
                   </div>
                 </div>

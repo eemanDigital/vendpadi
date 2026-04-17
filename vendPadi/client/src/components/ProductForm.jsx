@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { productAPI } from '../api/axiosInstance';
 import toast from 'react-hot-toast';
-import { FiImage, FiX, FiCheck, FiPackage, FiAlertTriangle } from 'react-icons/fi';
+import { FiImage, FiX, FiCheck, FiPackage, FiAlertTriangle, FiZap } from 'react-icons/fi';
 import { CATEGORIES } from './ui/FilterBar';
 import StockBadge from './ui/StockBadge';
 
@@ -13,6 +13,22 @@ const PLAN_IMAGE_LIMITS = {
   premium: 8
 };
 
+const PLAN_FEATURES = {
+  free: { flashSales: false },
+  starter: { flashSales: false },
+  business: { flashSales: false },
+  premium: { flashSales: true }
+};
+
+const DURATION_OPTIONS = [
+  { value: 1, label: '1 hour' },
+  { value: 4, label: '4 hours' },
+  { value: 12, label: '12 hours' },
+  { value: 24, label: '24 hours' },
+  { value: 48, label: '48 hours' },
+  { value: 72, label: '72 hours (max)' }
+];
+
 const ProductForm = ({ product, onSuccess, onCancel }) => {
   const { vendor } = useSelector((state) => state.auth);
   const isEditing = Boolean(product?._id);
@@ -20,6 +36,7 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
   const trialPlan = vendor?.trial?.plan || 'premium';
   const effectivePlan = isOnTrial ? trialPlan : (vendor?.plan?.type || 'free');
   const maxImages = PLAN_IMAGE_LIMITS[effectivePlan];
+  const canFlashSale = PLAN_FEATURES[effectivePlan]?.flashSales;
   
   const [formData, setFormData] = useState({
     name: product?.name || '',
@@ -35,6 +52,11 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
   const [localImages, setLocalImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  
+  const [flashSaleEnabled, setFlashSaleEnabled] = useState(product?.flashSale?.isActive || false);
+  const [flashSalePrice, setFlashSalePrice] = useState(product?.flashSale?.discountPrice || '');
+  const [flashSaleDuration, setFlashSaleDuration] = useState(24);
+  const [settingFlashSale, setSettingFlashSale] = useState(false);
 
   useEffect(() => {
     if (product?.images) {
@@ -165,11 +187,33 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
         if (localImages.length > 0) {
           finalData = await uploadImagesAndCreateProduct(finalData);
         }
-        await productAPI.update(product._id, finalData);
+        const updated = await productAPI.update(product._id, finalData);
+        
+        if (canFlashSale && isEditing) {
+          if (flashSaleEnabled && flashSalePrice && Number(flashSalePrice) < Number(formData.price)) {
+            await productAPI.setFlashSale(product._id, {
+              isActive: true,
+              discountPrice: Number(flashSalePrice),
+              duration: flashSaleDuration
+            });
+          } else if (!flashSaleEnabled && product?.flashSale?.isActive) {
+            await productAPI.setFlashSale(product._id, { isActive: false });
+          }
+        }
+        
         toast.success('Product updated!');
       } else {
         finalData = await uploadImagesAndCreateProduct(finalData);
-        await productAPI.create(finalData);
+        const created = await productAPI.create(finalData);
+        
+        if (canFlashSale && flashSaleEnabled && flashSalePrice && Number(flashSalePrice) < Number(formData.price)) {
+          await productAPI.setFlashSale(created._id, {
+            isActive: true,
+            discountPrice: Number(flashSalePrice),
+            duration: flashSaleDuration
+          });
+        }
+        
         toast.success('Product created!');
       }
       onSuccess();
@@ -183,6 +227,46 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
       setSaving(false);
     }
   };
+  
+  const handleSetFlashSale = async () => {
+    if (!flashSalePrice || Number(flashSalePrice) >= Number(formData.price)) {
+      toast.error('Flash sale price must be less than the current price');
+      return;
+    }
+    
+    setSettingFlashSale(true);
+    try {
+      await productAPI.setFlashSale(product._id, {
+        isActive: true,
+        discountPrice: Number(flashSalePrice),
+        duration: flashSaleDuration
+      });
+      toast.success('Flash sale activated!');
+      setFlashSaleEnabled(true);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to set flash sale');
+    } finally {
+      setSettingFlashSale(false);
+    }
+  };
+  
+  const handleEndFlashSale = async () => {
+    setSettingFlashSale(true);
+    try {
+      await productAPI.setFlashSale(product._id, { isActive: false });
+      toast.success('Flash sale ended');
+      setFlashSaleEnabled(false);
+      setFlashSalePrice('');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to end flash sale');
+    } finally {
+      setSettingFlashSale(false);
+    }
+  };
+  
+  const discountPercentage = flashSalePrice && formData.price 
+    ? Math.round(((Number(formData.price) - Number(flashSalePrice)) / Number(formData.price)) * 100) 
+    : 0;
 
   const isLowStock = formData.stock > 0 && formData.stock <= formData.lowStockThreshold;
 
@@ -306,6 +390,123 @@ const ProductForm = ({ product, onSuccess, onCancel }) => {
             threshold={Number(formData.lowStockThreshold)} 
             size="sm"
           />
+        </div>
+      )}
+      
+      {canFlashSale && formData.price && Number(formData.price) > 0 && (
+        <div className="bg-gradient-to-br from-red-50 to-orange-50 border border-red-100 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <FiZap className="text-red-500" />
+              <span className="font-semibold text-sm text-red-800">Flash Sale</span>
+              {flashSaleEnabled && product?.flashSale?.isActive && (
+                <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                  LIVE
+                </span>
+              )}
+            </div>
+            {!flashSaleEnabled && (
+              <span className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded-full">Premium Only</span>
+            )}
+          </div>
+          
+          {!flashSaleEnabled ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Flash Sale Price (₦)</label>
+                  <input
+                    type="number"
+                    value={flashSalePrice}
+                    onChange={(e) => setFlashSalePrice(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-red-200 text-sm bg-white"
+                    placeholder="Discounted price"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Duration</label>
+                  <select
+                    value={flashSaleDuration}
+                    onChange={(e) => setFlashSaleDuration(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-lg border border-red-200 text-sm bg-white"
+                  >
+                    {DURATION_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              {flashSalePrice && Number(flashSalePrice) < Number(formData.price) && (
+                <div className="flex items-center justify-between bg-white rounded-lg p-3">
+                  <div>
+                    <p className="text-sm text-gray-600">Discount</p>
+                    <p className="font-bold text-red-600">{discountPercentage}% OFF</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500 line-through">₦{Number(formData.price).toLocaleString()}</p>
+                    <p className="font-bold text-green-600">₦{Number(flashSalePrice).toLocaleString()}</p>
+                  </div>
+                </div>
+              )}
+              
+              <button
+                type="button"
+                onClick={handleSetFlashSale}
+                disabled={!flashSalePrice || Number(flashSalePrice) >= Number(formData.price) || settingFlashSale || !isEditing}
+                className="w-full py-2.5 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-lg font-semibold text-sm hover:from-red-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {settingFlashSale ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Activating...
+                  </>
+                ) : (
+                  <>
+                    <FiZap /> Start Flash Sale
+                  </>
+                )}
+              </button>
+              
+              {!isEditing && (
+                <p className="text-xs text-center text-red-600">
+                  Save product first, then set up flash sale
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between bg-white rounded-lg p-3">
+                <div>
+                  <p className="text-xs text-gray-500">Current Flash Price</p>
+                  <p className="font-bold text-red-600 text-lg">₦{Number(product?.flashSale?.discountPrice || flashSalePrice).toLocaleString()}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500 line-through">₦{Number(formData.price).toLocaleString()}</p>
+                  <p className="font-bold text-green-600">{product?.flashSale?.discountPercentage || discountPercentage}% OFF</p>
+                </div>
+              </div>
+              
+              <button
+                type="button"
+                onClick={handleEndFlashSale}
+                disabled={settingFlashSale}
+                className="w-full py-2.5 bg-gray-600 text-white rounded-lg font-semibold text-sm hover:bg-gray-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {settingFlashSale ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Ending...
+                  </>
+                ) : (
+                  <>
+                    <FiX /> End Flash Sale
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

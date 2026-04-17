@@ -1,5 +1,6 @@
 const Vendor = require('../models/Vendor');
 const Product = require('../models/Product');
+const Bundle = require('../models/Bundle');
 const Order = require('../models/Order');
 const { sendOrderNotificationEmail } = require('../utils/email');
 
@@ -31,6 +32,9 @@ exports.getStore = catchAsync(async (req, res) => {
   const products = await Product.find({ vendorId: vendor._id })
     .sort({ createdAt: -1 });
 
+  const bundles = await Bundle.find({ vendorId: vendor._id, isActive: true })
+    .sort({ createdAt: -1 });
+
   const planType = vendor.plan?.type || 'free';
   const defaultThreshold = LOW_STOCK_THRESHOLDS[planType] || 10;
 
@@ -44,7 +48,8 @@ exports.getStore = catchAsync(async (req, res) => {
 
   res.json({
     vendor,
-    products: productsWithAlerts
+    products: productsWithAlerts,
+    bundles
   });
 });
 
@@ -147,6 +152,9 @@ exports.getStoreByCustomLink = catchAsync(async (req, res) => {
   const products = await Product.find({ vendorId: vendor._id })
     .sort({ createdAt: -1 });
 
+  const bundles = await Bundle.find({ vendorId: vendor._id, isActive: true })
+    .sort({ createdAt: -1 });
+
   const planType = vendor.plan?.type || 'free';
   const defaultThreshold = LOW_STOCK_THRESHOLDS[planType] || 10;
 
@@ -160,7 +168,8 @@ exports.getStoreByCustomLink = catchAsync(async (req, res) => {
 
   res.json({
     vendor,
-    products: productsWithAlerts
+    products: productsWithAlerts,
+    bundles
   });
 });
 

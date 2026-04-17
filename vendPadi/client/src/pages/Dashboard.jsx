@@ -19,6 +19,7 @@ import AnalyticsCard from '../components/ui/AnalyticsCard';
 import TopProductsList from '../components/ui/TopProductsList';
 import GrowthInsights from '../components/ui/GrowthInsights';
 import InventoryModal from '../components/store/InventoryModal';
+import BundleManager from '../components/store/BundleManager';
 import Loading from '../components/Loading';
 import { logout } from '../store/authSlice';
 import { clearCart } from '../store/cartSlice';
@@ -274,17 +275,44 @@ const Dashboard = () => {
           </Link>
         </nav>
 
-        {lowStockProducts.length > 0 && (
-          <button
-            onClick={() => setShowInventoryModal(true)}
-            className="mt-4 p-3 bg-amber-500/20 hover:bg-amber-500/30 rounded-xl border border-amber-500/30 transition-colors"
-          >
-            <div className="flex items-center gap-2 text-amber-400">
-              <FiAlertTriangle size={16} />
-              <span className="text-sm font-medium">{lowStockProducts.length} Low Stock</span>
+{lowStockProducts.length > 0 && (
+              <LowStockAlert products={lowStockProducts} onManageClick={() => setShowInventoryModal(true)} />
+            )}
+
+            {hasAnalytics && (
+              <GrowthInsights analytics={analytics} />
+            )}
+
+            {effectivePlan === 'premium' && (
+              <BundleManager 
+                products={products.filter(p => p.inStock)} 
+                onUpgradeClick={() => setShowUpgradeModal(true)} 
+              />
+            )}
+
+            <div className="flex items-center justify-between">
+              <h2 className="font-sora font-bold text-lg text-navy">
+                Your Products
+              </h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2.5 rounded-xl transition-colors ${
+                    viewMode === 'grid' ? 'bg-padi-green text-white' : 'bg-white text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  <FiGrid size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2.5 rounded-xl transition-colors ${
+                    viewMode === 'list' ? 'bg-padi-green text-white' : 'bg-white text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  <FiList size={18} />
+                </button>
+              </div>
             </div>
-          </button>
-        )}
 
         <div className="mt-4 p-4 bg-white/10 rounded-xl">
           <p className="text-xs text-gray-400 mb-2">Your Store Link</p>

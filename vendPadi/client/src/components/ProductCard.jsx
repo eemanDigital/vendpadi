@@ -111,7 +111,10 @@ const GridCard = ({ product, onOpenDetail }) => {
   const stockPercent = product.stock > 0 ? Math.min(100, (product.stock / (product.lowStockThreshold || 5) * 100)) : 0;
   const isLow = product.lowStockAlert;
   const isOut = !product.inStock;
-
+  const isFlashSale = product.isFlashSaleActive;
+  const flashSalePrice = product.flashSale?.discountPrice;
+  const discountPct = product.discountPercentage;
+  
   const handleCardClick = () => {
     if (onOpenDetail) {
       onOpenDetail(product);
@@ -126,8 +129,14 @@ const GridCard = ({ product, onOpenDetail }) => {
       <div className="aspect-square sm:aspect-[4/3] relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
         <ImageCarousel images={product.images} name={product.name} category={product.category} />
         
-        <div className="absolute top-2 left-2 z-10 flex gap-1.5">
-          {isLow && !isOut && (
+        <div className="absolute top-2 left-2 z-10 flex gap-1.5 flex-wrap">
+          {isFlashSale && !isOut && (
+            <span className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-lg flex items-center gap-1 animate-pulse">
+              <FiZap size={10} />
+              {discountPct}% OFF
+            </span>
+          )}
+          {isLow && !isOut && !isFlashSale && (
             <span className="bg-amber-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-lg flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
               Low Stock
@@ -160,9 +169,22 @@ const GridCard = ({ product, onOpenDetail }) => {
         </h3>
 
         <div className="flex items-center justify-between mb-2 sm:mb-3">
-          <span className="font-bold text-base sm:text-lg text-padi-green">
-            ₦{product.price.toLocaleString()}
-          </span>
+          <div className="flex flex-col">
+            {isFlashSale ? (
+              <>
+                <span className="font-bold text-base sm:text-lg text-red-500">
+                  ₦{flashSalePrice?.toLocaleString()}
+                </span>
+                <span className="text-xs text-gray-400 line-through">
+                  ₦{product.price.toLocaleString()}
+                </span>
+              </>
+            ) : (
+              <span className="font-bold text-base sm:text-lg text-padi-green">
+                ₦{product.price.toLocaleString()}
+              </span>
+            )}
+          </div>
           {product.stock > 0 && (
             <StockBadge stock={product.stock} threshold={product.lowStockThreshold || 5} size="sm" />
           )}
@@ -195,6 +217,8 @@ const ListCard = ({ product, onOpenDetail }) => {
 
   const isLow = product.lowStockAlert;
   const isOut = !product.inStock;
+  const isFlashSale = product.isFlashSaleActive;
+  const flashSalePrice = product.flashSale?.discountPrice;
 
   const handleCardClick = () => {
     if (onOpenDetail) {
@@ -210,7 +234,12 @@ const ListCard = ({ product, onOpenDetail }) => {
       <div className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0 relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
         <ImageCarousel images={product.images} name={product.name} category={product.category} />
         
-        {isLow && !isOut && (
+        {isFlashSale && !isOut && (
+          <div className="absolute top-1 left-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
+            <FiZap size={8} /> {product.discountPercentage}%
+          </div>
+        )}
+        {isLow && !isOut && !isFlashSale && (
           <div className="absolute bottom-1 left-1 bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
             Low
           </div>
@@ -227,7 +256,10 @@ const ListCard = ({ product, onOpenDetail }) => {
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="flex items-center gap-1.5 sm:gap-2">
               <CategoryBadge category={product.category} />
-              {isLow && !isOut && (
+              {isFlashSale && (
+                <span className="bg-red-100 text-red-600 text-[10px] px-1.5 py-0.5 rounded font-bold">Flash Sale</span>
+              )}
+              {isLow && !isOut && !isFlashSale && (
                 <span className="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-semibold">Low</span>
               )}
             </div>
@@ -242,9 +274,20 @@ const ListCard = ({ product, onOpenDetail }) => {
 
         <div className="flex items-end justify-between gap-2 mt-1 sm:mt-2">
           <div>
-            <p className="font-bold text-padi-green text-sm sm:text-lg">
-              ₦{product.price.toLocaleString()}
-            </p>
+            {isFlashSale ? (
+              <>
+                <p className="font-bold text-red-500 text-sm sm:text-lg">
+                  ₦{flashSalePrice?.toLocaleString()}
+                </p>
+                <p className="text-xs text-gray-400 line-through">
+                  ₦{product.price.toLocaleString()}
+                </p>
+              </>
+            ) : (
+              <p className="font-bold text-padi-green text-sm sm:text-lg">
+                ₦{product.price.toLocaleString()}
+              </p>
+            )}
             <div className="flex items-center gap-1 sm:gap-2 mt-0.5 sm:mt-1">
               <StockBadge stock={product.stock} threshold={product.lowStockThreshold || 5} size="sm" />
               <span className="text-[10px] sm:text-xs text-gray-400 hidden sm:inline">{product.stock} in stock</span>

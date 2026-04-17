@@ -42,7 +42,12 @@ export const vendorAPI = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   updateCustomLink: (customLink) => api.put('/vendor/me/custom-link', { customLink }),
-  getTrialStatus: () => api.get('/vendor/trial-status')
+  getTrialStatus: () => api.get('/vendor/trial-status'),
+  submitVerification: (documentType, formData) => api.post('/vendor/me/verify', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  updateDeliveryZones: (data) => api.put('/vendor/me/delivery-zones', data),
+  getDeliveryZones: () => api.get('/vendor/me/delivery-zones')
 };
 
 export const productAPI = {
@@ -52,7 +57,17 @@ export const productAPI = {
   delete: (id) => api.delete(`/products/${id}`),
   uploadImages: (id, formData) => api.post(`/products/${id}/images`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  })
+  }),
+  setFlashSale: (id, data) => api.post(`/products/${id}/flash-sale`, data),
+  getFlashSaleProducts: () => api.get('/products/flash-sales')
+};
+
+export const bundleAPI = {
+  getAll: () => api.get('/bundles'),
+  getById: (id) => api.get(`/bundles/${id}`),
+  create: (data) => api.post('/bundles', data),
+  update: (id, data) => api.put(`/bundles/${id}`, data),
+  delete: (id) => api.delete(`/bundles/${id}`)
 };
 
 export const storeAPI = {
@@ -92,7 +107,10 @@ export const adminAPI = {
   getStats: () => api.get('/admin/stats'),
   approvePlan: (vendorId, planType) => api.put(`/admin/vendors/${vendorId}/approve-plan`, { planType }),
   rejectPlan: (vendorId, reason) => api.put(`/admin/vendors/${vendorId}/reject-plan`, { vendorId, reason }),
-  sendGreeting: (greetingType, vendorIds) => api.post('/admin/send-greeting', { greetingType, vendorIds })
+  sendGreeting: (greetingType, vendorIds) => api.post('/admin/send-greeting', { greetingType, vendorIds }),
+  getPendingVerifications: () => api.get('/admin/verifications/pending'),
+  approveVerification: (vendorId) => api.put(`/admin/vendors/${vendorId}/approve-verification`),
+  rejectVerification: (vendorId, reason) => api.put(`/admin/vendors/${vendorId}/reject-verification`, { reason })
 };
 
 export const analyticsAPI = {

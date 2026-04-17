@@ -13,4 +13,8 @@ router.put("/vendors/:id/approve-plan", adminController.approvePlanRequest);
 router.put("/vendors/:id/reject-plan", adminController.rejectPlanRequest);
 router.post("/send-greeting", adminController.sendGreeting);
 
+router.get("/verifications/pending", adminController.getPendingVerifications);
+router.put("/vendors/:vendorId/approve-verification", adminController.approveVerification);
+router.put("/vendors/:vendorId/reject-verification", adminController.rejectVerification);
+
 module.exports = router;

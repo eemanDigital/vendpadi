@@ -318,3 +318,86 @@ exports.uploadImagesStandalone = catchAsync(async (req, res) => {
   const images = req.files.map(f => f.path);
   res.json({ images, message: 'Images uploaded successfully' });
 });
+
+exports.setFlashSale = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { isActive, discountPrice, endTime, duration } = req.body;
+
+  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({ message: 'Invalid product ID' });
+  }
+
+  const product = await Product.findById(id);
+  
+  if (!product) {
+    return res.status(404).json({ message: 'Product not found' });
+  }
+
+  if (product.vendorId.toString() !== req.vendor._id.toString()) {
+    return res.status(403).json({ message: 'Not authorized' });
+  }
+
+  if (isActive === false) {
+    product.flashSale = {
+      isActive: false,
+      discountPrice: null,
+      startTime: null,
+      endTime: null,
+      originalStock: null
+    };
+    await product.save();
+    return res.json({ product, message: 'Flash sale ended' });
+  }
+
+  if (!discountPrice || discountPrice >= product.price) {
+    return res.status(400).json({ message: 'Discount price must be less than original price' });
+  }
+
+  const startTime = new Date();
+  let endDate = null;
+  
+  if (endTime) {
+    endDate = new Date(endTime);
+    if (endDate <= startTime) {
+      return res.status(400).json({ message: 'End time must be in the future' });
+    }
+  } else if (duration) {
+    const durationHours = parseInt(duration);
+    if (durationHours > 72) {
+      return res.status(400).json({ message: 'Maximum flash sale duration is 72 hours' });
+    }
+    endDate = new Date(startTime.getTime() + durationHours * 60 * 60 * 1000);
+  } else {
+    endDate = new Date(startTime.getTime() + 24 * 60 * 60 * 1000);
+  }
+
+  product.flashSale = {
+    isActive: true,
+    discountPrice: Number(discountPrice),
+    startTime,
+    endTime: endDate,
+    originalStock: product.flashSale.originalStock || product.stock
+  };
+
+  await product.save();
+  
+  res.json({ 
+    product, 
+    message: `Flash sale active! ${Math.round(((product.price - discountPrice) / product.price) * 100)}% off until ${endDate.toLocaleString()}` 
+  });
+});
+
+exports.getFlashSaleProducts = catchAsync(async (req, res) => {
+  const products = await Product.find({
+    vendorId: req.vendor._id,
+    'flashSale.isActive': true
+  }).sort({ 'flashSale.endTime': 1 });
+
+  const now = new Date();
+  const activeProducts = products.filter(p => {
+    const end = p.flashSale.endTime;
+    return !end || new Date(end) > now;
+  });
+
+  res.json(activeProducts);
+});

@@ -1,9 +1,10 @@
-import { FiClock, FiMapPin, FiStar } from "react-icons/fi";
+import { FiClock, FiMapPin, FiStar, FiShield } from "react-icons/fi";
 import OptimizedImage from "../OptimizedImage";
 import CategoryBadge, { CATEGORY_META } from "../ProductCard";
 
 const StoreHero = ({ vendor }) => {
   const meta = CATEGORY_META[vendor.category] || null;
+  const isVerified = vendor?.verification?.isVerified === true;
 
   return (
     <div className="bg-gradient-to-b from-white to-gray-50/50 border-b border-gray-100">
@@ -19,7 +20,7 @@ const StoreHero = ({ vendor }) => {
       
       <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <div className="flex items-start gap-3 sm:gap-5">
-          <div className={`w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white shadow-lg flex-shrink-0 bg-white ${vendor.coverImage ? '-mt-8 sm:-mt-12' : ''}`}>
+          <div className={`relative w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white shadow-lg flex-shrink-0 bg-white ${vendor.coverImage ? '-mt-8 sm:-mt-12' : ''}`}>
             <OptimizedImage
               src={vendor.logo}
               alt={vendor.businessName}
@@ -31,12 +32,24 @@ const StoreHero = ({ vendor }) => {
                 </div>
               }
             />
+            {isVerified && (
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                <FiShield className="text-white" size={12} />
+              </div>
+            )}
           </div>
 
           <div className="flex-1 min-w-0">
-            <h1 className="font-sora font-bold text-lg sm:text-2xl sm:text-3xl text-navy leading-tight truncate sm:truncate-none">
-              {vendor.businessName}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-sora font-bold text-lg sm:text-2xl sm:text-3xl text-navy leading-tight truncate sm:truncate-none">
+                {vendor.businessName}
+              </h1>
+              {isVerified && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-sm">
+                  <FiShield size={12} /> Verified
+                </span>
+              )}
+            </div>
 
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1 sm:mt-2">
               <CategoryBadge category={vendor.category} />

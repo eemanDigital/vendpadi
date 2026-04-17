@@ -124,3 +124,70 @@ exports.getVendorStats = catchAsync(async (req, res) => {
 
   res.json({ total, free, starter, business, premium });
 });
+
+exports.getPendingVerifications = catchAsync(async (req, res) => {
+  const vendors = await Vendor.find({ 
+    'verification.status': 'pending',
+    isAdmin: { $ne: true }
+  })
+    .select('businessName email slug verification createdAt')
+    .sort({ 'verification.submittedAt': -1 });
+  
+  res.json(vendors);
+});
+
+exports.approveVerification = catchAsync(async (req, res) => {
+  const { vendorId } = req.params;
+  
+  const vendor = await Vendor.findById(vendorId);
+  if (!vendor) {
+    return res.status(404).json({ message: 'Vendor not found' });
+  }
+  
+  if (vendor.verification.status !== 'pending') {
+    return res.status(400).json({ message: 'Vendor is not pending verification' });
+  }
+  
+  vendor.verification = {
+    ...vendor.verification.toObject(),
+    isVerified: true,
+    status: 'approved',
+    reviewedAt: new Date()
+  };
+  
+  await vendor.save();
+  
+  res.json({ 
+    message: 'Verification approved successfully',
+    verification: vendor.verification 
+  });
+});
+
+exports.rejectVerification = catchAsync(async (req, res) => {
+  const { vendorId } = req.params;
+  const { reason } = req.body;
+  
+  const vendor = await Vendor.findById(vendorId);
+  if (!vendor) {
+    return res.status(404).json({ message: 'Vendor not found' });
+  }
+  
+  if (vendor.verification.status !== 'pending') {
+    return res.status(400).json({ message: 'Vendor is not pending verification' });
+  }
+  
+  vendor.verification = {
+    ...vendor.verification.toObject(),
+    isVerified: false,
+    status: 'rejected',
+    rejectionReason: reason || 'Verification documents were not accepted',
+    reviewedAt: new Date()
+  };
+  
+  await vendor.save();
+  
+  res.json({ 
+    message: 'Verification rejected',
+    verification: vendor.verification 
+  });
+});

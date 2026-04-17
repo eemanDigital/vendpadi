@@ -3,6 +3,13 @@ const crypto = require('crypto');
 
 const TRIAL_DAYS = 7;
 
+const deliveryZoneSchema = new mongoose.Schema({
+  name: { type: String, required: true, trim: true },
+  fee: { type: Number, required: true, min: 0 },
+  estimatedDays: { type: String, default: '1-2 days' },
+  isActive: { type: Boolean, default: true }
+}, { _id: true });
+
 const vendorSchema = new mongoose.Schema({
   businessName: { type: String, required: true, trim: true },
   slug: { type: String, unique: true, lowercase: true },
@@ -39,6 +46,20 @@ const vendorSchema = new mongoose.Schema({
     whatsappClicks: { type: Number, default: 0 },
     lastViewedAt: { type: Date, default: null },
     totalRevenue: { type: Number, default: 0 }
+  },
+  verification: {
+    isVerified: { type: Boolean, default: false },
+    status: { type: String, enum: ['none', 'pending', 'approved', 'rejected'], default: 'none' },
+    documentType: { type: String, enum: ['cac', 'nin', 'passport', 'drivers_license', 'none'], default: 'none' },
+    documentUrl: { type: String, default: '' },
+    submittedAt: { type: Date, default: null },
+    reviewedAt: { type: Date, default: null },
+    rejectionReason: { type: String, default: '' }
+  },
+  deliveryZones: {
+    enabled: { type: Boolean, default: false },
+    defaultZone: { type: String, default: '' },
+    zones: { type: [deliveryZoneSchema], default: [] }
   },
   isActive: { type: Boolean, default: true },
   isAdmin: { type: Boolean, default: false },
