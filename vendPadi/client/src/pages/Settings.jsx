@@ -128,17 +128,18 @@ const Settings = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleCustomLinkSubmit = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!customLink.trim()) return;
+  const handleCustomLinkSubmit = async () => {
+    if (!customLink.trim()) {
+      toast.error('Please enter a custom link');
+      return;
+    }
     
     setCustomLinkLoading(true);
     try {
       const { data } = await vendorAPI.updateCustomLink(customLink.trim());
       setCustomLink(data.customLink);
-      dispatch(updateVendor({ ...vendor, customLink: data.customLink }));
-      toast.success('Custom link updated!');
+      dispatch(updateVendor({ ...vendor, customLink: data.customLink, _id: vendor._id }));
+      toast.success('Custom link saved!');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update custom link');
     } finally {
@@ -152,29 +153,27 @@ const Settings = () => {
     confirmPassword: ''
   });
   const [passwordLoading, setPasswordLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
 
   const handlePasswordChange = (e) => {
     setPasswordData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     setPasswordError('');
   };
 
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
+  const handlePasswordSubmit = async () => {
     setPasswordError('');
 
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      setPasswordError('Please fill in all fields');
+      toast.error('Please fill in all fields');
       return;
     }
 
     if (passwordData.newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters');
+      toast.error('New password must be at least 6 characters');
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
 
@@ -184,7 +183,7 @@ const Settings = () => {
       toast.success('Password changed successfully');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
-      setPasswordError(error.response?.data?.message || 'Failed to change password');
+      toast.error(error.response?.data?.message || 'Failed to change password');
     } finally {
       setPasswordLoading(false);
     }
@@ -465,7 +464,7 @@ const Settings = () => {
                   </h2>
                   <span className="text-xs bg-gold/20 text-gold px-2 py-1 rounded-full">Premium</span>
                 </div>
-                <form onSubmit={handleCustomLinkSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gray-50 p-4 rounded-xl">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-gray-50 p-4 rounded-xl">
                   <span className="text-gray-600 text-sm shrink-0">vendpadi.com/</span>
                   <div className="flex flex-col sm:flex-row gap-2 flex-1">
                     <input 
@@ -476,14 +475,15 @@ const Settings = () => {
                       className="flex-1 bg-white px-3 py-2 rounded-lg border border-gray-200 text-sm min-w-0"
                     />
                     <button 
-                      type="submit"
+                      type="button"
+                      onClick={handleCustomLinkSubmit}
                       disabled={customLinkLoading}
                       className="px-4 py-2 bg-padi-green text-white text-sm rounded-lg hover:bg-padi-green-dark disabled:opacity-50 shrink-0"
                     >
                       {customLinkLoading ? 'Saving...' : 'Save'}
                     </button>
                   </div>
-                </form>
+                </div>
                 {vendor?.customLink && (
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <button 
@@ -670,7 +670,7 @@ const Settings = () => {
               </div>
             )}
 
-            {/* Change Password */}
+{/* Change Password */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-padi-green/10 rounded-xl flex items-center justify-center">
@@ -678,15 +678,14 @@ const Settings = () => {
                 </div>
                 <h2 className="font-sora font-semibold text-lg">Change Password</h2>
               </div>
-
-              {passwordError && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-                  <FiAlertCircle size={16} />
-                  {passwordError}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-padi-green/10 rounded-xl flex items-center justify-center">
+                  <FiLock className="text-padi-green" />
                 </div>
-              )}
+                <h2 className="font-sora font-semibold text-lg">Change Password</h2>
+              </div>
 
-              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
                   <input
@@ -721,14 +720,15 @@ const Settings = () => {
                   />
                 </div>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handlePasswordSubmit}
                   disabled={passwordLoading}
-                  className="w-full btn-secondary flex items-center justify-center gap-2"
+                  className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {passwordLoading ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-padi-green border-t-transparent rounded-full animate-spin"></div>
-                      Changing...
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Saving...
                     </>
                   ) : (
                     <>
@@ -736,7 +736,7 @@ const Settings = () => {
                     </>
                   )}
                 </button>
-              </form>
+              </div>
 
               <p className="text-xs text-gray-400 mt-4">
                 Forgot your password?{' '}

@@ -2,16 +2,39 @@ const { Resend } = require('resend');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Custom domain email - e.g., "VendPadi <noreply@yourdomain.com>"
 const FROM_EMAIL = process.env.FROM_EMAIL || 'VendPadi <noreply@resend.dev>';
+
+// Emergency fallback if custom domain fails verification
+const FALLBACK_FROM_EMAIL = 'VendPadi <noreply@resend.dev>';
 
 const sendEmail = async ({ to, subject, html }) => {
   try {
-    const { data, error } = await resend.emails.send({
+    // Try with custom domain first
+    let { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to,
       subject,
       html,
     });
+
+    // If custom domain fails (domain not verified), use fallback
+    if (error && error.message?.includes('domain')) {
+      console.log('Custom domain not verified, using fallback email...');
+      const fallbackResult = await resend.emails.send({
+        from: FALLBACK_FROM_EMAIL,
+        to,
+        subject,
+        html,
+      });
+      
+      if (fallbackResult.error) {
+        console.error('Resend fallback error:', fallbackResult.error);
+        return { success: false, error: fallbackResult.error.message };
+      }
+      
+      return { success: true, data: fallbackResult.data };
+    }
 
     if (error) {
       console.error('Resend error:', error);
