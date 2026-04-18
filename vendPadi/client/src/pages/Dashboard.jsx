@@ -283,12 +283,10 @@ const Dashboard = () => {
               <GrowthInsights analytics={analytics} />
             )}
 
-            {effectivePlan === 'premium' && (
-              <BundleManager 
-                products={products.filter(p => p.inStock)} 
-                onUpgradeClick={() => setShowUpgradeModal(true)} 
-              />
-            )}
+            <BundleManager 
+              products={products.filter(p => p.inStock)} 
+              onUpgradeClick={() => setShowUpgradeModal(true)} 
+            />
 
             <div className="flex items-center justify-between">
               <h2 className="font-sora font-bold text-lg text-navy">

@@ -103,24 +103,35 @@ const BundleManager = ({ products, onUpgradeClick }) => {
     );
   }
 
+  const canShowBundles = canCreateBundles;
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <FiGift className="text-white" />
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${canShowBundles ? 'bg-gradient-to-br from-purple-500 to-purple-600 shadow-purple-500/20' : 'bg-gray-100'} shrink-0`}>
+            <FiGift className={canShowBundles ? 'text-white' : 'text-gray-400'} />
           </div>
           <div>
             <h3 className="font-sora font-semibold text-navy">Product Bundles</h3>
             <p className="text-xs text-gray-500">Create deals with multiple products</p>
           </div>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-padi-green text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-padi-green-dark transition-colors"
-        >
-          <FiPlus size={16} /> New Bundle
-        </button>
+        {canShowBundles ? (
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center justify-center gap-2 bg-padi-green text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-padi-green-dark transition-colors w-full sm:w-auto"
+          >
+            <FiPlus size={16} /> New Bundle
+          </button>
+        ) : (
+          <button
+            onClick={onUpgradeClick}
+            className="flex items-center justify-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-purple-200 transition-colors w-full sm:w-auto"
+          >
+            <FiLock size={14} /> Unlock
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -132,15 +143,15 @@ const BundleManager = ({ products, onUpgradeClick }) => {
           <p className="text-gray-400 text-xs mt-1">Create a bundle to boost your average order value</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {bundles.map((bundle) => (
             <div key={bundle._id} className="bg-gray-50 rounded-xl p-4">
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h4 className="font-semibold text-navy truncate">{bundle.name}</h4>
                     {bundle.isDealActive && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full">
+                      <span className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full shrink-0">
                         <FiZap size={10} /> DEAL
                       </span>
                     )}
@@ -149,28 +160,33 @@ const BundleManager = ({ products, onUpgradeClick }) => {
                     {bundle.products?.length || 0} products
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-padi-green">₦{bundle.bundlePrice?.toLocaleString()}</p>
+              </div>
+              
+              <div className="mb-3">
+                <p className="font-bold text-padi-green text-lg">₦{bundle.bundlePrice?.toLocaleString()}</p>
+                <div className="flex items-center gap-2">
                   <p className="text-xs text-gray-400 line-through">
                     ₦{bundle.originalPrice?.toLocaleString()}
                   </p>
-                  <span className="text-xs text-red-500 font-medium">
-                    Save {bundle.discountPercentage}%
-                  </span>
+                  {bundle.discountPercentage > 0 && (
+                    <span className="text-xs text-red-500 font-medium">
+                      -{bundle.discountPercentage}%
+                    </span>
+                  )}
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center gap-2 pt-2 border-t border-gray-200">
                 <button
                   onClick={() => handleToggleDeal(bundle)}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors ${
                     bundle.isDealOfTheDay
                       ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
                   <FiZap size={12} />
-                  {bundle.isDealOfTheDay ? 'Remove Deal' : 'Set as Deal'}
+                  {bundle.isDealOfTheDay ? 'Deal On' : 'Set Deal'}
                 </button>
                 <button
                   onClick={() => handleDeleteBundle(bundle._id)}
