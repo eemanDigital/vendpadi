@@ -95,7 +95,15 @@ exports.getProducts = catchAsync(async (req, res) => {
     result = result.filter(p => p.lowStockAlert);
   }
   
-  res.json(result);
+  res.json({
+    products: result,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages: Math.ceil(total / limitNum)
+    }
+  });
 });
 
 exports.getLowStockProducts = catchAsync(async (req, res) => {
@@ -383,21 +391,11 @@ exports.setFlashSale = catchAsync(async (req, res) => {
     originalStock: product.flashSale.originalStock || product.stock
   };
 
-  await product.save();
+await product.save();
   
-res.json({ 
-    products: productsWithAlerts,
-    pagination: {
-      page: pageNum,
-      limit: limitNum,
-      total,
-      totalPages: Math.ceil(total / limitNum)
-    },
-    filters: {
-      totalProducts: total,
-      lowStockAlerts: productsWithAlerts.filter(p => p.lowStockAlert).length,
-      outOfStock: productsWithAlerts.filter(p => !p.inStock && p.stock === 0).length
-    }
+  res.json({ 
+    product,
+    message: 'Flash sale activated successfully'
   });
 });
 
