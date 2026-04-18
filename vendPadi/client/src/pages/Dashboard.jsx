@@ -420,14 +420,7 @@ const Dashboard = () => {
           <Link to="/" className="flex items-center gap-2">
             <Logo variant="icon" size="sm" showText />
           </Link>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowBundleManager(true)}
-              className="text-sm text-padi-green font-medium">
-              Bundles
-            </button>
-            <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
-          </div>
+          <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
         </div>
       </header>
 
@@ -769,6 +762,35 @@ const Dashboard = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 py-2 z-30">
+          <div className="flex items-center justify-around">
+            <Link
+              to="/dashboard"
+              className="flex flex-col items-center gap-1 text-padi-green p-2">
+              <FiPackage />
+              <span className="text-xs">Products</span>
+            </Link>
+            <Link
+              to="/orders"
+              className="flex flex-col items-center gap-1 text-gray-500 p-2">
+              <FiShoppingBag />
+              <span className="text-xs">Orders</span>
+            </Link>
+            <Link
+              to="/settings"
+              className="flex flex-col items-center gap-1 text-gray-500 p-2">
+              <FiSettings />
+              <span className="text-xs">Settings</span>
+            </Link>
+            <button
+              onClick={() => setShowBundleManager(true)}
+              className="flex flex-col items-center gap-1 text-padi-green p-2">
+              <FiBox />
+              <span className="text-xs">Bundles</span>
+            </button>
+          </div>
+        </nav>
     </div>
   );
 };
