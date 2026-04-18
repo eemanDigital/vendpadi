@@ -24,7 +24,7 @@ const drawerSlide = {
   exit: { x: "100%" },
 };
 
-const CartDrawer = ({ isOpen, onClose, deliveryZones }) => {
+const CartDrawer = ({ isOpen, onClose, onOrder, deliveryZones }) => {
   const dispatch = useDispatch();
   const cartItems = useSelector((s) => s.cart.items);
   const cartTotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
@@ -45,9 +45,13 @@ const CartDrawer = ({ isOpen, onClose, deliveryZones }) => {
   } : null;
 
   const handleSendOrder = async () => {
-    dispatch(setDeliveryInfo(deliveryInfo));
+    if (deliveryInfo && deliveryInfo.zone) {
+      dispatch(setDeliveryInfo(deliveryInfo));
+    }
     onClose();
-    window.dispatchEvent(new Event('cart:SEND_ORDER'));
+    if (onOrder) {
+      onOrder();
+    }
   };
 
   return (

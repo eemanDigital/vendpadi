@@ -236,6 +236,7 @@ const Storefront = () => {
       <CartDrawer
         isOpen={showCart}
         onClose={() => setShowCart(false)}
+        onOrder={handleOrder}
         deliveryZones={store?.vendor?.deliveryZones}
       />
 
