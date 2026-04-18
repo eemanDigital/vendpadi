@@ -305,7 +305,7 @@ const Landing = () => {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 -mr-2 hover:bg-white/10 rounded-lg transition-colors md:hidden">
+              className="p-2 -mr-2 text-white hover:bg-white/10 rounded-lg transition-colors md:hidden">
               {mobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
             </button>
           </div>
