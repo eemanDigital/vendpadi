@@ -1,7 +1,7 @@
 import { useDispatch } from "react-redux";
 import { decrementQty, incrementQty, removeItem } from "../../store/cartSlice";
 import { motion } from "framer-motion";
-import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiMinus, FiPlus, FiTrash2, FiGift } from "react-icons/fi";
 import toast from "react-hot-toast";
 import OptimizedImage from "../OptimizedImage";
 import { CATEGORY_META } from "../ProductCard";
@@ -9,6 +9,8 @@ import { CATEGORY_META } from "../ProductCard";
 const CartItemRow = ({ item }) => {
   const dispatch = useDispatch();
   const meta = CATEGORY_META[item.category] || CATEGORY_META.other || { icon: "🏪", text: "text-gray-500" };
+  const isBundle = item.isBundle || item._id?.startsWith('bundle-');
+  const showDecrement = !isBundle;
 
   return (
     <motion.div
@@ -23,33 +25,63 @@ const CartItemRow = ({ item }) => {
           alt={item.name}
           className="w-full h-full"
           fallback={
-            <span className={`text-2xl ${meta.text}`}>{meta.icon}</span>
+            isBundle 
+              ? <FiGift className="text-purple-400 text-2xl" />
+              : <span className={`text-2xl ${meta.text}`}>{meta.icon}</span>
           }
         />
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-navy text-sm truncate">{item.name}</p>
-        <p className="text-padi-green font-bold text-sm mt-0.5">
-          NGN{item.price.toLocaleString()}
-        </p>
+        <div className="flex items-center gap-1.5 mb-1">
+          <p className="font-semibold text-navy text-sm truncate">{item.name}</p>
+          {isBundle && (
+            <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-bold">
+              BUNDLE
+            </span>
+          )}
+        </div>
+        
+        {isBundle && item.originalPrice ? (
+          <div className="flex items-center gap-1.5">
+            <p className="text-padi-green font-bold text-sm">
+              NGN{item.price.toLocaleString()}
+            </p>
+            <p className="text-gray-400 text-xs line-through">
+              NGN{item.originalPrice.toLocaleString()}
+            </p>
+            <span className="text-green-600 text-xs font-bold">
+              -{item.discountPercentage}%
+            </span>
+          </div>
+        ) : (
+          <p className="text-padi-green font-bold text-sm mt-0.5">
+            NGN{item.price.toLocaleString()}
+          </p>
+        )}
 
         <div className="flex items-center gap-2 mt-2">
-          <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
-            <button
-              onClick={() => dispatch(decrementQty(item._id))}
-              className="w-8 h-8 flex items-center justify-center hover:bg-red-100 hover:text-red-500 transition-colors">
-              <FiMinus size={14} />
-            </button>
-            <span className="w-8 text-center font-bold text-navy text-sm">
-              {item.qty}
+          {showDecrement ? (
+            <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
+              <button
+                onClick={() => dispatch(decrementQty(item._id))}
+                className="w-8 h-8 flex items-center justify-center hover:bg-red-100 hover:text-red-500 transition-colors">
+                <FiMinus size={14} />
+              </button>
+              <span className="w-8 text-center font-bold text-navy text-sm">
+                {item.qty}
+              </span>
+              <button
+                onClick={() => dispatch(incrementQty(item._id))}
+                className="w-8 h-8 flex items-center justify-center hover:bg-padi-green/20 hover:text-padi-green transition-colors">
+                <FiPlus size={14} />
+              </button>
+            </div>
+          ) : (
+            <span className="text-xs text-gray-500">
+              {item.bundleProducts?.length || 0} items in bundle
             </span>
-            <button
-              onClick={() => dispatch(incrementQty(item._id))}
-              className="w-8 h-8 flex items-center justify-center hover:bg-padi-green/20 hover:text-padi-green transition-colors">
-              <FiPlus size={14} />
-            </button>
-          </div>
+          )}
 
           <button
             onClick={() => {

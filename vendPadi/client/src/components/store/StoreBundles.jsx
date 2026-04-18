@@ -1,7 +1,30 @@
+import { useDispatch } from "react-redux";
+import { addItem } from "../../store/cartSlice";
 import { motion } from "framer-motion";
-import { FiZap, FiGift } from "react-icons/fi";
+import { FiZap, FiGift, FiShoppingCart } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 const StoreBundles = ({ bundles }) => {
+  const dispatch = useDispatch();
+  
+  const handleAddBundleToCart = (bundle) => {
+    // Add as a single bundle item with the bundle price
+    dispatch(addItem({
+      _id: `bundle-${bundle._id}`,
+      name: bundle.name,
+      price: bundle.bundlePrice,
+      description: `Bundle: ${bundle.products?.map(p => p.name).join(', ')}`,
+      images: bundle.products?.[0]?.images || [],
+      qty: 1,
+      isBundle: true,
+      bundleId: bundle._id,
+      bundleProducts: bundle.products,
+      originalPrice: bundle.originalPrice,
+      discountPercentage: bundle.discountPercentage
+    }));
+    toast.success(`Added ${bundle.name} to cart!`);
+  };
+  
   if (!bundles || bundles.length === 0) return null;
 
   const dealOfTheDay = bundles.find(b => b.isDealOfTheDay);
@@ -52,6 +75,12 @@ const StoreBundles = ({ bundles }) => {
                 </span>
               )}
             </div>
+            <button
+              onClick={() => handleAddBundleToCart(dealOfTheDay)}
+              className="mt-4 w-full bg-white text-red-500 font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
+            >
+              <FiShoppingCart size={18} /> Add to Cart
+            </button>
           </motion.div>
         )}
 
@@ -82,6 +111,12 @@ const StoreBundles = ({ bundles }) => {
                     Save ₦{(bundle.originalPrice - bundle.bundlePrice)?.toLocaleString()}
                   </span>
                 </div>
+                <button
+                  onClick={() => handleAddBundleToCart(bundle)}
+                  className="mt-3 w-full bg-padi-green text-white font-medium py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-padi-green-dark transition-colors text-sm"
+                >
+                  <FiShoppingCart size={14} /> Add to Cart
+                </button>
               </div>
             ))}
           </div>
