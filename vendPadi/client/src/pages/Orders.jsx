@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { orderAPI } from "../api/axiosInstance";
 import PlanBadge from "../components/PlanBadge";
 import Logo from "../components/Logo";
+import Pagination from "../components/ui/Pagination";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; // ✅ FIX 1: Import autoTable as standalone function
@@ -347,6 +348,9 @@ const Orders = () => {
   const [loadingAction, setLoadingAction] = useState(null);
   const [downloadingPdf, setDownloadingPdf] = useState(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
+
   console.log(selectedOrder);
 
   const isOnTrial = vendor?.trial?.active === true;
@@ -355,16 +359,20 @@ const Orders = () => {
   const canDownloadPdf = planType === "business" || planType === "premium";
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(currentPage);
+  }, [currentPage]);
 
-  const fetchData = async () => {
+  const fetchData = async (page = 1) => {
     try {
+      setLoading(true);
       const [ordersRes, statsRes] = await Promise.all([
-        orderAPI.getAll(),
+        orderAPI.getAll({ page, limit: 20 }),
         orderAPI.getStats(),
       ]);
-      setOrders(ordersRes.data);
+      setOrders(ordersRes.data.orders || []);
+      if (ordersRes.data.pagination) {
+        setPagination(ordersRes.data.pagination);
+      }
       setStats(statsRes.data);
     } catch (error) {
       toast.error("Failed to load orders");
@@ -663,6 +671,11 @@ const Orders = () => {
             </div>
           )}
         </div>
+
+        <Pagination 
+          pagination={pagination} 
+          onPageChange={(p) => setCurrentPage(p)} 
+        />
       </div>
 
       {/* Order Detail Modal */}

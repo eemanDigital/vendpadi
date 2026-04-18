@@ -7,10 +7,39 @@ const catchAsync = (fn) => (req, res, next) => {
 };
 
 exports.getOrders = catchAsync(async (req, res) => {
-  const orders = await Order.find({ vendorId: req.vendor._id })
+  const { page = 1, limit = 20, status, startDate, endDate } = req.query;
+  
+  const pageNum = Math.max(1, Number(page));
+  const limitNum = Math.min(50, Math.max(1, Number(limit)));
+  const skip = (pageNum - 1) * limitNum;
+  
+  const query = { vendorId: req.vendor._id };
+  
+  if (status) {
+    query.status = status;
+  }
+  
+  if (startDate || endDate) {
+    query.createdAt = {};
+    if (startDate) query.createdAt.$gte = new Date(startDate);
+    if (endDate) query.createdAt.$lte = new Date(endDate);
+  }
+  
+  const total = await Order.countDocuments(query);
+  const orders = await Order.find(query)
     .sort({ createdAt: -1 })
-    .limit(100);
-  res.json(orders);
+    .skip(skip)
+    .limit(limitNum);
+    
+  res.json({
+    orders,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages: Math.ceil(total / limitNum)
+    }
+  });
 });
 
 exports.getOrder = catchAsync(async (req, res) => {

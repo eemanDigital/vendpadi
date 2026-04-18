@@ -51,7 +51,7 @@ export const vendorAPI = {
 };
 
 export const productAPI = {
-  getAll: () => api.get('/products'),
+  getAll: (params) => api.get('/products', { params }),
   create: (data) => api.post('/products', data),
   update: (id, data) => api.put(`/products/${id}`, data),
   delete: (id) => api.delete(`/products/${id}`),
@@ -62,23 +62,8 @@ export const productAPI = {
   getFlashSaleProducts: () => api.get('/products/flash-sales')
 };
 
-export const bundleAPI = {
-  getAll: () => api.get('/bundles'),
-  getById: (id) => api.get(`/bundles/${id}`),
-  create: (data) => api.post('/bundles', data),
-  update: (id, data) => api.put(`/bundles/${id}`, data),
-  delete: (id) => api.delete(`/bundles/${id}`)
-};
-
-export const storeAPI = {
-  getStore: (slug) => api.get(`/store/${slug}`),
-  getStoreByCustomLink: (customLink) => api.get(`/store/custom/${customLink}`),
-  createOrder: (slug, data) => api.post(`/store/${slug}/order`, data),
-  createOrderByCustomLink: (customLink, data) => api.post(`/store/custom/${customLink}/order`, data)
-};
-
 export const orderAPI = {
-  getAll: () => api.get('/orders'),
+  getAll: (params) => api.get('/orders', { params }),
   getStats: () => api.get('/orders/stats'),
   getOne: (id) => api.get(`/orders/${id}`),
   updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status })
@@ -115,6 +100,19 @@ export const adminAPI = {
 
 export const analyticsAPI = {
   getAnalytics: () => api.get('/analytics')
+};
+
+export const storeAPI = {
+  getStore: (slug, params) => api.get(`/store/${slug}`, { params }),
+  createOrder: (slug, data) => api.post(`/store/${slug}/order`, data)
+};
+
+export const bundleAPI = {
+  getAll: () => api.get('/bundles'),
+  create: (data) => api.post('/bundles', data),
+  update: (id, data) => api.put(`/bundles/${id}`, data),
+  delete: (id) => api.delete(`/bundles/${id}`),
+  toggleDeal: (id) => api.post(`/bundles/${id}/toggle-deal`)
 };
 
 const publicAPI = axios.create({

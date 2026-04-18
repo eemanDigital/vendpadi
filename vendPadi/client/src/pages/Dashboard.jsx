@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { productAPI, analyticsAPI } from "../api/axiosInstance";
 import ProductCard from "../components/ProductCard";
 import ProductForm from "../components/ProductForm";
+import Pagination from "../components/ui/Pagination";
 import PlanBadge from "../components/PlanBadge";
 import PlanUpgradeModal from "../components/PlanUpgradeModal";
 import TrialBanner from "../components/TrialBanner";
@@ -45,6 +46,8 @@ import {
   FiTrendingUp,
   FiPercent,
   FiDollarSign,
+FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 
 const PLAN_LIMITS = {
@@ -79,6 +82,8 @@ const Dashboard = () => {
     maxPrice: undefined,
     lowStock: false,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
 
   // Get effective plan - trial takes priority over paid plan
   const isOnTrial = vendor?.trial?.active === true;
@@ -166,16 +171,21 @@ const Dashboard = () => {
     return result;
   }, [products, searchQuery, filters, sortBy]);
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (page = 1) => {
     try {
-      const { data } = await productAPI.getAll();
-      setProducts(data);
+      setLoading(true);
+      const { data } = await productAPI.getAll({ page, limit: 20, ...filters, search: searchQuery, sort: sortBy });
+      setProducts(data.products || []);
+      if (data.pagination) {
+        setPagination(data.pagination);
+        setCurrentPage(data.pagination.page);
+      }
     } catch (error) {
       toast.error("Failed to load products");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters, searchQuery, sortBy]);
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -189,9 +199,14 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(currentPage);
     fetchAnalytics();
-  }, [fetchProducts, fetchAnalytics]);
+  }, [fetchProducts, fetchAnalytics, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchProducts(1);
+  }, [searchQuery, sortBy, filters.category, filters.inStock, filters.lowStock]);
 
   const storeUrl = `${window.location.origin}/store/${vendor?.slug}`;
 
@@ -649,8 +664,15 @@ const Dashboard = () => {
               </AnimatePresence>
             </motion.div>
           )}
+        <Pagination 
+              pagination={pagination} 
+              onPageChange={(p) => {
+                setCurrentPage(p);
+                fetchProducts(p);
+              }} 
+            />
+          </div>
         </div>
-      </div>
 
       <AnimatePresence>
         {showModal && (

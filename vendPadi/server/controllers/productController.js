@@ -32,9 +32,12 @@ const LOW_STOCK_THRESHOLDS = {
 };
 
 exports.getProducts = catchAsync(async (req, res) => {
-  const { sort, category, inStock, minPrice, maxPrice, search, lowStock } = req.query;
+  const { sort, category, inStock, minPrice, maxPrice, search, lowStock, page = 1, limit = 20 } = req.query;
   
   const query = { vendorId: req.vendor._id };
+  const pageNum = Math.max(1, Number(page));
+  const limitNum = Math.min(50, Math.max(1, Number(limit)));
+  const skip = (pageNum - 1) * limitNum;
   
   if (category) {
     query.category = category;
@@ -72,7 +75,8 @@ exports.getProducts = catchAsync(async (req, res) => {
     }
   }
   
-  const products = await Product.find(query).sort(sortOption);
+  const total = await Product.countDocuments(query);
+  const products = await Product.find(query).sort(sortOption).skip(skip).limit(limitNum);
   
   const planType = req.vendor.plan?.type || 'free';
   const defaultThreshold = LOW_STOCK_THRESHOLDS[planType] || 10;
@@ -381,9 +385,19 @@ exports.setFlashSale = catchAsync(async (req, res) => {
 
   await product.save();
   
-  res.json({ 
-    product, 
-    message: `Flash sale active! ${Math.round(((product.price - discountPrice) / product.price) * 100)}% off until ${endDate.toLocaleString()}` 
+res.json({ 
+    products: productsWithAlerts,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages: Math.ceil(total / limitNum)
+    },
+    filters: {
+      totalProducts: total,
+      lowStockAlerts: productsWithAlerts.filter(p => p.lowStockAlert).length,
+      outOfStock: productsWithAlerts.filter(p => !p.inStock && p.stock === 0).length
+    }
   });
 });
 

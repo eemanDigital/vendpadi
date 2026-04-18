@@ -5,6 +5,7 @@ import { initWishlist } from "../store/wishlistSlice";
 import { clearCart } from "../store/cartSlice";
 import { storeAPI, trackingAPI } from "../api/axiosInstance";
 import { buildWhatsAppOrderLink } from "../utils/whatsapp";
+import Pagination from "../components/ui/Pagination";
 import toast from "react-hot-toast";
 import { FiPackage, FiHome, FiChevronRight, FiHeart } from "react-icons/fi";
 import { AnimatePresence, motion } from "framer-motion";
@@ -37,16 +38,18 @@ const Storefront = () => {
   const deliveryInfo = useSelector((s) => s.cart.deliveryInfo);
   const wishlistCount = useSelector(selectWishlistCount);
 
-  const [store, setStore] = useState(null);
+const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showCart, setShowCart] = useState(false);
-  const [showWishlist, setShowWishlist] = useState(false);
+  const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [view, setView] = useState("grid");
   const [search, setSearch] = useState("");
   const [copied, setCopied] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const bundles = store?.bundles || [];
 
@@ -89,21 +92,33 @@ const Storefront = () => {
   }, []);
 
   useEffect(() => {
-    const fetchStore = async () => {
+    const fetchStore = async (page = 1) => {
       try {
-        setLoading(true);
-        const { data } = await storeAPI.getStore(slug);
-        setStore(data);
+        if (page === 1) setLoading(true);
+        else setLoadingMore(true);
+        const { data } = await storeAPI.getStore(slug, { page, limit: 20 });
+        if (page === 1) {
+          setStore(data);
+        } else {
+          setStore(prev => ({
+            ...data,
+            products: [...(prev?.products || []), ...data.products]
+          }));
+        }
+        if (data.pagination) {
+          setPagination(data.pagination);
+        }
         dispatch(initWishlist(slug));
         trackingAPI.trackView(slug).catch(() => {});
       } catch {
         toast.error("Store not found");
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     };
-    fetchStore();
-  }, [slug]);
+    fetchStore(currentPage);
+  }, [slug, currentPage]);
 
   const handleOrder = useCallback(async () => {
     if (!cartItems.length || !store) return;
@@ -225,6 +240,15 @@ const Storefront = () => {
         setSearch={setSearch}
         onOpenDetail={setSelectedProduct}
       />
+
+      {pagination && pagination.totalPages > 1 && (
+        <div className="py-6">
+          <Pagination 
+            pagination={pagination} 
+            onPageChange={(p) => setCurrentPage(p)} 
+          />
+        </div>
+      )}
 
       <ProductDetailModal
         product={selectedProduct}

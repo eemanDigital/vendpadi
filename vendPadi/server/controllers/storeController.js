@@ -17,6 +17,7 @@ const LOW_STOCK_THRESHOLDS = {
 
 exports.getStore = catchAsync(async (req, res) => {
   const { slug } = req.params;
+  const { page = 1, limit = 20 } = req.query;
 
   if (!slug || slug.trim() === '') {
     return res.status(400).json({ message: 'Store slug is required' });
@@ -29,8 +30,16 @@ exports.getStore = catchAsync(async (req, res) => {
     return res.status(404).json({ message: 'Store not found' });
   }
 
-  const products = await Product.find({ vendorId: vendor._id })
-    .sort({ createdAt: -1 });
+  const pageNum = Math.max(1, Number(page));
+  const limitNum = Math.min(50, Math.max(1, Number(limit)));
+  const skip = (pageNum - 1) * limitNum;
+
+  const query = { vendorId: vendor._id, inStock: true };
+  const totalProducts = await Product.countDocuments(query);
+  const products = await Product.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limitNum);
 
   const bundles = await Bundle.find({ vendorId: vendor._id, isActive: true })
     .sort({ createdAt: -1 });
@@ -49,7 +58,13 @@ exports.getStore = catchAsync(async (req, res) => {
   res.json({
     vendor,
     products: productsWithAlerts,
-    bundles
+    bundles,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total: totalProducts,
+      totalPages: Math.ceil(totalProducts / limitNum)
+    }
   });
 });
 
