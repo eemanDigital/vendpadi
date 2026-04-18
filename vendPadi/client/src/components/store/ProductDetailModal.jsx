@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "../../store/cartSlice";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiX, FiCheck, FiShoppingCart, FiShare2, FiStar, FiMessageSquare, FiChevronDown } from "react-icons/fi";
+import { FiX, FiCheck, FiShoppingCart, FiShare2, FiStar, FiMessageSquare, FiChevronDown, FiZap } from "react-icons/fi";
 import toast from "react-hot-toast";
 import QRCode from "react-qr-code";
 import { CategoryBadge, ImageCarousel } from "../ProductCard";
@@ -79,7 +79,20 @@ const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
   }, [product?._id, storeSlug]);
 
   const handleAdd = () => {
-    dispatch(addItem(product));
+    const isFlashSale = product.flashSale?.isActive && product.flashSale?.discountPrice;
+    
+    const itemToAdd = isFlashSale 
+      ? { 
+          ...product, 
+          price: product.flashSale.discountPrice,
+          originalPrice: product.price,
+          discountPercentage: product.flashSale.discountPercentage,
+          isFlashSale: true,
+          flashSaleEndsAt: product.flashSale.endsAt
+        }
+      : product;
+    
+    dispatch(addItem(itemToAdd));
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1200);
     toast.success(`Added ${product.name} to order`, {
@@ -87,6 +100,11 @@ const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
       duration: 2000,
     });
   };
+
+  const isFlashSale = product.flashSale?.isActive && product.flashSale?.discountPrice;
+  const displayPrice = isFlashSale ? product.flashSale.discountPrice : product.price;
+  const originalPrice = product.price;
+  const discountPct = isFlashSale ? product.flashSale.discountPercentage : 0;
 
   const shareProduct = async () => {
     const shareData = {
@@ -194,10 +212,32 @@ const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
 
             <div className="p-5 space-y-5">
               <div className="bg-gradient-to-br from-navy/5 to-padi-green/5 rounded-2xl p-4 border border-navy/10">
-                <p className="text-xs text-gray-500 mb-1">Price</p>
-                <p className="font-bold text-padi-green text-3xl">
-                  NGN{product.price.toLocaleString()}
-                </p>
+                {isFlashSale ? (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <FiZap className="text-red-500" />
+                      <span className="text-xs font-bold text-red-500">FLASH SALE</span>
+                    </div>
+                    <p className="font-bold text-padi-green text-3xl">
+                      NGN{displayPrice.toLocaleString()}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-400 line-through">
+                        NGN{originalPrice.toLocaleString()}
+                      </p>
+                      <span className="text-xs font-bold text-green-600">
+                        Save {discountPct}%
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-xs text-gray-500 mb-1">Price</p>
+                    <p className="font-bold text-padi-green text-3xl">
+                      NGN{product.price.toLocaleString()}
+                    </p>
+                  </>
+                )}
               </div>
 
               {product.description && (
@@ -316,7 +356,7 @@ const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
                   <div>
                     <p className="text-xs text-gray-500 mb-1">In your order</p>
                     <p className="font-bold text-navy text-xl">
-                      NGN{(product.price * cartItem.qty).toLocaleString()}
+                      NGN{(displayPrice * cartItem.qty).toLocaleString()}
                     </p>
                   </div>
                   <QtyControl
@@ -349,7 +389,7 @@ const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
                     ) : (
                       <>
                         <FiShoppingCart size={18} />
-                        Add to Order - NGN{product.price.toLocaleString()}
+                        Add to Order - NGN{displayPrice.toLocaleString()}
                       </>
                     )}
                   </motion.button>

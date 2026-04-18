@@ -1,7 +1,7 @@
 import { useDispatch } from "react-redux";
 import { decrementQty, incrementQty, removeItem } from "../../store/cartSlice";
 import { motion } from "framer-motion";
-import { FiMinus, FiPlus, FiTrash2, FiGift } from "react-icons/fi";
+import { FiMinus, FiPlus, FiTrash2, FiGift, FiZap } from "react-icons/fi";
 import toast from "react-hot-toast";
 import OptimizedImage from "../OptimizedImage";
 import { CATEGORY_META } from "../ProductCard";
@@ -10,7 +10,8 @@ const CartItemRow = ({ item }) => {
   const dispatch = useDispatch();
   const meta = CATEGORY_META[item.category] || CATEGORY_META.other || { icon: "🏪", text: "text-gray-500" };
   const isBundle = item.isBundle || item._id?.startsWith('bundle-');
-  const showDecrement = !isBundle;
+  const isFlashSale = item.isFlashSale || (item.flashSale?.isActive && item.flashSale?.discountPrice);
+  const showDecrement = !isBundle && !isFlashSale;
 
   return (
     <motion.div
@@ -40,9 +41,14 @@ const CartItemRow = ({ item }) => {
               BUNDLE
             </span>
           )}
+          {isFlashSale && (
+            <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
+              <FiZap size={10} /> SALE
+            </span>
+          )}
         </div>
         
-        {isBundle && item.originalPrice ? (
+        {(isBundle || isFlashSale) && item.originalPrice ? (
           <div className="flex items-center gap-1.5">
             <p className="text-padi-green font-bold text-sm">
               NGN{item.price.toLocaleString()}

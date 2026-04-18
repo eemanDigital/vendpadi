@@ -15,7 +15,19 @@ const WishlistDrawer = ({ isOpen, onClose }) => {
   };
 
   const handleAddToCart = (product) => {
-    dispatch(addItem(product));
+    const isFlashSale = product.flashSale?.isActive && product.flashSale?.discountPrice;
+    
+    const itemToAdd = isFlashSale 
+      ? { 
+          ...product, 
+          price: product.flashSale.discountPrice,
+          originalPrice: product.price,
+          discountPercentage: product.flashSale.discountPercentage,
+          isFlashSale: true
+        }
+      : product;
+    
+    dispatch(addItem(itemToAdd));
     dispatch(removeFromWishlist(product._id));
   };
 
