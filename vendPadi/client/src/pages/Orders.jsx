@@ -177,6 +177,13 @@ const generateInvoicePDF = async (order, vendor) => {
   doc.setFont("helvetica", "bold");
   doc.text(`TOTAL: NGN ${order.totalAmount.toLocaleString()}`, 115, finalY + 9);
 
+  if (order.deliveryInfo?.zone) {
+    doc.setTextColor(80, 80, 80);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Delivery (${order.deliveryInfo.zone}): NGN ${order.deliveryInfo.fee.toLocaleString()}`, 20, finalY + 22);
+  }
+
   if (order.note) {
     doc.setTextColor(80, 80, 80);
     doc.setFontSize(9);
@@ -305,6 +312,17 @@ const generateReceiptPDF = async (order, vendor) => {
     finalY + 10,
     { align: "right" },
   );
+
+  if (order.deliveryInfo?.zone) {
+    doc.setTextColor(100, 100, 100);
+    doc.setFontSize(9);
+    doc.text(
+      `Delivery (${order.deliveryInfo.zone}): NGN ${order.deliveryInfo.fee.toLocaleString()}`,
+      pageWidth - 15,
+      finalY + 18,
+      { align: "right" },
+    );
+  }
 
   doc.setTextColor(100, 100, 100);
   doc.setFontSize(8);
