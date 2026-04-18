@@ -39,19 +39,21 @@ const Storefront = () => {
   const wishlistCount = useSelector(selectWishlistCount);
 
 const [store, setStore] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [view, setView] = useState("grid");
-  const [search, setSearch] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [showQRModal, setShowQRModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState(null);
-  const [loadingMore, setLoadingMore] = useState(false);
+const [loading, setLoading] = useState(true);
+const [showProductModal, setShowProductModal] = useState(false);
+const [selectedProduct, setSelectedProduct] = useState(null);
+const [view, setView] = useState("grid");
+const [search, setSearch] = useState("");
+const [copied, setCopied] = useState(false);
+const [showScrollTop, setShowScrollTop] = useState(false);
+const [showQRModal, setShowQRModal] = useState(false);
+const [currentPage, setCurrentPage] = useState(1);
+const [pagination, setPagination] = useState(null);
+const [loadingMore, setLoadingMore] = useState(false);
+const [showCart, setShowCart] = useState(false);
+const [showWishlist, setShowWishlist] = useState(false);
 
-  const bundles = store?.bundles || [];
+const bundles = store?.bundles || [];
 
   const whatsappLink = useMemo(() => {
     if (!store?.vendor) return "";

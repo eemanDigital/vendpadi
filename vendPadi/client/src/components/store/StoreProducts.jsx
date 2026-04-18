@@ -49,18 +49,16 @@ const StoreProducts = ({ products, view, search, setSearch, onOpenDetail }) => {
           </button>
         </motion.div>
       ) : (
-        <motion.div layout className={gridClass}>
-          <AnimatePresence mode="popLayout">
-            {products.map((product) => (
-              <ProductCard
-                key={product._id}
-                product={product}
-                onOpenDetail={onOpenDetail}
-                view={view}
-              />
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <div className={gridClass}>
+          {products.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              onOpenDetail={onOpenDetail}
+              view={view}
+            />
+          ))}
+        </div>
       )}
     </main>
   );
