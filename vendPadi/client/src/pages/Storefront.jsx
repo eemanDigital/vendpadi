@@ -34,6 +34,7 @@ const Storefront = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const cartItems = useSelector((s) => s.cart.items);
+  const deliveryInfo = useSelector((s) => s.cart.deliveryInfo);
   const wishlistCount = useSelector(selectWishlistCount);
 
   const [store, setStore] = useState(null);
@@ -116,6 +117,7 @@ const Storefront = () => {
           qty: i.qty,
         })),
         totalAmount: cartTotal,
+        deliveryInfo: deliveryInfo,
       });
     } catch {
       // Non-blocking
@@ -125,6 +127,7 @@ const Storefront = () => {
       store.vendor.phone,
       store.vendor.businessName,
       cartItems,
+      deliveryInfo,
     );
 
     const productIds = cartItems.map(item => item._id);
@@ -136,7 +139,7 @@ const Storefront = () => {
       setShowCart(false);
       toast.success("WhatsApp opened with your order!");
     }
-  }, [cartItems, store, cartTotal, slug, dispatch]);
+  }, [cartItems, store, cartTotal, slug, dispatch, deliveryInfo]);
 
   const handleShare = async () => {
     try {
@@ -229,7 +232,6 @@ const Storefront = () => {
       <CartDrawer
         isOpen={showCart}
         onClose={() => setShowCart(false)}
-        onOrder={handleOrder}
         deliveryZones={store?.vendor?.deliveryZones}
       />
 

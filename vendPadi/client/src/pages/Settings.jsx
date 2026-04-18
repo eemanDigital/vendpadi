@@ -46,7 +46,7 @@ const Settings = () => {
   const trialPlan = vendor?.trial?.plan || 'premium';
   const effectivePlan = isOnTrial ? trialPlan : (vendor?.plan?.type || 'free');
   const currentFeatures = PLAN_FEATURES[effectivePlan];
-  const isCustomCategory = !CATEGORIES.includes(formData.category) && formData.category !== 'food';
+  const isCustomCategory = formData.category === 'other' || (!CATEGORIES.includes(formData.category) && formData.category);
 
   useEffect(() => {
     if (vendor) {
@@ -191,8 +191,14 @@ const Settings = () => {
   };
   
   const handleRefreshVendor = async () => {
-    const { data } = await vendorAPI.getMe();
-    dispatch(updateVendor(data));
+    try {
+      const { data } = await vendorAPI.getMe();
+      dispatch(updateVendor(data));
+      return data;
+    } catch (error) {
+      console.error('Failed to refresh vendor:', error);
+      return null;
+    }
   };
 
   return (
@@ -535,7 +541,7 @@ const Settings = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
-                  {formData.category === 'other' ? (
+                  {isCustomCategory ? (
                     <input
                       type="text"
                       name="customCategory"

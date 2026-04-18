@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { vendorAPI } from '../../api/axiosInstance';
 import toast from 'react-hot-toast';
 import { FiTruck, FiPlus, FiTrash, FiSave } from 'react-icons/fi';
@@ -12,10 +12,19 @@ const COMMON_ZONES = [
   'Ibadan'
 ];
 
-const DeliveryZonesSection = ({ deliveryZones: initialZones, deliveryEnabled: initialEnabled, onUpdate }) => {
-  const [deliveryEnabled, setDeliveryEnabled] = useState(initialEnabled || false);
-  const [zones, setZones] = useState(initialZones || []);
+const DeliveryZonesSection = ({ deliveryZones, deliveryEnabled, onUpdate }) => {
+  const [enabled, setEnabled] = useState(deliveryEnabled || false);
+  const [zones, setZones] = useState(deliveryZones || []);
   const [loading, setLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    if (!isInitialized && deliveryZones) {
+      setZones(deliveryZones);
+      setEnabled(deliveryEnabled || false);
+      setIsInitialized(true);
+    }
+  }, [deliveryZones, deliveryEnabled, isInitialized]);
 
   const handleAddZone = () => {
     setZones([...zones, { name: '', fee: '', estimatedDays: '1-2 days', isActive: true }]);
@@ -48,12 +57,14 @@ const DeliveryZonesSection = ({ deliveryZones: initialZones, deliveryEnabled: in
       }));
       
       await vendorAPI.updateDeliveryZones({
-        enabled: deliveryEnabled,
+        enabled,
         zones: validZones
       });
       
       toast.success('Delivery zones updated!');
-      if (onUpdate) onUpdate();
+      setIsInitialized(false);
+      
+      if (onUpdate) await onUpdate();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update delivery zones');
     } finally {
@@ -70,13 +81,27 @@ const DeliveryZonesSection = ({ deliveryZones: initialZones, deliveryEnabled: in
         </div>
         <button
           type="button"
-          onClick={() => setDeliveryEnabled(!deliveryEnabled)}
-          className={`relative w-12 h-7 rounded-full transition-colors ${deliveryEnabled ? 'bg-padi-green' : 'bg-gray-300'}`}>
-          <span className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${deliveryEnabled ? 'right-1' : 'left-1'}`} />
+          onClick={() => setEnabled(!enabled)}
+          className={`relative w-12 h-7 rounded-full transition-colors ${enabled ? 'bg-padi-green' : 'bg-gray-300'}`}>
+          <span className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${enabled ? 'right-1' : 'left-1'}`} />
         </button>
       </div>
       
-      {deliveryEnabled && (
+      {/* Show saved zones even when disabled */}
+      {zones.length > 0 && !enabled && (
+        <div className="bg-gray-50 rounded-xl p-4">
+          <p className="text-xs text-gray-500 mb-2">Saved zones ({zones.length}):</p>
+          <div className="flex flex-wrap gap-2">
+            {zones.map((zone, i) => (
+              <span key={i} className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs">
+                {zone.name} - ₦{zone.fee}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {enabled && (
         <>
           <div className="space-y-3">
             {zones.length === 0 ? (

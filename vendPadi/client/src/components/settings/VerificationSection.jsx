@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { vendorAPI } from '../../api/axiosInstance';
 import { updateVendor } from '../../store/authSlice';
@@ -18,6 +18,13 @@ const VerificationSection = ({ verification, onUpdate }) => {
   const [documentFile, setDocumentFile] = useState(null);
   const [documentPreview, setDocumentPreview] = useState('');
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState(verification?.status || 'none');
+  const [isVerified, setIsVerified] = useState(verification?.isVerified || false);
+
+  useEffect(() => {
+    setStatus(verification?.status || 'none');
+    setIsVerified(verification?.isVerified || false);
+  }, [verification]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -46,14 +53,15 @@ const VerificationSection = ({ verification, onUpdate }) => {
       await vendorAPI.submitVerification(documentType, formData);
       toast.success('Verification documents submitted! We will review within 24-48 hours.');
       
-      const { data: vendorData } = await vendorAPI.getMe();
-      dispatch(updateVendor(vendorData));
-      
+      setStatus('pending');
       setDocumentType('');
       setDocumentFile(null);
       setDocumentPreview('');
       
-      if (onUpdate) onUpdate();
+      const { data: vendorData } = await vendorAPI.getMe();
+      dispatch(updateVendor(vendorData));
+      
+      if (onUpdate) onUpdate(vendorData);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to submit verification');
     } finally {
@@ -61,11 +69,11 @@ const VerificationSection = ({ verification, onUpdate }) => {
     }
   };
 
-  const canSubmit = verification?.status !== 'pending' && verification?.isVerified !== true;
+  const canSubmit = status !== 'pending' && !isVerified;
 
   return (
     <div className="space-y-4">
-      {verification?.status === 'pending' ? (
+      {status === 'pending' ? (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
           <FiClock className="text-amber-500 mt-0.5" />
           <div>
@@ -73,7 +81,7 @@ const VerificationSection = ({ verification, onUpdate }) => {
             <p className="text-sm text-amber-600">Your documents are being reviewed. This usually takes 24-48 hours.</p>
           </div>
         </div>
-      ) : verification?.status === 'rejected' ? (
+      ) : status === 'rejected' ? (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
           <div className="flex items-start gap-3">
             <FiX className="text-red-500 mt-0.5" />
@@ -86,7 +94,7 @@ const VerificationSection = ({ verification, onUpdate }) => {
           </div>
           <p className="text-sm text-red-600">Please submit new verification documents.</p>
         </div>
-      ) : verification?.isVerified ? (
+      ) : isVerified ? (
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
           <FiCheckCircle className="text-green-500 mt-0.5" />
           <div>

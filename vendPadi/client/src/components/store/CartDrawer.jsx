@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { clearCart } from "../../store/cartSlice";
+import { setDeliveryInfo, clearCart } from "../../store/cartSlice";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiX, FiShoppingCart, FiMessageCircle, FiInfo, FiTrash2, FiChevronDown, FiCheck } from "react-icons/fi";
 import toast from "react-hot-toast";
@@ -24,7 +24,7 @@ const drawerSlide = {
   exit: { x: "100%" },
 };
 
-const CartDrawer = ({ isOpen, onClose, onOrder, deliveryZones }) => {
+const CartDrawer = ({ isOpen, onClose, deliveryZones }) => {
   const dispatch = useDispatch();
   const cartItems = useSelector((s) => s.cart.items);
   const cartTotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
@@ -37,6 +37,18 @@ const CartDrawer = ({ isOpen, onClose, onOrder, deliveryZones }) => {
   const selectedDeliveryZone = deliveryZones?.zones?.find(z => z.name === selectedZone);
   const deliveryFee = selectedDeliveryZone?.fee || 0;
   const totalWithDelivery = cartTotal + deliveryFee;
+
+  const deliveryInfo = hasDeliveryZones && selectedZone ? {
+    zone: selectedZone,
+    fee: deliveryFee,
+    estimatedDays: selectedDeliveryZone?.estimatedDays
+  } : null;
+
+  const handleSendOrder = async () => {
+    dispatch(setDeliveryInfo(deliveryInfo));
+    onClose();
+    window.dispatchEvent(new Event('cart:SEND_ORDER'));
+  };
 
   return (
     <AnimatePresence>
@@ -192,7 +204,7 @@ const CartDrawer = ({ isOpen, onClose, onOrder, deliveryZones }) => {
 
                 <motion.button
                   whileTap={{ scale: 0.98 }}
-                  onClick={onOrder}
+                  onClick={handleSendOrder}
                   className="w-full bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/30 transition-all">
                   <FiMessageCircle size={20} />
                   Send Order via WhatsApp
