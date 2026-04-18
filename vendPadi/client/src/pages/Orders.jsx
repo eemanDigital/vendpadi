@@ -51,14 +51,14 @@ const loadImageAsBase64 = (url) => {
       return;
     }
     const img = new Image();
-    img.crossOrigin = 'Anonymous';
+    img.crossOrigin = "Anonymous";
     img.onload = () => {
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = img.width;
       canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
-      const dataUrl = canvas.toDataURL('image/png');
+      const dataUrl = canvas.toDataURL("image/png");
       resolve(dataUrl);
     };
     img.onerror = () => resolve(null);
@@ -75,7 +75,7 @@ const generateInvoicePDF = async (order, vendor) => {
   doc.rect(0, 0, pageWidth, 40, "F");
 
   if (logoData) {
-    doc.addImage(logoData, 'PNG', 15, 8, 20, 20);
+    doc.addImage(logoData, "PNG", 15, 8, 20, 20);
   }
 
   doc.setTextColor(255, 255, 255);
@@ -100,11 +100,12 @@ const generateInvoicePDF = async (order, vendor) => {
   doc.setTextColor(26, 26, 46);
   let y = 55;
 
-  const customerDisplay = order.customerName && order.customerName !== 'Anonymous' 
-    ? order.customerName 
-    : order.customerPhone 
-      ? `Customer (${order.customerPhone})`
-      : 'WhatsApp Customer';
+  const customerDisplay =
+    order.customerName && order.customerName !== "Anonymous"
+      ? order.customerName
+      : order.customerPhone
+        ? `Customer (${order.customerPhone})`
+        : "WhatsApp Customer";
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
@@ -174,11 +175,7 @@ const generateInvoicePDF = async (order, vendor) => {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
-  doc.text(
-    `TOTAL: NGN ${order.totalAmount.toLocaleString()}`,
-    115,
-    finalY + 9,
-  );
+  doc.text(`TOTAL: NGN ${order.totalAmount.toLocaleString()}`, 115, finalY + 9);
 
   if (order.note) {
     doc.setTextColor(80, 80, 80);
@@ -209,7 +206,7 @@ const generateReceiptPDF = async (order, vendor) => {
   doc.rect(0, 0, pageWidth, 35, "F");
 
   if (logoData) {
-    doc.addImage(logoData, 'PNG', 15, 8, 18, 18);
+    doc.addImage(logoData, "PNG", 15, 8, 18, 18);
   }
 
   doc.setTextColor(26, 26, 46);
@@ -237,11 +234,12 @@ const generateReceiptPDF = async (order, vendor) => {
 
   doc.line(15, 45, pageWidth - 15, 45);
 
-  const customerDisplay = order.customerName && order.customerName !== 'Anonymous' 
-    ? order.customerName 
-    : order.customerPhone 
-      ? `Customer (${order.customerPhone})`
-      : 'WhatsApp Customer';
+  const customerDisplay =
+    order.customerName && order.customerName !== "Anonymous"
+      ? order.customerName
+      : order.customerPhone
+        ? `Customer (${order.customerPhone})`
+        : "WhatsApp Customer";
 
   doc.setFontSize(10);
   doc.text(
@@ -331,10 +329,12 @@ const Orders = () => {
   const [loadingAction, setLoadingAction] = useState(null);
   const [downloadingPdf, setDownloadingPdf] = useState(null);
 
+  console.log(selectedOrder);
+
   const isOnTrial = vendor?.trial?.active === true;
-  const trialPlan = vendor?.trial?.plan || 'premium';
-  const planType = isOnTrial ? trialPlan : (vendor?.plan?.type || 'free');
-  const canDownloadPdf = planType === 'business' || planType === 'premium';
+  const trialPlan = vendor?.trial?.plan || "premium";
+  const planType = isOnTrial ? trialPlan : vendor?.plan?.type || "free";
+  const canDownloadPdf = planType === "business" || planType === "premium";
 
   useEffect(() => {
     fetchData();
@@ -537,7 +537,9 @@ const Orders = () => {
               <div className="flex items-center gap-4">
                 <span className="text-3xl">📄</span>
                 <div>
-                  <h3 className="font-semibold">Upgrade to Business or Premium</h3>
+                  <h3 className="font-semibold">
+                    Upgrade to Business or Premium
+                  </h3>
                   <p className="text-sm text-gray-300">
                     Generate PDF invoices & receipts for your orders
                   </p>
@@ -698,6 +700,24 @@ const Orders = () => {
                     {selectedOrder.customerPhone || "N/A"}
                   </p>
                 </div>
+                {selectedOrder.deliveryInfo?.zone && (
+                  <>
+                    <div>
+                      <p className="text-xs text-gray-500">Delivery Zone</p>
+                      <p className="font-medium">
+                        {selectedOrder.deliveryInfo.zone}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Delivery Fee</p>
+                      <p className="font-medium">
+                        {selectedOrder.deliveryInfo.fee > 0
+                          ? `₦${selectedOrder.deliveryInfo.fee.toLocaleString()}`
+                          : "Free"}
+                      </p>
+                    </div>
+                  </>
+                )}
                 <div>
                   <p className="text-xs text-gray-500">Date</p>
                   <p className="font-medium">

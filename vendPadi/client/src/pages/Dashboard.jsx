@@ -66,6 +66,7 @@ const Dashboard = () => {
   const [copied, setCopied] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showBundleManager, setShowBundleManager] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
   const [analytics, setAnalytics] = useState(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
@@ -404,7 +405,14 @@ const Dashboard = () => {
           <Link to="/" className="flex items-center gap-2">
             <Logo variant="icon" size="sm" showText />
           </Link>
-          <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowBundleManager(true)}
+              className="text-sm text-padi-green font-medium">
+              Bundles
+            </button>
+            <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
+          </div>
         </div>
       </header>
 
@@ -644,29 +652,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-2 z-30">
-        <div className="flex items-center justify-around">
-          <Link
-            to="/dashboard"
-            className="flex flex-col items-center gap-1 text-padi-green">
-            <FiPackage />
-            <span className="text-xs">Products</span>
-          </Link>
-          <Link
-            to="/orders"
-            className="flex flex-col items-center gap-1 text-gray-400">
-            <FiShoppingBag />
-            <span className="text-xs">Orders</span>
-          </Link>
-          <Link
-            to="/settings"
-            className="flex flex-col items-center gap-1 text-gray-400">
-            <FiSettings />
-            <span className="text-xs">Settings</span>
-          </Link>
-        </div>
-      </nav>
-
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -726,6 +711,42 @@ const Dashboard = () => {
         storeUrl={storeUrl}
         storeName={vendor?.businessName}
       />
+
+      <AnimatePresence>
+        {showBundleManager && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lg:hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowBundleManager(false)}>
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}>
+              <div className="p-5 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+                <h2 className="font-sora font-bold text-lg">Bundle Manager</h2>
+                <button
+                  onClick={() => setShowBundleManager(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <FiX size={20} />
+                </button>
+              </div>
+              <div className="p-5">
+                <BundleManager
+                  products={products.filter((p) => p.inStock)}
+                  onUpgradeClick={() => {
+                    setShowBundleManager(false);
+                    setShowUpgradeModal(true);
+                  }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

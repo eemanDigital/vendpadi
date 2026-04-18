@@ -8,7 +8,11 @@ const orderSchema = new mongoose.Schema({
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
     name: String,
     price: Number,
-    qty: { type: Number, default: 1 }
+    qty: { type: Number, default: 1 },
+    originalPrice: Number,
+    isBundle: Boolean,
+    bundleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Bundle' },
+    isFlashSale: Boolean
   }],
   totalAmount: { type: Number, required: true },
   status: {
@@ -17,6 +21,11 @@ const orderSchema = new mongoose.Schema({
     default: 'pending'
   },
   note: { type: String, default: '' },
+  deliveryInfo: {
+    zone: String,
+    fee: { type: Number, default: 0 },
+    estimatedDays: String
+  },
   stockReduced: { type: Boolean, default: false },
   revenueAdded: { type: Boolean, default: false },
   followUpSent: { type: Boolean, default: false }

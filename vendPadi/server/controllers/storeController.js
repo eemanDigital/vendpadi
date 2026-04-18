@@ -55,7 +55,7 @@ exports.getStore = catchAsync(async (req, res) => {
 
 exports.createOrder = catchAsync(async (req, res) => {
   const { slug } = req.params;
-  const { items, totalAmount, customerName, customerPhone, note } = req.body;
+  const { items, totalAmount, customerName, customerPhone, note, deliveryInfo } = req.body;
 
   if (!slug || slug.trim() === '') {
     return res.status(400).json({ message: 'Store slug is required' });
@@ -101,7 +101,7 @@ exports.createOrder = catchAsync(async (req, res) => {
     });
   }
 
-  const order = await Order.create({
+  const orderData = {
     vendorId: vendor._id,
     items: items.map(item => ({
       productId: item.productId || null,
@@ -113,7 +113,17 @@ exports.createOrder = catchAsync(async (req, res) => {
     customerName: customerName?.trim() || 'Anonymous',
     customerPhone: customerPhone?.trim() || '',
     note: note?.trim() || ''
-  });
+  };
+
+  if (deliveryInfo && deliveryInfo.zone) {
+    orderData.deliveryInfo = {
+      zone: deliveryInfo.zone,
+      fee: Number(deliveryInfo.fee) || 0,
+      estimatedDays: deliveryInfo.estimatedDays || null
+    };
+  }
+
+  const order = await Order.create(orderData);
 
   sendOrderNotificationEmail(vendor.email, vendor.businessName, {
     customerName: customerName || 'Anonymous',
@@ -175,7 +185,7 @@ exports.getStoreByCustomLink = catchAsync(async (req, res) => {
 
 exports.createOrderByCustomLink = catchAsync(async (req, res) => {
   const { customLink } = req.params;
-  const { items, totalAmount, customerName, customerPhone, note } = req.body;
+  const { items, totalAmount, customerName, customerPhone, note, deliveryInfo } = req.body;
 
   if (!customLink || customLink.trim() === '') {
     return res.status(400).json({ message: 'Custom link is required' });
@@ -215,7 +225,7 @@ exports.createOrderByCustomLink = catchAsync(async (req, res) => {
     });
   }
 
-  const order = await Order.create({
+  const orderData = {
     vendorId: vendor._id,
     items: items.map(item => ({
       productId: item.productId || null,
@@ -227,7 +237,17 @@ exports.createOrderByCustomLink = catchAsync(async (req, res) => {
     customerName: customerName?.trim() || 'Anonymous',
     customerPhone: customerPhone?.trim() || '',
     note: note?.trim() || ''
-  });
+  };
+
+  if (deliveryInfo && deliveryInfo.zone) {
+    orderData.deliveryInfo = {
+      zone: deliveryInfo.zone,
+      fee: Number(deliveryInfo.fee) || 0,
+      estimatedDays: deliveryInfo.estimatedDays || null
+    };
+  }
+
+  const order = await Order.create(orderData);
 
   sendOrderNotificationEmail(vendor.email, vendor.businessName, {
     customerName: customerName || 'Anonymous',
