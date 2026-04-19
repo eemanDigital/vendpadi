@@ -1,6 +1,36 @@
 import { Link } from "react-router-dom";
-import { FiShoppingBag, FiArrowRight } from "react-icons/fi";
+import { FiArrowRight, FiShoppingBag, FiSmartphone, FiCoffee } from "react-icons/fi";
 import ScrollReveal from "./ScrollReveal";
+
+const demoStores = [
+  {
+    id: 1,
+    name: "Fashion Store",
+    label: "For Fashion Sellers",
+    icon: FiShoppingBag,
+    color: "from-pink-500 to-rose-500",
+    image: "/image3.png",
+    desc: "Clothes, shoes, bags & accessories",
+  },
+  {
+    id: 2,
+    name: "Food Business",
+    label: "For Food Vendors",
+    icon: FiCoffee,
+    color: "from-amber-500 to-orange-500",
+    image: "/image2.png",
+    desc: "Meals, snacks & catering",
+  },
+  {
+    id: 3,
+    name: "Gadget Store",
+    label: "For Phone Sellers",
+    icon: FiSmartphone,
+    color: "from-blue-500 to-indigo-500",
+    image: "/image1.png",
+    desc: "Phones, accessories & electronics",
+  },
+];
 
 const DemoStoreSection = () => {
   return (
@@ -15,48 +45,66 @@ const DemoStoreSection = () => {
               See how your store will look
             </h2>
             <p className="text-gray-300 text-lg">
-              Preview a sample VendPadi store. Browse products, add to cart, and see how ordering works.
+              Nigerian vendors use VendPadi to sell on WhatsApp. Preview real stores below.
             </p>
           </div>
         </ScrollReveal>
 
         <ScrollReveal delay={100}>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-            <a
-              href="https://demo.vendpadi.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative bg-white rounded-3xl p-4 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-2 max-w-sm">
-              <div className="bg-gray-100 h-64 rounded-2xl mb-4 overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-padi-green/20 to-padi-green/10 flex items-center justify-center">
-                  <div className="text-center p-6">
-                    <div className="w-16 h-16 bg-padi-green rounded-2xl mx-auto mb-3 flex items-center justify-center">
-                      <FiShoppingBag className="text-white text-2xl" />
-                    </div>
-                    <p className="text-navy font-bold">Fashion Store</p>
-                    <p className="text-gray-500 text-sm">Tap to preview</p>
+          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {demoStores.map((store, i) => (
+              <a
+                key={store.id}
+                href="https://demo.vendpadi.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-2">
+                <div className="relative aspect-[9/16] sm:aspect-[4/5] lg:aspect-[9/16] overflow-hidden">
+                  <img
+                    src={store.image}
+                    alt={store.name}
+                    className="w-full h-full object-cover object-top"
+                    loading="lazy"
+                  />
+                  <div className="absolute top-3 left-3">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/95 backdrop-blur-sm shadow-lg ${store.color} text-white`}>
+                      <store.icon size={12} />
+                      {store.label}
+                    </span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+                    <span className="text-white font-semibold flex items-center gap-2 text-sm">
+                      Tap to preview <FiArrowRight />
+                    </span>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-navy">Demo Store</p>
-                  <p className="text-sm text-gray-500">Mobile-friendly design</p>
+                <div className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-navy">{store.name}</p>
+                      <p className="text-xs text-gray-500">{store.desc}</p>
+                    </div>
+                    <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${store.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                      <FiArrowRight className="text-white" />
+                    </div>
+                  </div>
                 </div>
-                <div className="w-10 h-10 bg-padi-green rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <FiArrowRight className="text-white" />
-                </div>
-              </div>
-            </a>
+              </a>
+            ))}
           </div>
         </ScrollReveal>
 
         <ScrollReveal delay={200}>
-          <div className="text-center mt-10">
-            <Link to="/register" className="inline-flex items-center gap-2 bg-padi-green hover:bg-padi-green-dark text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg shadow-padi-green/30 hover:-translate-y-1">
-              Create Your Own Store
+          <div className="text-center mt-12">
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 bg-padi-green hover:bg-padi-green-dark text-white font-bold py-4 px-10 rounded-full transition-all duration-300 shadow-xl shadow-padi-green/30 hover:-translate-y-1">
+              Create Your Store Now
               <FiArrowRight />
             </Link>
+            <p className="text-gray-400 text-sm mt-4">
+              Free to start • No credit card needed • Setup in 5 minutes
+            </p>
           </div>
         </ScrollReveal>
       </div>
