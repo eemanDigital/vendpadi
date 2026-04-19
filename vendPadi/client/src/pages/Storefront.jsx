@@ -112,6 +112,26 @@ const bundles = store?.bundles || [];
         }
         dispatch(initWishlist(slug));
         trackingAPI.trackView(slug).catch(() => {});
+        
+        if (data.vendor) {
+          const vendor = data.vendor;
+          const fullTitle = vendor.businessName 
+            ? `${vendor.businessName} | VendPadi Store`
+            : "VendPadi Store";
+          document.title = fullTitle;
+          
+          const ogTitle = vendor.businessName || "Store";
+          const ogDesc = vendor.bio || `Shop from ${vendor.businessName || 'our store'}. Order on WhatsApp!`;
+          
+          document.querySelector('meta[property="og:title"]')?.setAttribute('content', ogTitle);
+          document.querySelector('meta[property="og:description"]')?.setAttribute('content', ogDesc);
+          document.querySelector('meta[property="og:url"]')?.setAttribute('content', window.location.href);
+          
+          if (vendor.logo) {
+            document.querySelector('meta[property="og:image"]')?.setAttribute('content', vendor.logo);
+            document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', vendor.logo);
+          }
+        }
       } catch {
         toast.error("Store not found");
       } finally {
