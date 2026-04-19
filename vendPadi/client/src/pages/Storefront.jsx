@@ -122,8 +122,10 @@ const bundles = store?.bundles || [];
     fetchStore(currentPage);
   }, [slug, currentPage]);
 
-  const handleOrder = useCallback(async () => {
+  const handleOrder = useCallback(async (passedDeliveryInfo = null) => {
     if (!cartItems.length || !store) return;
+    
+    const finalDeliveryInfo = passedDeliveryInfo || deliveryInfo;
 
     try {
       await storeAPI.createOrder(slug, {
@@ -138,7 +140,7 @@ const bundles = store?.bundles || [];
           isFlashSale: i.isFlashSale,
         })),
         totalAmount: cartTotal,
-        deliveryInfo: deliveryInfo,
+        deliveryInfo: finalDeliveryInfo,
       });
     } catch {
       // Non-blocking
@@ -148,7 +150,7 @@ const bundles = store?.bundles || [];
       store.vendor.phone,
       store.vendor.businessName,
       cartItems,
-      deliveryInfo,
+      finalDeliveryInfo,
     );
 
     const productIds = cartItems.map(item => item._id);

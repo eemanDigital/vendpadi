@@ -50,7 +50,7 @@ const CartDrawer = ({ isOpen, onClose, onOrder, deliveryZones }) => {
     }
     onClose();
     if (onOrder) {
-      onOrder();
+      onOrder(deliveryInfo);
     }
   };
 

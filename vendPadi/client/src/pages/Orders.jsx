@@ -618,6 +618,12 @@ const Orders = () => {
                           {order.customerName} • {order.items.length} item
                           {order.items.length !== 1 ? "s" : ""}
                         </p>
+                        {order.deliveryInfo?.zone && (
+                          <p className="text-xs text-padi-green mt-1">
+                            📍 {order.deliveryInfo.zone}
+                            {order.deliveryInfo.fee > 0 && ` (+₦${order.deliveryInfo.fee.toLocaleString()})`}
+                          </p>
+                        )}
                         <p className="text-xs text-gray-400 mt-1">
                           {new Date(order.createdAt).toLocaleString()}
                         </p>
@@ -771,9 +777,17 @@ const Orders = () => {
                     key={idx}
                     className="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
                     <div>
-                      <p className="font-medium">{item.name}</p>
+                      <p className="font-medium">
+                        {item.isBundle && <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded mr-1.5">BUNDLE</span>}
+                        {item.name}
+                      </p>
                       <p className="text-sm text-gray-500">
                         {item.qty} × ₦{item.price.toLocaleString()}
+                        {item.originalPrice && item.originalPrice !== item.price && (
+                          <span className="text-xs text-gray-400 line-through ml-1">
+                            ₦{item.originalPrice.toLocaleString()}
+                          </span>
+                        )}
                       </p>
                     </div>
                     <span className="font-bold">
