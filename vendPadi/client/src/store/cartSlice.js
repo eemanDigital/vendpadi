@@ -6,36 +6,56 @@ const cartSlice = createSlice({
   reducers: {
     addItem: (state, action) => {
       const payload = action.payload;
-      const existing = state.items.find(i => i._id === payload._id);
+      const isBundleItem = payload.isBundle === true;
+      const itemId = isBundleItem ? `bundle-${payload._id}` : payload._id;
+      const existing = state.items.find(i => i._id === itemId);
       
       if (existing) {
         existing.qty += 1;
       } else {
-        state.items.push({
-          _id: payload._id,
+        const newItem = {
+          _id: itemId,
           name: payload.name,
           price: payload.price,
           description: payload.description || '',
           images: payload.images || [],
           qty: 1
-        });
+        };
+        if (isBundleItem) {
+          newItem.isBundle = true;
+          newItem.bundleId = payload.bundleId;
+          newItem.bundleProducts = payload.bundleProducts;
+          newItem.originalPrice = payload.originalPrice;
+          newItem.discountPercentage = payload.discountPercentage;
+        }
+        state.items.push(newItem);
       }
     },
     addItemWithQty: (state, action) => {
       const { product, qty = 1 } = action.payload;
-      const existing = state.items.find(i => i._id === product._id);
+      const isBundleItem = product.isBundle === true;
+      const itemId = isBundleItem ? `bundle-${product._id}` : product._id;
+      const existing = state.items.find(i => i._id === itemId);
       
       if (existing) {
         existing.qty += qty;
       } else {
-        state.items.push({
-          _id: product._id,
+        const newItem = {
+          _id: itemId,
           name: product.name,
           price: product.price,
           description: product.description || '',
           images: product.images || [],
           qty: qty
-        });
+        };
+        if (isBundleItem) {
+          newItem.isBundle = true;
+          newItem.bundleId = product.bundleId;
+          newItem.bundleProducts = product.bundleProducts;
+          newItem.originalPrice = product.originalPrice;
+          newItem.discountPercentage = product.discountPercentage;
+        }
+        state.items.push(newItem);
       }
     },
     removeItem: (state, action) => {

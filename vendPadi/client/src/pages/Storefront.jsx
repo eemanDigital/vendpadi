@@ -128,7 +128,7 @@ const bundles = store?.bundles || [];
     try {
       await storeAPI.createOrder(slug, {
         items: cartItems.map((i) => ({
-          productId: i._id,
+          productId: i.isBundle ? null : i._id,
           name: i.name,
           price: i.price,
           qty: i.qty,

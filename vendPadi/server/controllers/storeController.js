@@ -122,7 +122,11 @@ exports.createOrder = catchAsync(async (req, res) => {
       productId: item.productId || null,
       name: item.name,
       price: Number(item.price),
-      qty: Math.max(1, Number(item.qty))
+      qty: Math.max(1, Number(item.qty)),
+      isBundle: item.isBundle === true,
+      bundleId: item.bundleId || null,
+      isFlashSale: item.isFlashSale === true,
+      originalPrice: item.originalPrice ? Number(item.originalPrice) : null
     })),
     totalAmount: Number(totalAmount),
     customerName: customerName?.trim() || 'Anonymous',
@@ -137,6 +141,8 @@ exports.createOrder = catchAsync(async (req, res) => {
       estimatedDays: deliveryInfo.estimatedDays || null
     };
   }
+
+  console.log('Creating order with data:', JSON.stringify(orderData));
 
   const order = await Order.create(orderData);
 
