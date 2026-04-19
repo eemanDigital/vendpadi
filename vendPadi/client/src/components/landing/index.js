@@ -1,0 +1,10 @@
+export { default as HeroSection } from "./HeroSection";
+export { default as SetupServiceSection } from "./SetupServiceSection";
+export { default as ProblemSolutionSection } from "./ProblemSolutionSection";
+export { default as FeaturesSection } from "./FeaturesSection";
+export { default as DemoStoreSection } from "./DemoStoreSection";
+export { default as TrustSection } from "./TrustSection";
+export { default as PricingSection } from "./PricingSection";
+export { default as FinalCTASection } from "./FinalCTASection";
+export { default as ScrollReveal } from "./ScrollReveal";
+export { default as FloatingShape } from "./FloatingShape";
