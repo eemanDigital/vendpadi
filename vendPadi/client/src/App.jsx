@@ -23,6 +23,7 @@ const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
+const ManualInvoices = lazy(() => import('./pages/ManualInvoices'));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -120,6 +121,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Suspense fallback={<PageLoader />}><Orders /></Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invoices"
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={<PageLoader />}><ManualInvoices /></Suspense>
             </ProtectedRoute>
           }
         />

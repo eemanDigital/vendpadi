@@ -32,7 +32,7 @@ import {
   FiTrash2,
   FiExternalLink,
   FiX,
-  FiPackage,
+FiPackage,
   FiSettings,
   FiShoppingBag,
   FiLogOut,
@@ -46,8 +46,9 @@ import {
   FiTrendingUp,
   FiPercent,
   FiDollarSign,
-FiChevronLeft,
+  FiChevronLeft,
   FiChevronRight,
+  FiFileText,
 } from "react-icons/fi";
 
 const PLAN_LIMITS = {
@@ -336,6 +337,11 @@ const Dashboard = () => {
             to="/orders"
             className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 transition-colors">
             <FiShoppingBag /> Orders
+          </Link>
+          <Link
+            to="/invoices"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 transition-colors">
+            <FiFileText /> Invoices
           </Link>
           <Link
             to="/settings"

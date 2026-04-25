@@ -102,10 +102,10 @@ const generateInvoicePDF = async (order, vendor) => {
   let y = 55;
 
   const customerDisplay =
-    order.customerName && order.customerName !== "Anonymous"
-      ? order.customerName
-      : order.customerPhone
-        ? `Customer (${order.customerPhone})`
+    order.customerPhone
+      ? order.customerPhone
+      : order.customerName
+        ? order.customerName
         : "WhatsApp Customer";
 
   doc.setFont("helvetica", "bold");
@@ -240,31 +240,15 @@ const generateReceiptPDF = async (order, vendor) => {
     }
   }
 
-  doc.line(15, 45, pageWidth - 15, 45);
+doc.line(15, 45, pageWidth - 15, 45);
 
   const customerDisplay =
-    order.customerName && order.customerName !== "Anonymous"
-      ? order.customerName
-      : order.customerPhone
-        ? `Customer (${order.customerPhone})`
+    order.customerPhone
+      ? order.customerPhone
+      : order.customerName
+        ? order.customerName
         : "WhatsApp Customer";
 
-  doc.setFontSize(10);
-  doc.text(
-    `Date: ${new Date(order.createdAt).toLocaleString("en-NG", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`,
-    15,
-    55,
-  );
-  doc.text(`Receipt #: ${order._id.slice(-8).toUpperCase()}`, 15, 62);
-  doc.text(`Customer: ${customerDisplay}`, 15, 69);
-
-  let y = 85;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.text("Items Purchased", 15, y);
@@ -728,7 +712,7 @@ const Orders = () => {
                 <div>
                   <p className="text-xs text-gray-500">Customer</p>
                   <p className="font-medium">
-                    {selectedOrder.customerName || "Anonymous"}
+                    {selectedOrder.customerPhone || selectedOrder.customerName || "WhatsApp Customer"}
                   </p>
                 </div>
                 <div>

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
   vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true },
-  customerName: { type: String, default: 'Anonymous' },
+  customerName: { type: String, default: '' },
   customerPhone: { type: String, default: '' },
   items: [{
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },

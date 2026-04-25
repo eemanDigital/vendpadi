@@ -129,7 +129,7 @@ exports.createOrder = catchAsync(async (req, res) => {
       originalPrice: item.originalPrice ? Number(item.originalPrice) : null
     })),
     totalAmount: Number(totalAmount),
-    customerName: customerName?.trim() || 'Anonymous',
+    customerName: customerName?.trim() || '',
     customerPhone: customerPhone?.trim() || '',
     note: note?.trim() || ''
   };
@@ -147,7 +147,7 @@ exports.createOrder = catchAsync(async (req, res) => {
   const order = await Order.create(orderData);
 
   sendOrderNotificationEmail(vendor.email, vendor.businessName, {
-    customerName: customerName || 'Anonymous',
+    customerName: customerPhone || customerName || 'Customer',
     items: order.items,
     total: totalAmount,
     orderId: order._id.toString(),
@@ -255,7 +255,7 @@ exports.createOrderByCustomLink = catchAsync(async (req, res) => {
       qty: Math.max(1, Number(item.qty))
     })),
     totalAmount: Number(totalAmount),
-    customerName: customerName?.trim() || 'Anonymous',
+    customerName: customerName?.trim() || '',
     customerPhone: customerPhone?.trim() || '',
     note: note?.trim() || ''
   };
@@ -271,7 +271,7 @@ exports.createOrderByCustomLink = catchAsync(async (req, res) => {
   const order = await Order.create(orderData);
 
   sendOrderNotificationEmail(vendor.email, vendor.businessName, {
-    customerName: customerName || 'Anonymous',
+    customerName: customerPhone || customerName || 'Customer',
     items: order.items,
     total: totalAmount,
     orderId: order._id.toString(),

@@ -115,6 +115,17 @@ export const bundleAPI = {
   toggleDeal: (id) => api.post(`/bundles/${id}/toggle-deal`)
 };
 
+export const invoiceAPI = {
+  getAll: (params) => api.get('/invoices', { params }),
+  getStats: () => api.get('/invoices/stats'),
+  getOne: (id) => api.get(`/invoices/${id}`),
+  create: (data) => api.post('/invoices', data),
+  update: (id, data) => api.put(`/invoices/${id}`, data),
+  delete: (id) => api.delete(`/invoices/${id}`),
+  markSent: (id) => api.post(`/invoices/${id}/sent`),
+  recordPayment: (id, data) => api.post(`/invoices/${id}/payment`, data)
+};
+
 const publicAPI = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' }

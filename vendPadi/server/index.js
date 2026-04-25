@@ -18,6 +18,10 @@ const reviewRoutes = require("./routes/reviewRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const trackingRoutes = require("./routes/trackingRoutes");
 const bundleRoutes = require("./routes/bundleRoutes");
+const manualInvoiceRoutes = require("./routes/manualInvoiceRoutes");
+
+require("./models/ManualInvoice");
+
 const { sanitizeBody } = require("./middleware/sanitizeMiddleware");
 const { startScheduler } = require("./utils/trialScheduler");
 
@@ -158,6 +162,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/track", trackingRoutes);
 app.use("/api/bundles", bundleRoutes);
+app.use("/api/invoices", manualInvoiceRoutes);
 
 app.options("/api/*", (req, res) => {
   res.status(200).end();
