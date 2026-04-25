@@ -121,19 +121,19 @@ exports.createInvoice = catchAsync(async (req, res) => {
   }
 
   const processedItems = items.map(item => {
-    const itemTotal = (item.qty * item.unitPrice) - (item.discount || 0);
+    const itemTotal = (Number(item.qty) * Number(item.unitPrice)) - Number(item.discount || 0);
     return {
       name: item.name,
       description: item.description || '',
-      qty: item.qty,
-      unitPrice: item.unitPrice,
-      discount: item.discount || 0,
+      qty: Number(item.qty),
+      unitPrice: Number(item.unitPrice),
+      discount: Number(item.discount || 0),
       total: itemTotal
     };
   });
 
   const subtotal = processedItems.reduce((sum, item) => sum + item.total, 0);
-  const totalAmount = subtotal - discount + tax;
+  const totalAmount = Number(subtotal) - Number(discount || 0) + Number(tax || 0);
 
   const invoiceNumber = await generateInvoiceNumber(vendorId, type);
 
@@ -206,13 +206,13 @@ exports.updateInvoice = catchAsync(async (req, res) => {
 
   if (items && Array.isArray(items) && items.length > 0) {
     const processedItems = items.map(item => {
-      const itemTotal = (item.qty * item.unitPrice) - (item.discount || 0);
+      const itemTotal = (Number(item.qty) * Number(item.unitPrice)) - Number(item.discount || 0);
       return {
         name: item.name,
         description: item.description || '',
-        qty: item.qty,
-        unitPrice: item.unitPrice,
-        discount: item.discount || 0,
+        qty: Number(item.qty),
+        unitPrice: Number(item.unitPrice),
+        discount: Number(item.discount || 0),
         total: itemTotal
       };
     });
@@ -221,17 +221,17 @@ exports.updateInvoice = catchAsync(async (req, res) => {
     invoice.subtotal = processedItems.reduce((sum, item) => sum + item.total, 0);
     
     if (discount !== undefined) {
-      invoice.discount = discount;
+      invoice.discount = Number(discount);
     }
     if (tax !== undefined) {
-      invoice.tax = tax;
+      invoice.tax = Number(tax);
     }
     
-    invoice.totalAmount = invoice.subtotal - invoice.discount + invoice.tax;
+    invoice.totalAmount = Number(invoice.subtotal) - Number(invoice.discount || 0) + Number(invoice.tax || 0);
   }
 
-  if (discount !== undefined) invoice.discount = discount;
-  if (tax !== undefined) invoice.tax = tax;
+  if (discount !== undefined) invoice.discount = Number(discount);
+  if (tax !== undefined) invoice.tax = Number(tax);
   if (issueDate) invoice.issueDate = new Date(issueDate);
   if (dueDate) invoice.dueDate = new Date(dueDate);
   if (notes !== undefined) invoice.notes = notes;

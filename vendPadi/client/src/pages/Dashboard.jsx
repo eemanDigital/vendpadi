@@ -32,7 +32,7 @@ import {
   FiTrash2,
   FiExternalLink,
   FiX,
-FiPackage,
+  FiPackage,
   FiSettings,
   FiShoppingBag,
   FiLogOut,
@@ -48,7 +48,6 @@ FiPackage,
   FiDollarSign,
   FiChevronLeft,
   FiChevronRight,
-  FiFileText,
 } from "react-icons/fi";
 
 const PLAN_LIMITS = {
@@ -84,7 +83,12 @@ const Dashboard = () => {
     lowStock: false,
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+  });
 
   // Get effective plan - trial takes priority over paid plan
   const isOnTrial = vendor?.trial?.active === true;
@@ -172,21 +176,30 @@ const Dashboard = () => {
     return result;
   }, [products, searchQuery, filters, sortBy]);
 
-  const fetchProducts = useCallback(async (page = 1) => {
-    try {
-      setLoading(true);
-      const { data } = await productAPI.getAll({ page, limit: 20, ...filters, search: searchQuery, sort: sortBy });
-      setProducts(data.products || []);
-      if (data.pagination) {
-        setPagination(data.pagination);
-        setCurrentPage(data.pagination.page);
+  const fetchProducts = useCallback(
+    async (page = 1) => {
+      try {
+        setLoading(true);
+        const { data } = await productAPI.getAll({
+          page,
+          limit: 20,
+          ...filters,
+          search: searchQuery,
+          sort: sortBy,
+        });
+        setProducts(data.products || []);
+        if (data.pagination) {
+          setPagination(data.pagination);
+          setCurrentPage(data.pagination.page);
+        }
+      } catch (error) {
+        toast.error("Failed to load products");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      toast.error("Failed to load products");
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, searchQuery, sortBy]);
+    },
+    [filters, searchQuery, sortBy],
+  );
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -207,7 +220,13 @@ const Dashboard = () => {
   useEffect(() => {
     setCurrentPage(1);
     fetchProducts(1);
-  }, [searchQuery, sortBy, filters.category, filters.inStock, filters.lowStock]);
+  }, [
+    searchQuery,
+    sortBy,
+    filters.category,
+    filters.inStock,
+    filters.lowStock,
+  ]);
 
   const storeUrl = `${window.location.origin}/store/${vendor?.slug}`;
 
@@ -337,11 +356,6 @@ const Dashboard = () => {
             to="/orders"
             className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 transition-colors">
             <FiShoppingBag /> Orders
-          </Link>
-          <Link
-            to="/invoices"
-            className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 transition-colors">
-            <FiFileText /> Invoices
           </Link>
           <Link
             to="/settings"
@@ -663,15 +677,15 @@ const Dashboard = () => {
               </AnimatePresence>
             </motion.div>
           )}
-        <Pagination 
-              pagination={pagination} 
-              onPageChange={(p) => {
-                setCurrentPage(p);
-                fetchProducts(p);
-              }} 
-            />
-          </div>
+          <Pagination
+            pagination={pagination}
+            onPageChange={(p) => {
+              setCurrentPage(p);
+              fetchProducts(p);
+            }}
+          />
         </div>
+      </div>
 
       <AnimatePresence>
         {showModal && (
@@ -711,6 +725,7 @@ const Dashboard = () => {
             </motion.div>
           </motion.div>
         )}
+        /
       </AnimatePresence>
 
       <InventoryModal
@@ -769,34 +784,34 @@ const Dashboard = () => {
         )}
       </AnimatePresence>
 
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 py-2 z-30">
-          <div className="flex items-center justify-around">
-            <Link
-              to="/dashboard"
-              className="flex flex-col items-center gap-1 text-padi-green p-2">
-              <FiPackage />
-              <span className="text-xs">Products</span>
-            </Link>
-            <Link
-              to="/orders"
-              className="flex flex-col items-center gap-1 text-gray-500 p-2">
-              <FiShoppingBag />
-              <span className="text-xs">Orders</span>
-            </Link>
-            <Link
-              to="/settings"
-              className="flex flex-col items-center gap-1 text-gray-500 p-2">
-              <FiSettings />
-              <span className="text-xs">Settings</span>
-            </Link>
-            <button
-              onClick={() => setShowBundleManager(true)}
-              className="flex flex-col items-center gap-1 text-padi-green p-2">
-              <FiBox />
-              <span className="text-xs">Bundles</span>
-            </button>
-          </div>
-        </nav>
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 py-2 z-30">
+        <div className="flex items-center justify-around">
+          <Link
+            to="/dashboard"
+            className="flex flex-col items-center gap-1 text-padi-green p-2">
+            <FiPackage />
+            <span className="text-xs">Products</span>
+          </Link>
+          <Link
+            to="/orders"
+            className="flex flex-col items-center gap-1 text-gray-500 p-2">
+            <FiShoppingBag />
+            <span className="text-xs">Orders</span>
+          </Link>
+          <Link
+            to="/settings"
+            className="flex flex-col items-center gap-1 text-gray-500 p-2">
+            <FiSettings />
+            <span className="text-xs">Settings</span>
+          </Link>
+          <button
+            onClick={() => setShowBundleManager(true)}
+            className="flex flex-col items-center gap-1 text-padi-green p-2">
+            <FiBox />
+            <span className="text-xs">Bundles</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 };

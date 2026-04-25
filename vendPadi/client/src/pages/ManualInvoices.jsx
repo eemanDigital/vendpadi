@@ -21,11 +21,23 @@ import {
 } from "react-icons/fi";
 
 const STATUS_CONFIG = {
-  draft: { label: "Draft", color: "bg-gray-100 text-gray-600", icon: FiFileText },
+  draft: {
+    label: "Draft",
+    color: "bg-gray-100 text-gray-600",
+    icon: FiFileText,
+  },
   issued: { label: "Issued", color: "bg-blue-100 text-blue-700", icon: FiSend },
   paid: { label: "Paid", color: "bg-green-100 text-green-700", icon: FiCheck },
-  overdue: { label: "Overdue", color: "bg-red-100 text-red-700", icon: FiAlertCircle },
-  cancelled: { label: "Cancelled", color: "bg-red-100 text-red-600", icon: FiX },
+  overdue: {
+    label: "Overdue",
+    color: "bg-red-100 text-red-700",
+    icon: FiAlertCircle,
+  },
+  cancelled: {
+    label: "Cancelled",
+    color: "bg-red-100 text-red-600",
+    icon: FiX,
+  },
 };
 
 const STATUS_OPTIONS = ["draft", "issued", "paid", "overdue", "cancelled"];
@@ -42,7 +54,10 @@ const PAYMENT_METHODS = [
 
 const loadImageAsBase64 = (url) => {
   return new Promise((resolve) => {
-    if (!url) { resolve(null); return; }
+    if (!url) {
+      resolve(null);
+      return;
+    }
     const img = new Image();
     img.crossOrigin = "Anonymous";
     img.onload = () => {
@@ -56,6 +71,11 @@ const loadImageAsBase64 = (url) => {
     img.onerror = () => resolve(null);
     img.src = url;
   });
+};
+
+const formatCurrency = (value) => {
+  const num = parseFloat(value) || 0;
+  return `NGN ${num.toLocaleString()}`;
 };
 
 const generateInvoicePDF = async (invoice, vendor) => {
@@ -85,16 +105,29 @@ const generateInvoicePDF = async (invoice, vendor) => {
   doc.setTextColor(26, 26, 46);
   let y = 55;
 
-  const customerName = invoice.customer?.name || invoice.customer?.phone || "Customer";
+  const customerName = invoice.customer?.name || "";
+  const customerPhone = invoice.customer?.phone || "";
+  const customerEmail = invoice.customer?.email || "";
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.text("Bill To:", 20, y);
   doc.setFont("helvetica", "normal");
   y += 7;
   doc.setFontSize(10);
-  doc.text(customerName, 20, y);
-  if (invoice.customer?.address) {
+  if (customerName) {
+    doc.text(customerName, 20, y);
     y += 6;
+  }
+  if (customerPhone) {
+    doc.text(`Phone: ${customerPhone}`, 20, y);
+    y += 6;
+  }
+  if (customerEmail) {
+    doc.text(`Email: ${customerEmail}`, 20, y);
+    y += 6;
+  }
+  if (invoice.customer?.address) {
     doc.text(invoice.customer.address, 20, y);
   }
 
@@ -103,11 +136,23 @@ const generateInvoicePDF = async (invoice, vendor) => {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.text(`Invoice #: ${invoice.invoiceNumber}`, 120, 68);
-  doc.text(`Date: ${new Date(invoice.issueDate).toLocaleDateString("en-NG")}`, 120, 75);
+  doc.text(
+    `Date: ${new Date(invoice.issueDate).toLocaleDateString("en-NG")}`,
+    120,
+    75,
+  );
   if (invoice.dueDate) {
-    doc.text(`Due: ${new Date(invoice.dueDate).toLocaleDateString("en-NG")}`, 120, 82);
+    doc.text(
+      `Due: ${new Date(invoice.dueDate).toLocaleDateString("en-NG")}`,
+      120,
+      82,
+    );
   }
-  doc.text(`Status: ${STATUS_CONFIG[invoice.status]?.label || invoice.status}`, 120, 89);
+  doc.text(
+    `Status: ${STATUS_CONFIG[invoice.status]?.label || invoice.status}`,
+    120,
+    89,
+  );
 
   y = 100;
   doc.setFontSize(11);
@@ -121,11 +166,16 @@ const generateInvoicePDF = async (invoice, vendor) => {
       idx + 1,
       item.name,
       item.qty,
-      `NGN ${item.unitPrice.toLocaleString()}`,
-      `NGN ${item.total.toLocaleString()}`,
+      `NGN ${(item.unitPrice || 0).toLocaleString()}`,
+      `NGN ${(item.total || item.qty * item.unitPrice || 0).toLocaleString()}`,
     ]),
     theme: "striped",
-    headStyles: { fillColor: [26, 26, 46], textColor: 255, fontStyle: "bold", fontSize: 9 },
+    headStyles: {
+      fillColor: [26, 26, 46],
+      textColor: 255,
+      fontStyle: "bold",
+      fontSize: 9,
+    },
     bodyStyles: { fontSize: 9 },
     columnStyles: {
       0: { cellWidth: 12 },
@@ -144,16 +194,16 @@ const generateInvoicePDF = async (invoice, vendor) => {
 
   doc.setFontSize(10);
   doc.text("Subtotal:", 120, finalY + 8);
-  doc.text(`NGN ${invoice.subtotal.toLocaleString()}`, pageWidth - 15, finalY + 8, { align: "right" });
+  doc.text(formatCurrency(invoice.subtotal), pageWidth - 15, finalY + 8, { align: "right" });
 
   if (invoice.discount > 0) {
     doc.text("Discount:", 120, finalY + 16);
-    doc.text(`-NGN ${invoice.discount.toLocaleString()}`, pageWidth - 15, finalY + 16, { align: "right" });
+    doc.text("-" + formatCurrency(invoice.discount), pageWidth - 15, finalY + 16, { align: "right" });
   }
 
   if (invoice.tax > 0) {
     doc.text("Tax:", 120, finalY + 24);
-    doc.text(`NGN ${invoice.tax.toLocaleString()}`, pageWidth - 15, finalY + 24, { align: "right" });
+    doc.text(formatCurrency(invoice.tax), pageWidth - 15, finalY + 24, { align: "right" });
   }
 
   const totalY = finalY + (invoice.discount > 0 || invoice.tax > 0 ? 36 : 28);
@@ -162,14 +212,14 @@ const generateInvoicePDF = async (invoice, vendor) => {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
-  doc.text(`TOTAL: NGN ${invoice.totalAmount.toLocaleString()}`, 115, totalY + 9);
+  doc.text("TOTAL: " + formatCurrency(invoice.totalAmount), 115, totalY + 9);
 
-  if (invoice.amountPaid > 0) {
+  if ((invoice.amountPaid ?? 0) > 0) {
     doc.setTextColor(26, 26, 46);
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text(`Paid: NGN ${invoice.amountPaid.toLocaleString()}`, 20, totalY + 22);
-    doc.text(`Balance: NGN ${invoice.balanceDue.toLocaleString()}`, 20, totalY + 30);
+    doc.text("Paid: " + formatCurrency(invoice.amountPaid), 20, totalY + 22);
+    doc.text("Balance: " + formatCurrency(invoice.balanceDue), 20, totalY + 30);
   }
 
   if (invoice.notes) {
@@ -214,32 +264,52 @@ const generateReceiptPDF = async (invoice, vendor) => {
 
   doc.line(15, 45, pageWidth - 15, 45);
 
-  const customerName = invoice.customer?.name || invoice.customer?.phone || "Customer";
+  const customerName = invoice.customer?.name || "";
+  const customerPhone = invoice.customer?.phone || "";
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text(`Customer: ${customerName}`, 15, 55);
+  doc.text(`Customer: ${customerName || "Customer"}`, 15, 55);
+
+  let yPos = 63;
+  if (customerPhone) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Phone: ${customerPhone}`, 15, yPos);
+    yPos += 8;
+  }
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text(`Receipt #: ${invoice.invoiceNumber}`, 15, 65);
-  doc.text(`Date: ${new Date(invoice.issueDate).toLocaleDateString("en-NG")}`, 15, 73);
+  doc.text(`Receipt #: ${invoice.invoiceNumber}`, 15, yPos);
+  yPos += 8;
+  doc.text(
+    `Date: ${new Date(invoice.issueDate).toLocaleDateString("en-NG")}`,
+    15,
+    yPos,
+  );
 
-  let y = 85;
+  yPos += 15;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text("Items Purchased", 15, y);
+  doc.text("Items Purchased", 15, yPos);
 
   autoTable(doc, {
-    startY: y + 5,
+    startY: yPos + 5,
     head: [["#", "Item", "Qty", "Amount"]],
     body: invoice.items.map((item, idx) => [
       idx + 1,
       item.name,
       item.qty,
-      `NGN ${item.total.toLocaleString()}`,
+      `NGN ${(item.total || item.qty * item.unitPrice).toLocaleString()}`,
     ]),
     theme: "grid",
-    headStyles: { fillColor: [245, 166, 35], textColor: [26, 26, 46], fontStyle: "bold", fontSize: 9 },
+    headStyles: {
+      fillColor: [245, 166, 35],
+      textColor: [26, 26, 46],
+      fontStyle: "bold",
+      fontSize: 9,
+    },
     bodyStyles: { fontSize: 9 },
     columnStyles: {
       0: { cellWidth: 12, halign: "center" },
@@ -250,7 +320,7 @@ const generateReceiptPDF = async (invoice, vendor) => {
     margin: { left: 15, right: 15 },
   });
 
-  const finalY = (doc.lastAutoTable?.finalY ?? y + 40) + 12;
+  const finalY = (doc.lastAutoTable?.finalY ?? yPos + 40) + 12;
 
   doc.setDrawColor(200, 200, 200);
   doc.line(100, finalY, pageWidth - 15, finalY);
@@ -258,12 +328,16 @@ const generateReceiptPDF = async (invoice, vendor) => {
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.text("TOTAL:", 120, finalY + 8);
-  doc.text(`NGN ${invoice.totalAmount.toLocaleString()}`, pageWidth - 15, finalY + 8, { align: "right" });
+  doc.text(formatCurrency(invoice.totalAmount), pageWidth - 15, finalY + 8, { align: "right" });
 
   if (invoice.paymentMethod) {
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.text(`Payment Method: ${invoice.paymentMethod.replace("_", " ")}`, 15, finalY + 20);
+    doc.text(
+      `Payment Method: ${invoice.paymentMethod.replace("_", " ")}`,
+      15,
+      finalY + 20,
+    );
     if (invoice.paymentReference) {
       doc.text(`Ref: ${invoice.paymentReference}`, 15, finalY + 28);
     }
@@ -271,7 +345,9 @@ const generateReceiptPDF = async (invoice, vendor) => {
 
   doc.setTextColor(120, 120, 120);
   doc.setFontSize(8);
-  doc.text("Thank you for your business!", pageWidth / 2, 275, { align: "center" });
+  doc.text("Thank you for your business!", pageWidth / 2, 275, {
+    align: "center",
+  });
   doc.text("Generated by VendPadi", pageWidth / 2, 280, { align: "center" });
 
   doc.save(`${invoice.invoiceNumber}.pdf`);
@@ -328,20 +404,24 @@ function ManualInvoices() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const numberFields = ["discount", "tax"];
+    setFormData((prev) => ({
+      ...prev,
+      [name]: numberFields.includes(name) ? (value === "" ? 0 : value) : value,
+    }));
   };
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...formData.items];
     newItems[index] = { ...newItems[index], [field]: value };
-    
+
     if (field === "qty" || field === "unitPrice" || field === "discount") {
       const qty = Number(newItems[index].qty) || 0;
       const price = Number(newItems[index].unitPrice) || 0;
       const disc = Number(newItems[index].discount) || 0;
       newItems[index].total = qty * price - disc;
     }
-    
+
     setFormData((prev) => ({ ...prev, items: newItems }));
   };
 
@@ -364,7 +444,7 @@ function ManualInvoices() {
       const qty = parseFloat(item.qty) || 0;
       const price = parseFloat(item.unitPrice) || 0;
       const disc = parseFloat(item.discount) || 0;
-      return sum + ((qty * price) - disc);
+      return sum + (qty * price - disc);
     }, 0);
     const discount = parseFloat(formData.discount) || 0;
     const tax = parseFloat(formData.tax) || 0;
@@ -374,8 +454,10 @@ function ManualInvoices() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const validItems = formData.items.filter((item) => item.name && item.qty > 0 && item.unitPrice > 0);
+
+    const validItems = formData.items.filter(
+      (item) => item.name && item.qty > 0 && item.unitPrice > 0,
+    );
     if (validItems.length === 0) {
       toast.error("Add at least one valid item");
       return;
@@ -406,7 +488,9 @@ function ManualInvoices() {
         toast.success("Invoice updated");
       } else {
         await invoiceAPI.create(payload);
-        toast.success(`${formData.type === "invoice" ? "Invoice" : "Receipt"} created`);
+        toast.success(
+          `${formData.type === "invoice" ? "Invoice" : "Receipt"} created`,
+        );
       }
       setShowModal(false);
       setEditingInvoice(null);
@@ -444,10 +528,15 @@ function ManualInvoices() {
       customerPhone: invoice.customer?.phone || "",
       customerEmail: invoice.customer?.email || "",
       customerAddress: invoice.customer?.address || "",
-      items: invoice.items.length > 0 ? invoice.items : [{ name: "", qty: 1, unitPrice: 0, discount: 0 }],
+      items:
+        invoice.items.length > 0
+          ? invoice.items
+          : [{ name: "", qty: 1, unitPrice: 0, discount: 0 }],
       discount: invoice.discount || 0,
       tax: invoice.tax || 0,
-      issueDate: invoice.issueDate?.split("T")[0] || new Date().toISOString().split("T")[0],
+      issueDate:
+        invoice.issueDate?.split("T")[0] ||
+        new Date().toISOString().split("T")[0],
       dueDate: invoice.dueDate?.split("T")[0] || "",
       notes: invoice.notes || "",
       terms: invoice.terms || "",
@@ -483,13 +572,18 @@ function ManualInvoices() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Invoices & Receipts</h1>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Invoices & Receipts
+            </h1>
             <p className="text-gray-500">Create manual invoices and receipts</p>
           </div>
           <button
-            onClick={() => { resetForm(); setEditingInvoice(null); setShowModal(true); }}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-          >
+            onClick={() => {
+              resetForm();
+              setEditingInvoice(null);
+              setShowModal(true);
+            }}
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
             <FiPlus /> New Invoice
           </button>
         </div>
@@ -498,23 +592,33 @@ function ManualInvoices() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white p-4 rounded-lg shadow-sm border">
               <div className="text-sm text-gray-500">Total Invoices</div>
-              <div className="text-xl font-bold">{stats.stats?.reduce((s, x) => s + x.totalCount, 0) || 0}</div>
+              <div className="text-xl font-bold">
+                {stats.stats?.reduce((s, x) => s + x.totalCount, 0) || 0}
+              </div>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm border">
               <div className="text-sm text-gray-500">Total Amount</div>
               <div className="text-xl font-bold text-green-600">
-                NGN {(stats.stats?.reduce((s, x) => s + x.totalAmount, 0) || 0).toLocaleString()}
+                NGN{" "}
+                {(
+                  stats.stats?.reduce((s, x) => s + x.totalAmount, 0) || 0
+                ).toLocaleString()}
               </div>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm border">
               <div className="text-sm text-gray-500">Paid</div>
               <div className="text-xl font-bold text-blue-600">
-                NGN {(stats.stats?.reduce((s, x) => s + x.totalPaid, 0) || 0).toLocaleString()}
+                NGN{" "}
+                {(
+                  stats.stats?.reduce((s, x) => s + x.totalPaid, 0) || 0
+                ).toLocaleString()}
               </div>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm border">
               <div className="text-sm text-gray-500">Overdue</div>
-              <div className="text-xl font-bold text-red-600">{stats.overdueCount || 0}</div>
+              <div className="text-xl font-bold text-red-600">
+                {stats.overdueCount || 0}
+              </div>
             </div>
           </div>
         )}
@@ -524,8 +628,7 @@ function ManualInvoices() {
             <select
               value={filter.type}
               onChange={(e) => setFilter({ ...filter, type: e.target.value })}
-              className="border rounded-lg px-3 py-2"
-            >
+              className="border rounded-lg px-3 py-2">
               <option value="">All Types</option>
               <option value="invoice">Invoices</option>
               <option value="receipt">Receipts</option>
@@ -533,11 +636,12 @@ function ManualInvoices() {
             <select
               value={filter.status}
               onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-              className="border rounded-lg px-3 py-2"
-            >
+              className="border rounded-lg px-3 py-2">
               <option value="">All Status</option>
               {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                <option key={s} value={s}>
+                  {STATUS_CONFIG[s].label}
+                </option>
               ))}
             </select>
           </div>
@@ -546,72 +650,97 @@ function ManualInvoices() {
         {loading ? (
           <div className="text-center py-12 text-gray-500">Loading...</div>
         ) : invoices.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">No invoices found</div>
+          <div className="text-center py-12 text-gray-500">
+            No invoices found
+          </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Invoice #</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Type</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Customer</th>
-                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">Amount</th>
-                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">Paid</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Status</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">Date</th>
-                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">Actions</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
+                      Invoice #
+                    </th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
+                      Type
+                    </th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
+                      Customer
+                    </th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">
+                      Amount
+                    </th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">
+                      Paid
+                    </th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
+                      Status
+                    </th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
+                      Date
+                    </th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {invoices.map((invoice) => (
                     <tr key={invoice._id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium">{invoice.invoiceNumber}</td>
+                      <td className="px-4 py-3 font-medium">
+                        {invoice.invoiceNumber}
+                      </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          invoice.type === "receipt" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"
-                        }`}>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            invoice.type === "receipt"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}>
                           {invoice.type === "receipt" ? "Receipt" : "Invoice"}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        {invoice.customer?.phone || invoice.customer?.name || "-"}
+                        {invoice.customer?.phone ||
+                          invoice.customer?.name ||
+                          "-"}
                       </td>
                       <td className="px-4 py-3 text-right font-medium">
-                        NGN {invoice.totalAmount.toLocaleString()}
+                        {formatCurrency(invoice.totalAmount)}
                       </td>
                       <td className="px-4 py-3 text-right text-green-600">
-                        NGN {invoice.amountPaid.toLocaleString()}
+                        {formatCurrency(invoice.amountPaid)}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded text-xs font-medium $STATUS_CONFIG[invoice.status]?.color`}>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${STATUS_CONFIG[invoice.status]?.color}`}>
                           {STATUS_CONFIG[invoice.status]?.label}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-500">
-                        {new Date(invoice.issueDate).toLocaleDateString("en-NG")}
+                        {new Date(invoice.issueDate).toLocaleDateString(
+                          "en-NG",
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex gap-2 justify-end">
                           <button
                             onClick={() => handleDownload(invoice)}
                             className="p-1 text-gray-500 hover:text-green-600"
-                            title="Download"
-                          >
+                            title="Download">
                             <FiDownload size={18} />
                           </button>
                           <button
                             onClick={() => openEditModal(invoice)}
                             className="p-1 text-gray-500 hover:text-blue-600"
-                            title="Edit"
-                          >
+                            title="Edit">
                             <FiEdit size={18} />
                           </button>
                           <button
                             onClick={() => handleDelete(invoice._id)}
                             className="p-1 text-gray-500 hover:text-red-600"
-                            title="Delete"
-                          >
+                            title="Delete">
                             <FiTrash2 size={18} />
                           </button>
                         </div>
@@ -630,9 +759,15 @@ function ManualInvoices() {
           <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
               <h2 className="text-xl font-bold">
-                {editingInvoice ? "Edit" : "Create"} {formData.type === "invoice" ? "Invoice" : "Receipt"}
+                {editingInvoice ? "Edit" : "Create"}{" "}
+                {formData.type === "invoice" ? "Invoice" : "Receipt"}
               </h2>
-              <button onClick={() => { setShowModal(false); setEditingInvoice(null); }} className="text-gray-500">
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingInvoice(null);
+                }}
+                className="text-gray-500">
                 <FiX size={24} />
               </button>
             </div>
@@ -640,21 +775,26 @@ function ManualInvoices() {
             <form onSubmit={handleSubmit} className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Type
+                  </label>
                   <select
                     name="type"
                     value={formData.type}
                     onChange={handleInputChange}
                     className="w-full border rounded-lg px-3 py-2"
-                    disabled={!!editingInvoice}
-                  >
+                    disabled={!!editingInvoice}>
                     {TYPE_OPTIONS.map((t) => (
-                      <option key={t} value={t}>{t === "invoice" ? "Invoice" : "Receipt"}</option>
+                      <option key={t} value={t}>
+                        {t === "invoice" ? "Invoice" : "Receipt"}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Issue Date</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Issue Date
+                  </label>
                   <input
                     type="date"
                     name="issueDate"
@@ -664,7 +804,9 @@ function ManualInvoices() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Customer Name
+                  </label>
                   <input
                     type="text"
                     name="customerName"
@@ -675,7 +817,9 @@ function ManualInvoices() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Customer Phone
+                  </label>
                   <input
                     type="text"
                     name="customerPhone"
@@ -686,7 +830,9 @@ function ManualInvoices() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Customer Email
+                  </label>
                   <input
                     type="email"
                     name="customerEmail"
@@ -696,7 +842,9 @@ function ManualInvoices() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Due Date (Invoice)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Due Date (Invoice)
+                  </label>
                   <input
                     type="date"
                     name="dueDate"
@@ -708,21 +856,27 @@ function ManualInvoices() {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Items</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Items
+                </label>
                 <div className="space-y-2">
                   {formData.items.map((item, index) => (
                     <div key={index} className="flex gap-2 items-start">
                       <input
                         type="text"
                         value={item.name}
-                        onChange={(e) => handleItemChange(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          handleItemChange(index, "name", e.target.value)
+                        }
                         className="flex-1 border rounded-lg px-3 py-2"
                         placeholder="Item name *"
                       />
                       <input
                         type="number"
                         value={item.qty}
-                        onChange={(e) => handleItemChange(index, "qty", e.target.value)}
+                        onChange={(e) =>
+                          handleItemChange(index, "qty", e.target.value)
+                        }
                         className="w-20 border rounded-lg px-3 py-2"
                         placeholder="Qty"
                         min="1"
@@ -730,26 +884,34 @@ function ManualInvoices() {
                       <input
                         type="number"
                         value={item.unitPrice}
-                        onChange={(e) => handleItemChange(index, "unitPrice", e.target.value)}
+                        onChange={(e) =>
+                          handleItemChange(index, "unitPrice", e.target.value)
+                        }
                         className="w-28 border rounded-lg px-3 py-2"
                         placeholder="Price"
                       />
                       <input
                         type="number"
                         value={item.discount}
-                        onChange={(e) => handleItemChange(index, "discount", e.target.value)}
+                        onChange={(e) =>
+                          handleItemChange(index, "discount", e.target.value)
+                        }
                         className="w-24 border rounded-lg px-3 py-2"
                         placeholder="Discount"
                       />
                       <div className="w-24 py-2 text-sm text-gray-600">
-                        NGN {((Number(item.qty) || 0) * (Number(item.unitPrice) || 0) - (Number(item.discount) || 0)).toLocaleString()}
+                        NGN{" "}
+                        {(
+                          (Number(item.qty) || 0) *
+                            (Number(item.unitPrice) || 0) -
+                          (Number(item.discount) || 0)
+                        ).toLocaleString()}
                       </div>
                       <button
                         type="button"
                         onClick={() => removeItem(index)}
                         className="p-2 text-red-500 hover:text-red-700"
-                        disabled={formData.items.length === 1}
-                      >
+                        disabled={formData.items.length === 1}>
                         <FiTrash2 />
                       </button>
                     </div>
@@ -758,15 +920,16 @@ function ManualInvoices() {
                 <button
                   type="button"
                   onClick={addItem}
-                  className="mt-2 text-green-600 hover:text-green-700 text-sm font-medium"
-                >
+                  className="mt-2 text-green-600 hover:text-green-700 text-sm font-medium">
                   + Add Item
                 </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Discount</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Total Discount
+                  </label>
                   <input
                     type="number"
                     name="discount"
@@ -776,7 +939,9 @@ function ManualInvoices() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tax</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tax
+                  </label>
                   <input
                     type="number"
                     name="tax"
@@ -786,7 +951,9 @@ function ManualInvoices() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Total Amount
+                  </label>
                   <div className="w-full border rounded-lg px-3 py-2 bg-gray-100 font-bold text-green-600">
                     NGN {total.toLocaleString()}
                   </div>
@@ -795,7 +962,9 @@ function ManualInvoices() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes
+                  </label>
                   <textarea
                     name="notes"
                     value={formData.notes}
@@ -805,7 +974,9 @@ function ManualInvoices() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Terms</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Terms
+                  </label>
                   <textarea
                     name="terms"
                     value={formData.terms}
@@ -819,20 +990,25 @@ function ManualInvoices() {
               {editingInvoice && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Payment Method
+                    </label>
                     <select
                       name="paymentMethod"
                       value={formData.paymentMethod}
                       onChange={handleInputChange}
-                      className="w-full border rounded-lg px-3 py-2"
-                    >
+                      className="w-full border rounded-lg px-3 py-2">
                       {PAYMENT_METHODS.map((pm) => (
-                        <option key={pm.value} value={pm.value}>{pm.label}</option>
+                        <option key={pm.value} value={pm.value}>
+                          {pm.label}
+                        </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Reference</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Payment Reference
+                    </label>
                     <input
                       type="text"
                       name="paymentReference"
@@ -847,16 +1023,18 @@ function ManualInvoices() {
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"
-                  onClick={() => { setShowModal(false); setEditingInvoice(null); }}
-                  className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-                >
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingInvoice(null);
+                  }}
+                  className="px-4 py-2 border rounded-lg hover:bg-gray-50">
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                >
-                  {editingInvoice ? "Update" : "Create"} {formData.type === "invoice" ? "Invoice" : "Receipt"}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                  {editingInvoice ? "Update" : "Create"}{" "}
+                  {formData.type === "invoice" ? "Invoice" : "Receipt"}
                 </button>
               </div>
             </form>
