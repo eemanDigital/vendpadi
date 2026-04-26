@@ -268,7 +268,7 @@ exports.updateInvoice = catchAsync(async (req, res) => {
 });
 
 exports.deleteInvoice = catchAsync(async (req, res) => {
-  const invoice = await ManualInvoice.findOneAndDelete({
+  const invoice = await ManualInvoice.findOne({
     _id: req.params.id,
     vendorId: req.vendor._id
   });
@@ -276,6 +276,14 @@ exports.deleteInvoice = catchAsync(async (req, res) => {
   if (!invoice) {
     return res.status(404).json({ message: 'Invoice not found' });
   }
+
+  // Allow deletion but warn for certain statuses
+  if (invoice.status === 'paid' && invoice.amountPaid >= invoice.totalAmount) {
+    // Fully paid - allow delete but could log this
+    console.log(`Deleting fully paid invoice: ${invoice.invoiceNumber}`);
+  }
+
+  await ManualInvoice.findByIdAndDelete(invoice._id);
 
   res.json({ message: 'Invoice deleted successfully' });
 });

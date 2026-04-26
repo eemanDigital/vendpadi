@@ -627,13 +627,31 @@ function ManualInvoices() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this invoice?")) return;
+    const invoice = invoices.find(i => i._id === id);
+    if (!invoice) return;
+    
+    let confirmMsg = "Delete this invoice?";
+    
+    if (invoice.status === "paid") {
+      confirmMsg = "This invoice is fully paid. Are you sure you want to delete it?";
+    } else if (invoice.amountPaid > 0) {
+      confirmMsg = `This invoice has NGN ${invoice.amountPaid.toLocaleString()} paid. Delete anyway?`;
+    } else if (invoice.status === "issued") {
+      confirmMsg = "This invoice has been issued to the customer. Delete anyway?";
+    }
+    
+    if (!window.confirm(confirmMsg)) return;
+    
     try {
       await invoiceAPI.delete(id);
-      toast.success("Deleted");
+      toast.success("Invoice deleted");
       fetchInvoices();
     } catch (error) {
-      toast.error("Failed to delete");
+      if (error.response?.status === 400) {
+        toast.error(error.response.data.message || "Cannot delete this invoice");
+      } else {
+        toast.error("Failed to delete");
+      }
     }
   };
 
@@ -911,6 +929,12 @@ function ManualInvoices() {
                               <FiCheck size={16} />
                             </button>
                           )}
+                          <button
+                            onClick={() => handleDelete(invoice._id)}
+                            className="p-1.5 text-red-500 hover:text-red-700"
+                            title="Delete Invoice">
+                            <FiTrash2 size={16} />
+                          </button>
                         </div>
                       </td>
                     </tr>
