@@ -7,14 +7,25 @@ const catchAsync = (fn) => (req, res, next) => {
 
 const generateInvoiceNumber = async (vendorId, type) => {
   const prefix = type === 'invoice' ? 'INV' : 'RCP';
-  const vendor = await Vendor.findById(vendorId).select('slug');
-  const vendorPrefix = vendor?.slug?.toUpperCase()?.replace(/[^A-Z]/g, '').slice(0, 4) || 'DOC';
   
-  const count = await ManualInvoice.countDocuments({ vendorId, type });
-  const year = new Date().getFullYear();
-  const seq = String(count + 1).padStart(5, '0');
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const vendor = await Vendor.findById(vendorId).select('slug');
+    const vendorPrefix = vendor?.slug?.toUpperCase()?.replace(/[^A-Z]/g, '').slice(0, 4) || 'DOC';
+    
+    const count = await ManualInvoice.countDocuments({ vendorId });
+    const year = new Date().getFullYear();
+    const seq = String(count + attempt + 1).padStart(5, '0');
+    
+    const invoiceNumber = `${vendorPrefix}-${year}-${seq}`;
+    
+    const existing = await ManualInvoice.findOne({ vendorId, invoiceNumber });
+    if (!existing) {
+      return invoiceNumber;
+    }
+  }
   
-  return `${vendorPrefix}-${year}-${seq}`;
+  const timestamp = Date.now().toString(36);
+  return `${prefix}-${timestamp}`;
 };
 
 exports.getInvoices = catchAsync(async (req, res) => {

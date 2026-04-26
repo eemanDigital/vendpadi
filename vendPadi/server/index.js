@@ -252,12 +252,37 @@ const cleanupExpiredTrials = async () => {
 
 setInterval(cleanupExpiredTrials, 60 * 60 * 1000);
 
+const fixManualInvoiceIndexes = async () => {
+  try {
+    const ManualInvoice = require("./models/ManualInvoice");
+    const db = ManualInvoice.db.db;
+    
+    const indexes = await db.collection('manualinvoices').indexes();
+    const hasDuplicateUniqueIndex = indexes.some(idx => 
+      idx.key && idx.key.invoiceNumber === 1 && idx.unique === true
+    );
+    
+    if (hasDuplicateUniqueIndex) {
+      await db.collection('manualinvoices').dropIndex('invoiceNumber_1');
+      log.info('Dropped duplicate unique index on invoiceNumber');
+      await db.collection('manualinvoices').createIndex(
+        { vendorId: 1, invoiceNumber: 1 },
+        { unique: true }
+      );
+      log.info('Created compound unique index on vendorId + invoiceNumber');
+    }
+  } catch (error) {
+    log.error('Error fixing manual invoice indexes:', error);
+  }
+};
+
 app.listen(PORT, () => {
   log.info(`Server running on port ${PORT}`);
   log.info(`Environment: ${process.env.NODE_ENV || "development"}`);
 
   cleanupExpiredTrials();
   startScheduler();
+  fixManualInvoiceIndexes();
 });
 
 module.exports = app;

@@ -11,7 +11,7 @@ const manualInvoiceItemSchema = new mongoose.Schema({
 
 const manualInvoiceSchema = new mongoose.Schema({
   vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true, index: true },
-  invoiceNumber: { type: String, required: true, unique: true },
+  invoiceNumber: { type: String, required: true },
   type: { type: String, enum: ['invoice', 'receipt'], required: true },
   status: { 
     type: String, 
