@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import OptimizedImage from "../OptimizedImage";
 import CategoryBadge, { CATEGORY_META } from "../ProductCard";
 
-const_STORE_VARIANTS = {
+const storeVariants = {
   initial: { opacity: 0, y: 30 },
   animate: { opacity: 1, y: 0 },
 };
@@ -40,7 +40,7 @@ const StoreHero = ({ vendor }) => {
       initial="initial"
       animate="animate"
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      variants={_STORE_VARIANTS}
+      variants={storeVariants}
     >
       <motion.div 
         style={{ y: coverY, opacity: coverOpacity, scale: coverScale }}
@@ -103,7 +103,7 @@ const StoreHero = ({ vendor }) => {
 
           <motion.div 
             className="flex-1 min-w-0"
-            variants={_STORE_VARIANTS}
+            variants={storeVariants}
           >
             <motion.div 
               className="flex items-center gap-2 flex-wrap"
