@@ -747,12 +747,16 @@ function ManualInvoices() {
               <p className="text-gray-500">Create manual invoices and receipts</p>
             </div>
           </div>
-          <Link
-            to="/dashboard"
+          <button
+            onClick={() => {
+              resetForm();
+              setEditingInvoice(null);
+              setShowModal(true);
+            }}
             className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
           >
             <FiPlus /> New Invoice
-          </Link>
+          </button>
         </div>
 
         {stats && (
