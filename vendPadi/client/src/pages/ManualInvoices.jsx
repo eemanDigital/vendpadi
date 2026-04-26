@@ -361,6 +361,9 @@ function ManualInvoices() {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [filter, setFilter] = useState({ type: "", status: "" });
   const [stats, setStats] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentInvoice, setPaymentInvoice] = useState(null);
+  const [paymentData, setPaymentData] = useState({ amount: "", paymentMethod: "", paymentReference: "" });
 
   const [formData, setFormData] = useState({
     type: "invoice",
@@ -497,7 +500,18 @@ function ManualInvoices() {
       resetForm();
       fetchInvoices();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to save");
+      if (error.response?.status === 403) {
+        const { message, requiredPlan, currentPlan, trialActive } = error.response.data;
+        toast.error(
+          <div>
+            <div>{message}</div>
+            {trialActive && <div className="text-sm mt-1">Trial period active</div>}
+          </div>,
+          { duration: 5000 }
+        );
+      } else {
+        toast.error(error.response?.data?.message || "Failed to save");
+      }
     }
   };
 
@@ -562,6 +576,43 @@ function ManualInvoices() {
       generateReceiptPDF(invoice, vendor);
     } else {
       generateInvoicePDF(invoice, vendor);
+    }
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await invoiceAPI.update(id, { status: newStatus });
+      toast.success(`Status updated to ${newStatus}`);
+      fetchInvoices();
+    } catch (error) {
+      toast.error("Failed to update status");
+      fetchInvoices();
+    }
+  };
+
+  const openPaymentModal = (invoice) => {
+    setPaymentInvoice(invoice);
+    setPaymentData({
+      amount: invoice.balanceDue?.toString() || invoice.totalAmount?.toString() || "",
+      paymentMethod: "",
+      paymentReference: ""
+    });
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await invoiceAPI.recordPayment(paymentInvoice._id, {
+        amount: parseFloat(paymentData.amount),
+        paymentMethod: paymentData.paymentMethod,
+        paymentReference: paymentData.paymentReference
+      });
+      toast.success("Payment recorded");
+      setShowPaymentModal(false);
+      fetchInvoices();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to record payment");
     }
   };
 
@@ -713,10 +764,17 @@ function ManualInvoices() {
                         {formatCurrency(invoice.amountPaid)}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${STATUS_CONFIG[invoice.status]?.color}`}>
-                          {STATUS_CONFIG[invoice.status]?.label}
-                        </span>
+                        <select
+                          value={invoice.status}
+                          onChange={(e) => handleStatusChange(invoice._id, e.target.value)}
+                          className={`px-2 py-1 rounded text-xs font-medium border-0 cursor-pointer ${STATUS_CONFIG[invoice.status]?.color}`}
+                        >
+                          <option value="draft">Draft</option>
+                          <option value="issued">Issued</option>
+                          <option value="paid">Paid</option>
+                          <option value="overdue">Overdue</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-500">
                         {new Date(invoice.issueDate).toLocaleDateString(
@@ -730,6 +788,12 @@ function ManualInvoices() {
                             className="p-1 text-gray-500 hover:text-green-600"
                             title="Download">
                             <FiDownload size={18} />
+                          </button>
+                          <button
+                            onClick={() => openPaymentModal(invoice)}
+                            className="p-1 text-gray-500 hover:text-blue-600"
+                            title="Record Payment">
+                            <FiDollarSign size={18} />
                           </button>
                           <button
                             onClick={() => openEditModal(invoice)}
@@ -1035,6 +1099,77 @@ function ManualInvoices() {
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                   {editingInvoice ? "Update" : "Create"}{" "}
                   {formData.type === "invoice" ? "Invoice" : "Receipt"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="border-b px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold">Record Payment</h2>
+              <button onClick={() => setShowPaymentModal(false)} className="text-gray-500">
+                <FiX size={24} />
+              </button>
+            </div>
+            <form onSubmit={handlePaymentSubmit} className="p-6">
+              <div className="mb-4">
+                <p className="text-sm text-gray-500">Invoice</p>
+                <p className="font-medium">{paymentInvoice?.invoiceNumber}</p>
+                <p className="text-green-600 font-bold">{formatCurrency(paymentInvoice?.totalAmount)}</p>
+                <p className="text-sm text-gray-500">Balance: {formatCurrency(paymentInvoice?.balanceDue)}</p>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={paymentData.amount}
+                  onChange={(e) => setPaymentData(prev => ({ ...prev, amount: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2"
+                  placeholder="Enter amount"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <select
+                  name="paymentMethod"
+                  value={paymentData.paymentMethod}
+                  onChange={(e) => setPaymentData(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2"
+                >
+                  {PAYMENT_METHODS.map((pm) => (
+                    <option key={pm.value} value={pm.value}>{pm.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Reference (Optional)</label>
+                <input
+                  type="text"
+                  name="paymentReference"
+                  value={paymentData.paymentReference}
+                  onChange={(e) => setPaymentData(prev => ({ ...prev, paymentReference: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2"
+                  placeholder="Transaction reference"
+                />
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowPaymentModal(false)}
+                  className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Record Payment
                 </button>
               </div>
             </form>

@@ -67,6 +67,7 @@ export const PLAN_DETAILS = {
     popular: true,
     features: [
       { text: "100 products (5 images)", included: true, icon: FiGrid },
+      { text: "📄 Manual invoices & receipts", included: true, icon: FiCopy },
       { text: "Logo + PDF invoices", included: true, icon: FiCopy },
       { text: "Full analytics dashboard", included: true, icon: FiBarChart2 },
       { text: "Top products tracking", included: true, icon: FiTrendingUp },
@@ -85,6 +86,7 @@ export const PLAN_DETAILS = {
     tagline: "Run like a brand",
     features: [
       { text: "Unlimited products (8 images)", included: true, icon: FiGrid },
+      { text: "📄 Manual invoices & receipts", included: true, icon: FiCopy },
       { text: "Logo + cover image", included: true, icon: FiStar },
       { text: "Custom store link", included: true, icon: FiLink },
       { text: "Full analytics + top products", included: true, icon: FiBarChart2 },

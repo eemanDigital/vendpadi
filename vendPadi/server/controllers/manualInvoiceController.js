@@ -286,7 +286,7 @@ exports.markAsSent = catchAsync(async (req, res) => {
 exports.recordPayment = catchAsync(async (req, res) => {
   const { amount, paymentMethod, paymentReference } = req.body;
 
-  if (!amount || amount <= 0) {
+  if (!amount || Number(amount) <= 0) {
     return res.status(400).json({ message: 'Valid payment amount required' });
   }
 
@@ -299,14 +299,15 @@ exports.recordPayment = catchAsync(async (req, res) => {
     return res.status(404).json({ message: 'Invoice not found' });
   }
 
-  const newAmountPaid = invoice.amountPaid + amount;
+  const paymentAmount = Number(amount);
+  const newAmountPaid = Number(invoice.amountPaid) + paymentAmount;
   invoice.amountPaid = newAmountPaid;
-  invoice.balanceDue = invoice.totalAmount - newAmountPaid;
+  invoice.balanceDue = Number(invoice.totalAmount) - newAmountPaid;
   
   if (paymentMethod) invoice.paymentMethod = paymentMethod;
   if (paymentReference) invoice.paymentReference = paymentReference;
   
-  if (newAmountPaid >= invoice.totalAmount) {
+  if (newAmountPaid >= Number(invoice.totalAmount)) {
     invoice.status = 'paid';
     invoice.paidDate = new Date();
   }

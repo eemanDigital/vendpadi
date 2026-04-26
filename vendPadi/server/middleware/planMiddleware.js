@@ -132,6 +132,20 @@ const checkAdvancedSorting = catchAsync(async (req, res, next) => {
   next();
 });
 
+const checkInvoiceAccess = catchAsync(async (req, res, next) => {
+  req.vendor.checkTrialExpired();
+
+  if (!hasAccess(req.vendor, "business")) {
+    return sendUpgradeRequired(
+      res,
+      req.vendor,
+      "business",
+      "Manual invoices require Business plan or higher",
+    );
+  }
+  next();
+});
+
 const getTrialInfo = catchAsync(async (req, res) => {
   req.vendor.checkTrialExpired();
 
@@ -156,6 +170,7 @@ module.exports = {
   checkCoverImage,
   checkAnalytics,
   checkAdvancedSorting,
+  checkInvoiceAccess,
   getTrialInfo,
   hasAccess,
   getEffectivePlan,

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FiMessageCircle, FiLink, FiBarChart2, FiShare2, FiArrowRight } from "react-icons/fi";
+import { FiMessageCircle, FiLink, FiBarChart2, FiShare2, FiArrowRight, FiFileText, FiCheck } from "react-icons/fi";
 import ScrollReveal from "./ScrollReveal";
 
 const coreFeatures = [
@@ -23,6 +23,12 @@ const coreFeatures = [
     title: "Share Anywhere",
     desc: "WhatsApp, Instagram, Status, SMS — everywhere",
   },
+  {
+    icon: FiFileText,
+    title: "Invoices & Receipts",
+    desc: "Manual invoices for offline sales (Business+)",
+    badge: "Business+",
+  },
 ];
 
 const FeaturesSection = () => {
@@ -40,14 +46,21 @@ const FeaturesSection = () => {
           </div>
         </ScrollReveal>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {coreFeatures.map((feature, i) => (
             <ScrollReveal key={i} delay={i * 50}>
               <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-padi-green/30 hover:shadow-xl transition-all duration-300">
                 <div className="w-14 h-14 bg-gradient-to-br from-padi-green to-emerald-400 rounded-2xl flex items-center justify-center mb-4">
                   <feature.icon className="text-white text-2xl" />
                 </div>
-                <h3 className="font-sora font-bold text-lg text-navy mb-2">{feature.title}</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="font-sora font-bold text-lg text-navy">{feature.title}</h3>
+                  {feature.badge && (
+                    <span className="text-xs bg-padi-green/10 text-padi-green px-2 py-0.5 rounded-full font-medium">
+                      {feature.badge}
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-500 text-sm">{feature.desc}</p>
               </div>
             </ScrollReveal>
