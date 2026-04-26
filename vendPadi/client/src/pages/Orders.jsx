@@ -242,6 +242,7 @@ const generateReceiptPDF = async (order, vendor) => {
 
 doc.line(15, 45, pageWidth - 15, 45);
 
+  let y = 55;
   const customerDisplay =
     order.customerPhone
       ? order.customerPhone
@@ -251,6 +252,8 @@ doc.line(15, 45, pageWidth - 15, 45);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
+  doc.text(`Customer: ${customerDisplay}`, 15, y);
+  y += 10;
   doc.text("Items Purchased", 15, y);
 
   autoTable(doc, {
