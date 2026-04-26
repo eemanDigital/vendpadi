@@ -1,30 +1,55 @@
-import { FiZap, FiSmartphone } from "react-icons/fi";
+import { motion } from "framer-motion";
+import { FiZap, FiSmartphone, FiArrowRight } from "react-icons/fi";
 
 const SetupServiceSection = () => {
   return (
-    <section className="py-12 px-4 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100">
-      <div className="max-w-3xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-semibold mb-4">
-          <FiZap size={14} /> CONVERSION FOCUS
-        </div>
-        <h3 className="font-sora font-bold text-2xl mb-3 text-navy">
+    <section className="py-16 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50/50">
+      <motion.div 
+        className="max-w-3xl mx-auto text-center"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <motion.h3 
+          className="font-sora font-bold text-2xl sm:text-3xl mb-3 text-navy"
+          whileHover={{ scale: 1.02 }}
+        >
           Don't want to set it up yourself?
-        </h3>
-        <p className="text-gray-600 mb-4">
-          We'll create your store for you in 24 hours.
-        </p>
-        <div className="inline-flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-lg mb-6">
-          <span className="text-3xl font-bold text-amber-600">₦5,000</span>
+        </motion.h3>
+        <motion.p 
+          className="text-gray-600 text-lg mb-6"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+        >
+          We'll create your professional store for you in 24 hours.
+        </motion.p>
+        <motion.div 
+          className="inline-flex items-center gap-3 bg-white px-8 py-4 rounded-2xl shadow-xl mb-8 border border-amber-100"
+          whileHover={{ boxShadow: "0 20px 40px rgba(245, 158, 11, 0.2)" }}
+        >
+          <span className="text-4xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">₦5,000</span>
           <span className="text-gray-500 text-sm">one-time</span>
-        </div>
+        </motion.div>
         <br />
-        <a
+        <motion.a
           href="mailto:support@vendpadi.com?subject=Store Setup Service"
-          className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-3 px-8 rounded-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-          <FiSmartphone size={18} />
+          whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(245, 158, 11, 0.4)" }}
+          whileTap={{ scale: 0.98 }}
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold py-4 px-10 rounded-full hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        >
+          <FiSmartphone size={20} />
           Request Setup Service
-        </a>
-      </div>
+          <motion.span
+            animate={{ x: [0, 5, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5, repeatDelay: 2 }}
+          >
+            <FiArrowRight size={18} />
+          </motion.span>
+        </motion.a>
+      </motion.div>
     </section>
   );
 };

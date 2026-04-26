@@ -11,7 +11,7 @@ const ScrollReveal = ({ children, delay = 0, className = "" }) => {
           setTimeout(() => setIsVisible(true), delay);
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1, rootMargin: "-50px" }
     );
 
     if (ref.current) observer.observe(ref.current);
@@ -22,8 +22,9 @@ const ScrollReveal = ({ children, delay = 0, className = "" }) => {
     <div
       ref={ref}
       className={`transition-all duration-700 ease-out ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
-      } ${className}`}>
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      } ${className}`}
+    >
       {children}
     </div>
   );

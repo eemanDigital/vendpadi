@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { FiZap, FiArrowRight, FiCheck } from "react-icons/fi";
-import { FiMessageCircle, FiTrendingUp, FiShoppingBag, FiArrowDownRight } from "react-icons/fi";
+import { FiZap, FiArrowRight, FiCheck, FiTrendingUp, FiArrowDownRight } from "react-icons/fi";
 import ScrollReveal from "./ScrollReveal";
 import FloatingShape from "./FloatingShape";
 
@@ -43,7 +42,8 @@ const HeroSection = () => {
             <div className="flex flex-col items-center justify-center gap-4">
               <Link
                 to="/register"
-                className="group relative inline-flex items-center justify-center gap-3 bg-padi-green hover:bg-padi-green-dark text-white font-bold py-4 px-8 sm:px-10 rounded-full text-lg transition-all duration-300 shadow-xl shadow-padi-green/30 hover:shadow-padi-green/50 hover:-translate-y-1 w-full sm:w-auto">
+                className="group relative inline-flex items-center justify-center gap-3 bg-padi-green hover:bg-padi-green-dark text-white font-bold py-4 px-8 sm:px-10 rounded-full text-lg transition-all duration-300 shadow-xl shadow-padi-green/30 hover:shadow-padi-green/50 hover:-translate-y-1 w-full sm:w-auto"
+              >
                 <FiZap className="group-hover:rotate-12 transition-transform" />
                 Create Your Store Now
                 <FiArrowRight className="opacity-0 -ml-8 group-hover:opacity-100 group-hover:ml-0 transition-all" />
