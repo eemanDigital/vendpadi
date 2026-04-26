@@ -449,7 +449,14 @@ const Dashboard = () => {
           <Link to="/" className="flex items-center gap-2">
             <Logo variant="icon" size="sm" showText />
           </Link>
-          <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
+          <div className="flex items-center gap-4">
+            {hasInvoices && (
+              <Link to="/invoices" className="text-gray-600">
+                <FiFileText size={20} />
+              </Link>
+            )}
+            <PlanBadge plan={vendor?.plan} trial={vendor?.trial} size="sm" />
+          </div>
         </div>
       </header>
 
