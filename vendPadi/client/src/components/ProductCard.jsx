@@ -1,5 +1,6 @@
 import { useState } from "react";
 import StockBadge from "./ui/StockBadge";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FiChevronLeft,
   FiChevronRight,
@@ -12,6 +13,8 @@ import {
   FiHome,
   FiGrid,
   FiZap,
+  FiPlus,
+  FiMinus,
 } from "react-icons/fi";
 
 const CategoryIcon = ({ category, size = 16, className = "" }) => {
@@ -61,6 +64,7 @@ const CategoryBadge = ({ category }) => {
 const ImageCarousel = ({ images = [], name, category }) => {
   const [current, setCurrent] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const hasMany = images && images.length > 1;
 
   if (!images || images.length === 0) {
@@ -73,39 +77,86 @@ const ImageCarousel = ({ images = [], name, category }) => {
   }
 
   return (
-    <div className="relative w-full h-full group/img">
-      {!loaded && <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse" />}
-      <img
+    <motion.div
+      className="relative w-full h-full group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: loaded ? 0 : 1 }}
+      />
+      <motion.img
         src={images[current]}
         alt={name}
         loading="lazy"
         decoding="async"
         onLoad={() => setLoaded(true)}
-        className={`w-full h-full object-cover transition-all duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: loaded ? 1 : 0 }}
+        className="absolute inset-0 w-full h-full object-cover"
       />
+      <AnimatePresence>
+        {hasMany && isHovered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-between px-2"
+          >
+            <motion.button
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrent((i) => (i - 1 + images.length) % images.length);
+              }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-8 h-8 bg-white/95 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
+            >
+              <FiChevronLeft size={16} className="text-gray-700" />
+            </motion.button>
+            <motion.button
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrent((i) => (i + 1) % images.length);
+              }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-8 h-8 bg-white/95 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
+            >
+              <FiChevronRight size={16} className="text-gray-700" />
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {hasMany && (
-        <>
-          <button onClick={(e) => { e.stopPropagation(); setCurrent((i) => (i - 1 + images.length) % images.length); }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/95 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover/img:opacity-100 transition-all z-10">
-            <FiChevronLeft size={16} className="text-gray-700" />
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); setCurrent((i) => (i + 1) % images.length); }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/95 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover/img:opacity-100 transition-all z-10">
-            <FiChevronRight size={16} className="text-gray-700" />
-          </button>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-            {images.map((_, idx) => (
-              <div key={idx} className={`w-2 h-2 rounded-full transition-all ${idx === current ? "bg-white w-4" : "bg-white/60"}`} />
-            ))}
-          </div>
-        </>
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+          {images.map((_, idx) => (
+            <motion.div
+              key={idx}
+              className={`h-1.5 rounded-full transition-all ${
+                idx === current ? "bg-white w-5" : "bg-white/50 w-2"
+              }`}
+              animate={{
+                width: idx === current ? 20 : 8,
+              }}
+              transition={{ duration: 0.2 }}
+            />
+          ))}
+        </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
-// ─── GRID CARD ───────────────────────────────────────────────
-const GridCard = ({ product, onOpenDetail }) => {
+const cardVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: 20 },
+};
+
+const GridCard = ({ product, onOpenDetail, index = 0 }) => {
   if (!product) return null;
 
   const stockPercent = product.stock > 0 ? Math.min(100, (product.stock / (product.lowStockThreshold || 5) * 100)) : 0;
@@ -114,7 +165,7 @@ const GridCard = ({ product, onOpenDetail }) => {
   const isFlashSale = product.isFlashSaleActive;
   const flashSalePrice = product.flashSale?.discountPrice;
   const discountPct = product.discountPercentage;
-  
+
   const handleCardClick = () => {
     if (onOpenDetail) {
       onOpenDetail(product);
@@ -122,19 +173,42 @@ const GridCard = ({ product, onOpenDetail }) => {
   };
 
   return (
-    <div
+    <motion.div
+      variants={cardVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      whileHover={{ y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       onClick={handleCardClick}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-xl active:scale-[0.98] transition-all duration-300 cursor-pointer flex flex-col"
+      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 active:scale-[0.98] transition-all duration-300 cursor-pointer flex flex-col shadow-sm hover:shadow-xl"
     >
       <div className="aspect-square sm:aspect-[4/3] relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-        <ImageCarousel images={product.images} name={product.name} category={product.category} />
-        
-        <div className="absolute top-2 left-2 z-10 flex gap-1.5 flex-wrap">
+        <motion.div
+          className="w-full h-full"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <ImageCarousel images={product.images} name={product.name} category={product.category} />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-2 left-2 z-10 flex gap-1.5 flex-wrap"
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           {isFlashSale && !isOut && (
-            <span className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-lg flex items-center gap-1 animate-pulse">
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-lg flex items-center gap-1"
+            >
               <FiZap size={10} />
               {discountPct}% OFF
-            </span>
+            </motion.span>
           )}
           {isLow && !isOut && !isFlashSale && (
             <span className="bg-amber-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-lg flex items-center gap-1">
@@ -147,42 +221,62 @@ const GridCard = ({ product, onOpenDetail }) => {
               Out of Stock
             </span>
           )}
-        </div>
+        </motion.div>
 
-        <div className="absolute top-2 right-2 z-10">
+        <motion.div
+          className="absolute top-2 right-2 z-10"
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.15 }}
+        >
           <CategoryBadge category={product.category} />
-        </div>
+        </motion.div>
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 sm:opacity-0 transition-opacity flex items-end justify-center pb-4 pointer-events-none">
-          <span className="bg-white/95 text-navy text-xs font-semibold px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4"
+          initial={{ opacity: 0 }}
+          whileHover={{ opacity: 1 }}
+        >
+          <motion.span
+            initial={{ y: 10, opacity: 0 }}
+            whileHover={{ y: 0, opacity: 1 }}
+            className="bg-white/95 text-navy text-xs font-semibold px-4 py-2 rounded-full flex items-center gap-2 shadow-lg"
+          >
             <FiEye size={14} />
             View Details
-          </span>
-        </div>
-        
-        <div className="absolute inset-0 bg-black/5 opacity-0 group-active:opacity-100 transition-opacity sm:hidden" />
+          </motion.span>
+        </motion.div>
       </div>
 
       <div className="p-3 sm:p-4 flex flex-col flex-1">
-        <h3 className="font-sora font-bold text-navy text-xs sm:text-sm leading-tight line-clamp-2 mb-2 sm:mb-3">
+        <motion.h3
+          className="font-sora font-bold text-navy text-xs sm:text-sm leading-tight line-clamp-2 mb-2 sm:mb-3"
+          whileHover={{ color: "#10B981" }}
+        >
           {product.name}
-        </h3>
+        </motion.h3>
 
         <div className="flex items-center justify-between mb-2 sm:mb-3">
           <div className="flex flex-col">
             {isFlashSale ? (
               <>
-                <span className="font-bold text-base sm:text-lg text-red-500">
+                <motion.span
+                  className="font-bold text-base sm:text-lg text-red-500"
+                  whileHover={{ scale: 1.05 }}
+                >
                   ₦{flashSalePrice?.toLocaleString()}
-                </span>
+                </motion.span>
                 <span className="text-xs text-gray-400 line-through">
                   ₦{product.price.toLocaleString()}
                 </span>
               </>
             ) : (
-              <span className="font-bold text-base sm:text-lg text-padi-green">
+              <motion.span
+                className="font-bold text-base sm:text-lg text-padi-green"
+                whileHover={{ scale: 1.05 }}
+              >
                 ₦{product.price.toLocaleString()}
-              </span>
+              </motion.span>
             )}
           </div>
           {product.stock > 0 && (
@@ -192,27 +286,33 @@ const GridCard = ({ product, onOpenDetail }) => {
 
         {product.stock > 0 && (
           <div className="mt-auto hidden sm:block">
-            <div className="flex items-center justify-between text-xs mb-1.5">
+            <motion.div
+              className="flex items-center justify-between text-xs mb-1.5"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
               <span className="text-gray-500 font-medium">Stock Level</span>
               <span className={`font-bold ${isLow ? 'text-amber-600' : 'text-gray-700'}`}>
                 {product.stock} units
               </span>
-            </div>
+            </motion.div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
+              <motion.div
                 className={`h-full rounded-full transition-all duration-500 ${isLow ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500'}`}
-                style={{ width: `${stockPercent}%` }}
+                initial={{ width: 0 }}
+                animate={{ width: `${stockPercent}%` }}
+                transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
               />
             </div>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-// ─── LIST CARD ───────────────────────────────────────────────
-const ListCard = ({ product, onOpenDetail }) => {
+const ListCard = ({ product, onOpenDetail, index = 0 }) => {
   if (!product) return null;
 
   const isLow = product.lowStockAlert;
@@ -227,13 +327,24 @@ const ListCard = ({ product, onOpenDetail }) => {
   };
 
   return (
-    <div
+    <motion.div
+      variants={cardVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      whileHover={{ x: 4 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       onClick={handleCardClick}
       className="group bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-lg active:scale-[0.98] transition-all duration-300 cursor-pointer flex"
     >
-      <div className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0 relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+      <motion.div
+        className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0 relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
+        whileHover={{ scale: 1.05 }}
+        transition={{ duration: 0.3 }}
+      >
         <ImageCarousel images={product.images} name={product.name} category={product.category} />
-        
+
         {isFlashSale && !isOut && (
           <div className="absolute top-1 left-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
             <FiZap size={8} /> {product.discountPercentage}%
@@ -249,7 +360,7 @@ const ListCard = ({ product, onOpenDetail }) => {
             <span className="bg-white text-gray-600 px-2 py-1 rounded text-xs font-bold">Out</span>
           </div>
         )}
-      </div>
+      </motion.div>
 
       <div className="flex-1 p-2.5 sm:p-4 flex flex-col justify-between min-w-0">
         <div>
@@ -293,17 +404,19 @@ const ListCard = ({ product, onOpenDetail }) => {
               <span className="text-[10px] sm:text-xs text-gray-400 hidden sm:inline">{product.stock} in stock</span>
             </div>
           </div>
-          <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-400 bg-gray-50 px-1.5 sm:px-2 py-1 rounded-lg">
+          <motion.div
+            className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-400 bg-gray-50 px-1.5 sm:px-2 py-1 rounded-lg"
+            whileHover={{ scale: 1.05, backgroundColor: "#f0fdf4" }}
+          >
             <FiEye size={10} className="sm:w-3 sm:h-3" />
             <span className="hidden sm:inline">View</span>
-          </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-// ─── EXPORTED WRAPPER ────────────────────────────────────────
 const ProductCard = ({ product, onOpenDetail, view = "grid" }) => {
   if (!product) return null;
 
