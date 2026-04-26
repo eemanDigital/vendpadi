@@ -11,6 +11,7 @@ import {
   FiCreditCard,
   FiCalendar,
   FiPercent,
+  FiZap,
 } from "react-icons/fi";
 import { PLAN_DETAILS, FALLBACK_PAYMENT } from "../data/planConstants";
 
