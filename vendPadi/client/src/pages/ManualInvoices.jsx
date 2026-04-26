@@ -590,6 +590,32 @@ function ManualInvoices() {
     }
   };
 
+  const quickMarkPaid = async (id) => {
+    const invoice = invoices.find(i => i._id === id);
+    if (!invoice) return;
+    
+    const balance = invoice.balanceDue || 0;
+    if (balance > 0) {
+      try {
+        await invoiceAPI.recordPayment(id, {
+          amount: balance,
+          paymentMethod: "other",
+          paymentReference: "Quick payment"
+        });
+        toast.success("Marked as paid");
+        fetchInvoices();
+      } catch (error) {
+        toast.error("Failed to record payment");
+      }
+    } else {
+      handleStatusChange(id, "paid");
+    }
+  };
+
+  const quickIssue = async (id) => {
+    handleStatusChange(id, "issued");
+  };
+
   const openPaymentModal = (invoice) => {
     setPaymentInvoice(invoice);
     setPaymentData({
@@ -720,10 +746,13 @@ function ManualInvoices() {
                       Customer
                     </th>
                     <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">
-                      Amount
+                      Total
                     </th>
                     <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">
                       Paid
+                    </th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">
+                      Due
                     </th>
                     <th className="text-left px-4 py-3 text-sm font-medium text-gray-500">
                       Status
@@ -763,6 +792,9 @@ function ManualInvoices() {
                       <td className="px-4 py-3 text-right text-green-600">
                         {formatCurrency(invoice.amountPaid)}
                       </td>
+                      <td className="px-4 py-3 text-right text-orange-600">
+                        {formatCurrency(invoice.balanceDue)}
+                      </td>
                       <td className="px-4 py-3">
                         <select
                           value={invoice.status}
@@ -782,31 +814,37 @@ function ManualInvoices() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex gap-1 justify-end">
                           <button
                             onClick={() => handleDownload(invoice)}
-                            className="p-1 text-gray-500 hover:text-green-600"
-                            title="Download">
-                            <FiDownload size={18} />
+                            className="p-1.5 text-gray-500 hover:text-green-600"
+                            title="Download PDF">
+                            <FiDownload size={16} />
                           </button>
-                          <button
-                            onClick={() => openPaymentModal(invoice)}
-                            className="p-1 text-gray-500 hover:text-blue-600"
-                            title="Record Payment">
-                            <FiDollarSign size={18} />
-                          </button>
-                          <button
-                            onClick={() => openEditModal(invoice)}
-                            className="p-1 text-gray-500 hover:text-blue-600"
-                            title="Edit">
-                            <FiEdit size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(invoice._id)}
-                            className="p-1 text-gray-500 hover:text-red-600"
-                            title="Delete">
-                            <FiTrash2 size={18} />
-                          </button>
+                          {invoice.status === "draft" && (
+                            <button
+                              onClick={() => quickIssue(invoice._id)}
+                              className="p-1.5 text-blue-600 hover:text-blue-800"
+                              title="Issue Invoice">
+                              <FiSend size={16} />
+                            </button>
+                          )}
+                          {invoice.balanceDue > 0 && invoice.status !== "paid" && (
+                            <button
+                              onClick={() => openPaymentModal(invoice)}
+                              className="p-1.5 text-orange-600 hover:text-orange-800"
+                              title="Record Payment">
+                              <FiDollarSign size={16} />
+                            </button>
+                          )}
+                          {invoice.balanceDue > 0 && (
+                            <button
+                              onClick={() => quickMarkPaid(invoice._id)}
+                              className="p-1.5 text-green-600 hover:text-green-800"
+                              title="Mark Fully Paid">
+                              <FiCheck size={16} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
