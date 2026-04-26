@@ -457,13 +457,59 @@ function ManualInvoices() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    const errors = [];
+    
+    if (!formData.customerName && !formData.customerPhone) {
+      errors.push("Add customer name or phone number");
+    }
+    
     const validItems = formData.items.filter(
-      (item) => item.name && item.qty > 0 && item.unitPrice > 0,
+      (item) => item.name && parseFloat(item.qty) > 0 && parseFloat(item.unitPrice) > 0,
     );
     if (validItems.length === 0) {
-      toast.error("Add at least one valid item");
+      errors.push("Add at least one item with name, quantity and price");
+    }
+    
+    if (formData.type === "invoice" && !formData.dueDate) {
+      errors.push("Invoices should have a due date");
+    }
+    
+    validItems.forEach((item, i) => {
+      if (parseFloat(item.qty) < 1) {
+        errors.push(`Item ${i+1}: Quantity must be at least 1`);
+      }
+      if (parseFloat(item.unitPrice) < 0) {
+        errors.push(`Item ${i+1}: Price cannot be negative`);
+      }
+      if (parseFloat(item.discount || 0) < 0) {
+        errors.push(`Item ${i+1}: Discount cannot be negative`);
+      }
+    });
+    
+    if (errors.length > 0) {
+      errors.forEach(err => toast.error(err));
       return;
+    }
+    
+    if (parseFloat(formData.discount) < 0) {
+      toast.error("Discount cannot be negative");
+      return;
+    }
+    
+    if (parseFloat(formData.tax) < 0) {
+      toast.error("Tax cannot be negative");
+      return;
+    }
+
+    if (validItems.length < formData.items.length) {
+      const emptyItems = formData.items.filter(
+        (item) => !item.name || !item.qty || !item.unitPrice,
+      );
+      if (emptyItems.length > 0) {
+        toast.error("Remove empty items before submitting");
+        return;
+      }
     }
 
     const payload = {
@@ -501,7 +547,7 @@ function ManualInvoices() {
       fetchInvoices();
     } catch (error) {
       if (error.response?.status === 403) {
-        const { message, requiredPlan, currentPlan, trialActive } = error.response.data;
+        const { message, requiredPlan, trialActive } = error.response.data;
         toast.error(
           <div>
             <div>{message}</div>
@@ -509,6 +555,26 @@ function ManualInvoices() {
           </div>,
           { duration: 5000 }
         );
+      } else if (error.response?.status === 400 && error.response?.data?.message) {
+        let msg = error.response.data.message;
+        if (msg.includes("tax")) msg = "Tax cannot be negative";
+        if (msg.includes("discount")) msg = "Discount cannot be negative";
+        if (msg.includes("qty")) msg = "Quantity must be at least 1";
+        if (msg.includes("unitPrice")) msg = "Price must be greater than 0";
+        if (msg.includes("validation failed")) msg = "Please check your form values: " + msg;
+        toast.error(msg);
+      } else if (error.response?.status === 400) {
+        const msgs = [];
+        if (error.response.data?.errors) {
+          Object.values(error.response.data.errors).forEach(err => {
+            msgs.push(err.message);
+          });
+        }
+        if (msgs.length > 0) {
+          msgs.forEach(m => toast.error(m));
+        } else {
+          toast.error("Please check your form values");
+        }
       } else {
         toast.error(error.response?.data?.message || "Failed to save");
       }
@@ -907,7 +973,7 @@ function ManualInvoices() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Customer Name
+                    Customer Name <span className="text-gray-400">(or leave empty)</span>
                   </label>
                   <input
                     type="text"
@@ -915,12 +981,12 @@ function ManualInvoices() {
                     value={formData.customerName}
                     onChange={handleInputChange}
                     className="w-full border rounded-lg px-3 py-2"
-                    placeholder="Optional"
+                    placeholder="John Doe"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Customer Phone
+                    Customer Phone <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -945,7 +1011,7 @@ function ManualInvoices() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Due Date (Invoice)
+                    Due Date <span className="text-gray-400">(invoices only)</span>
                   </label>
                   <input
                     type="date"
@@ -959,7 +1025,7 @@ function ManualInvoices() {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Items
+                  Items <span className="text-red-500">*</span>
                 </label>
                 <div className="space-y-2">
                   {formData.items.map((item, index) => (
@@ -971,7 +1037,7 @@ function ManualInvoices() {
                           handleItemChange(index, "name", e.target.value)
                         }
                         className="flex-1 border rounded-lg px-3 py-2"
-                        placeholder="Item name *"
+                        placeholder="e.g. Laptop HP"
                       />
                       <input
                         type="number"
@@ -980,7 +1046,7 @@ function ManualInvoices() {
                           handleItemChange(index, "qty", e.target.value)
                         }
                         className="w-20 border rounded-lg px-3 py-2"
-                        placeholder="Qty"
+                        placeholder="1"
                         min="1"
                       />
                       <input
@@ -990,7 +1056,7 @@ function ManualInvoices() {
                           handleItemChange(index, "unitPrice", e.target.value)
                         }
                         className="w-28 border rounded-lg px-3 py-2"
-                        placeholder="Price"
+                        placeholder="0"
                       />
                       <input
                         type="number"
@@ -999,7 +1065,8 @@ function ManualInvoices() {
                           handleItemChange(index, "discount", e.target.value)
                         }
                         className="w-24 border rounded-lg px-3 py-2"
-                        placeholder="Discount"
+                        placeholder="0"
+                        min="0"
                       />
                       <div className="w-24 py-2 text-sm text-gray-600">
                         NGN{" "}
@@ -1031,13 +1098,14 @@ function ManualInvoices() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Total Discount
-                  </label>
+</label>
                   <input
                     type="number"
                     name="discount"
                     value={formData.discount}
                     onChange={handleInputChange}
                     className="w-full border rounded-lg px-3 py-2"
+                    min="0"
                   />
                 </div>
                 <div>
@@ -1050,6 +1118,20 @@ function ManualInvoices() {
                     value={formData.tax}
                     onChange={handleInputChange}
                     className="w-full border rounded-lg px-3 py-2"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tax
+                  </label>
+                  <input
+                    type="number"
+                    name="tax"
+                    value={formData.tax}
+                    onChange={handleInputChange}
+                    className="w-full border rounded-lg px-3 py-2"
+                    min="0"
                   />
                 </div>
                 <div>
