@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "../../store/cartSlice";
+import { toggleWishlist, selectIsInWishlist } from "../../store/wishlistSlice";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiX, FiCheck, FiShoppingCart, FiShare2, FiStar, FiMessageSquare, FiChevronDown, FiZap } from "react-icons/fi";
+import { FiX, FiCheck, FiShoppingCart, FiShare2, FiStar, FiMessageSquare, FiChevronDown, FiZap, FiHeart } from "react-icons/fi";
 import toast from "react-hot-toast";
 import QRCode from "react-qr-code";
 import { CategoryBadge, ImageCarousel } from "../ProductCard";
@@ -28,6 +29,7 @@ const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
 
   const dispatch = useDispatch();
   const cartItems = useSelector((s) => s.cart.items);
+  const isInWishlist = useSelector(selectIsInWishlist(product._id));
   const [justAdded, setJustAdded] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
@@ -99,6 +101,11 @@ const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
       icon: "🛒",
       duration: 2000,
     });
+  };
+
+  const handleToggleWishlist = () => {
+    dispatch(toggleWishlist(product));
+    toast.success(isInWishlist ? 'Removed from wishlist' : 'Added to wishlist');
   };
 
   const isFlashSale = product.flashSale?.isActive && product.flashSale?.discountPrice;
@@ -187,11 +194,23 @@ const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
                 )}
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 flex-shrink-0">
-              <FiX size={18} />
-            </button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={handleToggleWishlist}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${
+                  isInWishlist
+                    ? 'bg-red-50 text-red-500 hover:bg-red-100'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-500'
+                }`}
+              >
+                <FiHeart size={18} className={isInWishlist ? 'fill-current' : ''} />
+              </button>
+              <button
+                onClick={onClose}
+                className="w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95">
+                <FiX size={18} />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto overscroll-contain">

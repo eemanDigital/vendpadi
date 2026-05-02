@@ -1,4 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { wishlistAPI } from '../api/axiosInstance';
 
 const getOrCreateCustomerId = () => {
   let customerId = localStorage.getItem('vendpadi_customer_id');
@@ -18,13 +19,41 @@ const loadWishlistFromStorage = (slug) => {
   }
 };
 
+export const syncWishlistWithServer = createAsyncThunk(
+  'wishlist/syncWithServer',
+  async ({ phone, storeSlug, items }, { rejectWithValue }) => {
+    try {
+      const response = await wishlistAPI.sync(phone, storeSlug, items);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to sync wishlist');
+    }
+  }
+);
+
+export const fetchWishlistFromServer = createAsyncThunk(
+  'wishlist/fetchFromServer',
+  async ({ phone, storeSlug }, { rejectWithValue }) => {
+    try {
+      const response = await wishlistAPI.get(phone, storeSlug);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch wishlist');
+    }
+  }
+);
+
 const wishlistSlice = createSlice({
   name: 'wishlist',
   initialState: {
     items: [],
     isOpen: false,
     customerId: null,
-    storeSlug: null
+    storeSlug: null,
+    phone: null,
+    isSynced: false,
+    syncLoading: false,
+    syncError: null
   },
   reducers: {
     initWishlist: (state, action) => {
@@ -32,6 +61,9 @@ const wishlistSlice = createSlice({
       state.storeSlug = storeSlug;
       state.customerId = getOrCreateCustomerId();
       state.items = loadWishlistFromStorage(storeSlug);
+    },
+    setPhone: (state, action) => {
+      state.phone = action.payload;
     },
     addToWishlist: (state, action) => {
       const product = action.payload;
@@ -78,17 +110,73 @@ const wishlistSlice = createSlice({
     },
     setWishlistOpen: (state, action) => {
       state.isOpen = action.payload;
+    },
+    setServerItems: (state, action) => {
+      state.items = action.payload.map(item => ({
+        _id: item.productId?._id || item.productId,
+        name: item.name,
+        price: item.price,
+        images: item.images,
+        category: item.category,
+        addedAt: item.addedAt
+      }));
+      state.isSynced = true;
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(syncWishlistWithServer.pending, (state) => {
+        state.syncLoading = true;
+        state.syncError = null;
+      })
+      .addCase(syncWishlistWithServer.fulfilled, (state, action) => {
+        state.syncLoading = false;
+        state.isSynced = true;
+        state.items = action.payload.items.map(item => ({
+          _id: item.productId?._id || item.productId,
+          name: item.name,
+          price: item.price,
+          images: item.images,
+          category: item.category,
+          addedAt: item.addedAt
+        }));
+      })
+      .addCase(syncWishlistWithServer.rejected, (state, action) => {
+        state.syncLoading = false;
+        state.syncError = action.payload;
+      })
+      .addCase(fetchWishlistFromServer.pending, (state) => {
+        state.syncLoading = true;
+        state.syncError = null;
+      })
+      .addCase(fetchWishlistFromServer.fulfilled, (state, action) => {
+        state.syncLoading = false;
+        state.isSynced = true;
+        state.items = action.payload.items.map(item => ({
+          _id: item.productId?._id || item.productId,
+          name: item.name,
+          price: item.price,
+          images: item.images,
+          category: item.category,
+          addedAt: item.addedAt
+        }));
+      })
+      .addCase(fetchWishlistFromServer.rejected, (state, action) => {
+        state.syncLoading = false;
+        state.syncError = action.payload;
+      });
   }
 });
 
 export const { 
   initWishlist,
+  setPhone,
   addToWishlist, 
   removeFromWishlist, 
   toggleWishlist, 
   clearWishlist,
-  setWishlistOpen 
+  setWishlistOpen,
+  setServerItems
 } = wishlistSlice.actions;
 
 export const selectWishlistItems = (state) => state.wishlist.items;
@@ -97,5 +185,9 @@ export const selectIsInWishlist = (productId) => (state) =>
 export const selectWishlistCount = (state) => state.wishlist.items.length;
 export const selectIsWishlistOpen = (state) => state.wishlist.isOpen;
 export const selectCustomerId = (state) => state.wishlist.customerId;
+export const selectPhone = (state) => state.wishlist.phone;
+export const selectIsSynced = (state) => state.wishlist.isSynced;
+export const selectSyncLoading = (state) => state.wishlist.syncLoading;
+export const selectSyncError = (state) => state.wishlist.syncError;
 
 export default wishlistSlice.reducer;

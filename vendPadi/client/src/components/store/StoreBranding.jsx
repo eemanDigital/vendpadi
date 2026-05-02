@@ -1,8 +1,29 @@
 import { Link } from 'react-router-dom';
 
 const StoreBranding = ({ plan }) => {
+  const linkClass = 'text-navy hover:text-padi-green font-medium transition-colors';
+
   if (plan && plan.type !== 'free') {
-    return null;
+    return (
+      <div className="py-3 px-4 text-center border-t border-gray-100 bg-gray-50">
+        <p className="text-xs text-gray-400">
+          Powered by{' '}
+          <Link 
+            to="/" 
+            className="text-padi-green hover:text-padi-green-dark font-medium transition-colors"
+          >
+            VendPadi
+          </Link>
+          {' '}•{' '}
+          <Link 
+            to="/my-orders" 
+            className={linkClass}
+          >
+            My Orders →
+          </Link>
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -17,10 +38,17 @@ const StoreBranding = ({ plan }) => {
         </Link>
         {' '}•{' '}
         <Link 
-          to="/register" 
-          className="text-gold hover:text-gold/80 font-medium transition-colors"
+          to="/my-orders" 
+          className={linkClass}
         >
-          Remove branding →
+          My Orders →
+        </Link>
+        {' '}•{' '}
+        <Link 
+          to="/track" 
+          className={linkClass}
+        >
+          Track Order →
         </Link>
       </p>
     </div>

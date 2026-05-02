@@ -1,5 +1,6 @@
 import { useState } from "react";
 import StockBadge from "./ui/StockBadge";
+import WishlistButton from "./store/WishlistButton";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiChevronLeft,
@@ -224,11 +225,12 @@ const GridCard = ({ product, onOpenDetail, index = 0 }) => {
         </motion.div>
 
         <motion.div
-          className="absolute top-2 right-2 z-10"
+          className="absolute top-2 right-2 z-10 flex flex-col gap-1.5"
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.15 }}
         >
+          <WishlistButton product={product} size="sm" />
           <CategoryBadge category={product.category} />
         </motion.div>
 
@@ -344,6 +346,10 @@ const ListCard = ({ product, onOpenDetail, index = 0 }) => {
         transition={{ duration: 0.3 }}
       >
         <ImageCarousel images={product.images} name={product.name} category={product.category} />
+
+        <div className="absolute top-1 right-1 z-10">
+          <WishlistButton product={product} size="sm" />
+        </div>
 
         {isFlashSale && !isOut && (
           <div className="absolute top-1 left-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">

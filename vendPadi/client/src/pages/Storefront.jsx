@@ -7,7 +7,7 @@ import { storeAPI, trackingAPI } from "../api/axiosInstance";
 import { buildWhatsAppOrderLink } from "../utils/whatsapp";
 import Pagination from "../components/ui/Pagination";
 import toast from "react-hot-toast";
-import { FiPackage, FiHome, FiChevronRight, FiHeart } from "react-icons/fi";
+import { FiPackage, FiHome, FiChevronRight, FiHeart, FiExternalLink, FiCheckCircle, FiCopy } from "react-icons/fi";
 import { AnimatePresence, motion } from "framer-motion";
 
 import StoreHeader from "../components/store/StoreHeader";
@@ -22,6 +22,7 @@ import ProductDetailModal from "../components/store/ProductDetailModal";
 import CartDrawer from "../components/store/CartDrawer";
 import WhatsAppQRModal from "../components/WhatsAppQRModal";
 import WishlistDrawer from "../components/store/WishlistDrawer";
+import CheckoutModal from "../components/store/CheckoutModal";
 import { selectWishlistCount, setWishlistOpen } from "../store/wishlistSlice";
 
 const scaleIn = {
@@ -52,6 +53,22 @@ const [pagination, setPagination] = useState(null);
 const [loadingMore, setLoadingMore] = useState(false);
 const [showCart, setShowCart] = useState(false);
 const [showWishlist, setShowWishlist] = useState(false);
+const [showCheckout, setShowCheckout] = useState(false);
+const [showOrderConfirm, setShowOrderConfirm] = useState(false);
+const [lastOrderInfo, setLastOrderInfo] = useState(null);
+const [pendingDeliveryInfo, setPendingDeliveryInfo] = useState(null);
+
+useEffect(() => {
+  try {
+    const saved = localStorage.getItem(`vendpadi_orders_${slug}`);
+    if (saved) {
+      const orders = JSON.parse(saved);
+      if (orders.length > 0) {
+        setLastOrderInfo(orders[orders.length - 1]);
+      }
+    }
+  } catch {}
+}, [slug]);
 
 const bundles = store?.bundles || [];
 
@@ -147,8 +164,9 @@ const bundles = store?.bundles || [];
     
     const finalDeliveryInfo = passedDeliveryInfo || deliveryInfo;
 
+    let trackingData = null;
     try {
-      await storeAPI.createOrder(slug, {
+      const { data } = await storeAPI.createOrder(slug, {
         items: cartItems.map((i) => ({
           productId: i.isBundle ? null : i._id,
           name: i.name,
@@ -162,6 +180,7 @@ const bundles = store?.bundles || [];
         totalAmount: cartTotal,
         deliveryInfo: finalDeliveryInfo,
       });
+      trackingData = data.trackingInfo;
     } catch {
       // Non-blocking
     }
@@ -171,6 +190,8 @@ const bundles = store?.bundles || [];
       store.vendor.businessName,
       cartItems,
       finalDeliveryInfo,
+      '',
+      trackingData?.shortId || '',
     );
 
     const productIds = cartItems.map(item => item._id);
@@ -181,8 +202,103 @@ const bundles = store?.bundles || [];
       dispatch(clearCart());
       setShowCart(false);
       toast.success("WhatsApp opened with your order!");
+      
+      if (trackingData) {
+        const orderData = {
+          shortId: trackingData.shortId,
+          orderId: trackingData.orderId,
+          trackingUrl: trackingData.trackingUrl,
+          storeSlug: slug,
+          trackedAt: new Date().toISOString()
+        };
+        setLastOrderInfo(orderData);
+        
+        try {
+          const key = `vendpadi_orders_${slug}`;
+          const existing = JSON.parse(localStorage.getItem(key) || '[]');
+          existing.push(orderData);
+          localStorage.setItem(key, JSON.stringify(existing.slice(-10)));
+        } catch {}
+      }
     }
   }, [cartItems, store, cartTotal, slug, dispatch, deliveryInfo]);
+
+  const handleCheckout = useCallback((passedDeliveryInfo = null) => {
+    if (!cartItems.length || !store) return;
+    setPendingDeliveryInfo(passedDeliveryInfo || deliveryInfo);
+    setShowCheckout(true);
+  }, [cartItems.length, store, deliveryInfo]);
+
+  const handleCheckoutSubmit = useCallback(async ({ name, phone, note }) => {
+    if (!cartItems.length || !store) return;
+    
+    const finalDeliveryInfo = pendingDeliveryInfo || deliveryInfo;
+
+    let trackingData = null;
+    try {
+      const { data } = await storeAPI.createOrder(slug, {
+        items: cartItems.map((i) => ({
+          productId: i.isBundle ? null : i._id,
+          name: i.name,
+          price: i.price,
+          qty: i.qty,
+          originalPrice: i.originalPrice,
+          isBundle: i.isBundle,
+          bundleId: i.bundleId,
+          isFlashSale: i.isFlashSale,
+        })),
+        totalAmount: cartTotal,
+        customerName: name,
+        customerPhone: phone,
+        note: note,
+        deliveryInfo: finalDeliveryInfo,
+      });
+      trackingData = data.trackingInfo;
+    } catch {
+      // Non-blocking
+    }
+
+    const waLink = buildWhatsAppOrderLink(
+      store.vendor.phone,
+      store.vendor.businessName,
+      cartItems,
+      finalDeliveryInfo,
+      name,
+      trackingData?.shortId || '',
+    );
+
+    const productIds = cartItems.map(item => item._id);
+    trackingAPI.trackWhatsAppClick(slug, productIds).catch(() => {});
+
+    if (waLink) {
+      window.open(waLink, "_blank");
+      dispatch(clearCart());
+      setShowCheckout(false);
+      setShowCart(false);
+      toast.success("WhatsApp opened with your order!");
+      
+      if (trackingData) {
+        const orderData = {
+          shortId: trackingData.shortId,
+          orderId: trackingData.orderId,
+          trackingUrl: trackingData.trackingUrl,
+          storeSlug: slug,
+          customerPhone: phone,
+          customerName: name,
+          trackedAt: new Date().toISOString()
+        };
+        setLastOrderInfo(orderData);
+        setShowOrderConfirm(true);
+        
+        try {
+          const key = `vendpadi_orders_${slug}`;
+          const existing = JSON.parse(localStorage.getItem(key) || '[]');
+          existing.push(orderData);
+          localStorage.setItem(key, JSON.stringify(existing.slice(-10)));
+        } catch {}
+      }
+    }
+  }, [cartItems, store, cartTotal, slug, dispatch, deliveryInfo, pendingDeliveryInfo]);
 
   const handleShare = async () => {
     try {
@@ -285,12 +401,14 @@ const bundles = store?.bundles || [];
         isOpen={showCart}
         onClose={() => setShowCart(false)}
         onOrder={handleOrder}
+        onCheckout={handleCheckout}
         deliveryZones={store?.vendor?.deliveryZones}
       />
 
       <WishlistDrawer
         isOpen={showWishlist}
         onClose={() => setShowWishlist(false)}
+        storeSlug={store?.vendor?.slug}
       />
 
       <StoreBottomBar
@@ -309,6 +427,91 @@ const bundles = store?.bundles || [];
         whatsappLink={whatsappLink}
         storeName={store?.vendor?.businessName}
       />
+
+      <CheckoutModal
+        isOpen={showCheckout}
+        onClose={() => setShowCheckout(false)}
+        cartItems={cartItems}
+        cartTotal={cartTotal}
+        deliveryInfo={pendingDeliveryInfo || deliveryInfo}
+        storeName={store?.vendor?.businessName}
+        vendorPhone={store?.vendor?.phone}
+        onSubmit={handleCheckoutSubmit}
+      />
+
+      <AnimatePresence>
+        {showOrderConfirm && lastOrderInfo && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowOrderConfirm(false)}
+              className="fixed inset-0 bg-black/60 z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed inset-4 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-md sm:w-full z-50 bg-white rounded-2xl shadow-2xl overflow-hidden"
+            >
+              <div className="bg-gradient-to-r from-padi-green to-padi-green-dark p-6 text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <FiCheckCircle size={32} className="text-white" />
+                </div>
+                <h3 className="font-sora font-bold text-xl text-white">Order Sent!</h3>
+                <p className="text-white/80 text-sm mt-1">Your order has been placed successfully</p>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-xs text-gray-500 mb-1">Order ID</p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-mono font-bold text-navy text-lg">#{lastOrderInfo.shortId}</p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(lastOrderInfo.orderId);
+                        toast.success('Order ID copied!');
+                      }}
+                      className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                      <FiCopy size={16} className="text-gray-500" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">
+                    Keep your <span className="font-semibold text-navy">Order ID</span> and <span className="font-semibold text-navy">phone number</span> to track your order status.
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    You can always access your orders via the <Link to="/my-orders" className="text-padi-green hover:underline font-medium">My Orders</Link> page.
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setShowOrderConfirm(false);
+                      navigate(`/track?orderId=${lastOrderInfo.orderId}&phone=${encodeURIComponent(lastOrderInfo.customerPhone || '')}`);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 bg-padi-green text-white py-3 rounded-xl font-semibold hover:bg-padi-green-dark transition-colors"
+                  >
+                    <FiExternalLink size={16} />
+                    Track Order
+                  </button>
+                  <button
+                    onClick={() => setShowOrderConfirm(false)}
+                    className="flex-1 bg-gray-100 text-navy py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showScrollTop && (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { FiArrowLeft, FiShare2, FiCheck, FiHeart, FiMenu, FiX } from "react-icons/fi";
+import { FiArrowLeft, FiShare2, FiCheck, FiHeart, FiMenu, FiX, FiPackage } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import OptimizedImage from "../OptimizedImage";
 
 const headerVariants = {
@@ -80,11 +81,18 @@ const StoreHeader = ({ vendor, onBack, onShare, onWishlist, wishlistCount = 0, c
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={onWishlist}
-              className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-gray-50/80 hover:bg-gray-100 transition-all flex-shrink-0 group"
-            >
+          <Link
+            to="/my-orders"
+            className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-gray-50/80 hover:bg-gray-100 transition-all flex-shrink-0 group"
+          >
+            <FiPackage size={16} className="text-gray-500 group-hover:text-navy transition-colors" />
+          </Link>
+
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={onWishlist}
+            className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-gray-50/80 hover:bg-gray-100 transition-all flex-shrink-0 group"
+          >
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}

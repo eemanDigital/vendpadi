@@ -107,6 +107,23 @@ export const storeAPI = {
   createOrder: (slug, data) => api.post(`/store/${slug}/order`, data)
 };
 
+export const wishlistAPI = {
+  get: (phone, storeSlug) => api.get(`/wishlist/${encodeURIComponent(phone)}/${storeSlug}`),
+  sync: (phone, storeSlug, items) => api.post('/wishlist/sync', { phone, storeSlug, items }),
+  addItem: (phone, storeSlug, data) => api.post(`/wishlist/${encodeURIComponent(phone)}/${storeSlug}/add`, data),
+  removeItem: (phone, storeSlug, productId) => api.delete(`/wishlist/${encodeURIComponent(phone)}/${storeSlug}/${productId}`),
+  toggleItem: (phone, storeSlug, data) => api.post(`/wishlist/${encodeURIComponent(phone)}/${storeSlug}/toggle`, data),
+  clear: (phone, storeSlug) => api.delete(`/wishlist/${encodeURIComponent(phone)}/${storeSlug}`)
+};
+
+export const orderTrackingAPI = {
+  track: (orderId, phone) => {
+    const params = { orderId };
+    if (phone) params.phone = phone;
+    return api.get('/orders/track', { params });
+  }
+};
+
 export const bundleAPI = {
   getAll: () => api.get('/bundles'),
   create: (data) => api.post('/bundles', data),

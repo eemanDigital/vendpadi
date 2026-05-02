@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setDeliveryInfo, clearCart } from "../../store/cartSlice";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiX, FiShoppingCart, FiMessageCircle, FiInfo, FiTrash2, FiChevronDown, FiCheck, FiArrowRight, FiTruck } from "react-icons/fi";
+import { FiX, FiShoppingCart, FiMessageCircle, FiInfo, FiTrash2, FiChevronDown, FiCheck, FiArrowRight, FiTruck, FiShield } from "react-icons/fi";
 import toast from "react-hot-toast";
 import CartItemRow from "./CartItemRow";
 
@@ -18,7 +18,7 @@ const drawerSlide = {
   exit: { x: "100%" },
 };
 
-const CartDrawer = ({ isOpen, onClose, onOrder, deliveryZones }) => {
+const CartDrawer = ({ isOpen, onClose, onOrder, onCheckout, deliveryZones }) => {
   const dispatch = useDispatch();
   const cartItems = useSelector((s) => s.cart.items);
   const cartTotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
@@ -189,15 +189,29 @@ const CartDrawer = ({ isOpen, onClose, onOrder, deliveryZones }) => {
                   </p>
                 )}
 
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleSendOrder}
-                  className="w-full bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg"
-                >
-                  <FiMessageCircle size={18} />
-                  Send Order via WhatsApp
-                </motion.button>
+                <div className="flex gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSendOrder}
+                    className="flex-1 bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg"
+                  >
+                    <FiMessageCircle size={18} />
+                    <span className="hidden sm:inline">Order via WhatsApp</span>
+                    <span className="sm:hidden">WhatsApp</span>
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => { onClose(); if (onCheckout) onCheckout(deliveryInfo); }}
+                    className="flex-1 bg-navy hover:bg-navy/90 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg"
+                  >
+                    <FiShield size={16} />
+                    <span className="hidden sm:inline">Checkout & Track</span>
+                    <span className="sm:hidden">Track</span>
+                  </motion.button>
+                </div>
 
                 <button
                   onClick={() => { dispatch(clearCart()); toast.success("Order cleared"); }}

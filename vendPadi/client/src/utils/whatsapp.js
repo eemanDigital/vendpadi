@@ -1,4 +1,4 @@
-export const buildWhatsAppOrderLink = (vendorPhone, storeName, cartItems, deliveryInfo = null) => {
+export const buildWhatsAppOrderLink = (vendorPhone, storeName, cartItems, deliveryInfo = null, customerName = '', orderId = null) => {
   if (!cartItems.length) return null;
 
   const lines = cartItems.map(
@@ -12,9 +12,20 @@ export const buildWhatsAppOrderLink = (vendorPhone, storeName, cartItems, delive
   const messageParts = [
     `Hello ${storeName}! I'd like to place an order:`,
     '',
-    ...lines,
-    '',
   ];
+
+  if (customerName) {
+    messageParts.push(`Name: ${customerName}`);
+    messageParts.push('');
+  }
+
+  if (orderId) {
+    messageParts.push(`Order ID: ${orderId}`);
+    messageParts.push('');
+  }
+
+  messageParts.push(...lines);
+  messageParts.push('');
 
   if (deliveryFee > 0) {
     messageParts.push(`Subtotal: ₦${subtotal.toLocaleString()}`);
