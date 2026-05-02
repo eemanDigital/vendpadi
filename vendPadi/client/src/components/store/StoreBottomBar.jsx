@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { FiShoppingCart, FiMessageCircle, FiChevronRight, FiPlus, FiX } from "react-icons/fi";
+import { FiShoppingCart, FiMessageCircle, FiChevronRight, FiPlus, FiX, FiPackage } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const easeOut = [0.16, 1, 0.3, 1];
 
@@ -122,6 +123,13 @@ const StoreBottomBar = ({ cartCount, cartTotal, onCartClick, onOrderClick, onQRC
                     )}
                   </div>
                 </motion.button>
+
+                <Link
+                  to="/track"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-navy/10 hover:bg-navy/20 text-navy transition-all flex items-center justify-center flex-shrink-0"
+                >
+                  <FiPackage size={18} className="sm:w-5 sm:h-5" />
+                </Link>
 
                 <motion.button
                   whileHover={{ scale: 1.1, backgroundColor: "rgba(37, 211, 102, 0.2)" }}

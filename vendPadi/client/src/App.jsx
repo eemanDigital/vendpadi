@@ -25,7 +25,6 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const ManualInvoices = lazy(() => import('./pages/ManualInvoices'));
 const OrderTrack = lazy(() => import('./pages/OrderTrack'));
-const MyOrders = lazy(() => import('./pages/MyOrders'));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -102,7 +101,6 @@ function AppContent() {
         <Route path="/cookie-policy" element={<Suspense fallback={<PageLoader />}><CookiePolicy /></Suspense>} />
         <Route path="/store/:slug" element={<Suspense fallback={<PageLoader />}><Storefront /></Suspense>} />
         <Route path="/track" element={<Suspense fallback={<PageLoader />}><OrderTrack /></Suspense>} />
-        <Route path="/my-orders" element={<Suspense fallback={<PageLoader />}><MyOrders /></Suspense>} />
         
         <Route
           path="/dashboard"

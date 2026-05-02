@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiPackage, FiClock, FiCheckCircle, FiXCircle, FiSearch, FiArrowLeft, FiTruck } from 'react-icons/fi';
+import { FiPackage, FiClock, FiCheckCircle, FiXCircle, FiSearch, FiArrowLeft, FiTruck, FiDownload, FiFileText, FiRefreshCw } from 'react-icons/fi';
 import { orderTrackingAPI } from '../api/axiosInstance';
+import { generateInvoicePDF, generateReceiptPDF } from '../utils/pdfGenerator';
 import toast from 'react-hot-toast';
 
 const STATUS_CONFIG = {
@@ -45,6 +46,7 @@ const OrderTrack = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [downloading, setDownloading] = useState(null);
 
   useEffect(() => {
     if (searchParams.get('orderId')) {
@@ -76,6 +78,32 @@ const OrderTrack = () => {
     }
   };
 
+  const handleDownloadInvoice = async () => {
+    if (!order || downloading) return;
+    setDownloading('invoice');
+    try {
+      await generateInvoicePDF(order, order.vendor);
+      toast.success('Invoice downloaded');
+    } catch {
+      toast.error('Failed to generate invoice');
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const handleDownloadReceipt = async () => {
+    if (!order || downloading) return;
+    setDownloading('receipt');
+    try {
+      await generateReceiptPDF(order, order.vendor);
+      toast.success('Receipt downloaded');
+    } catch {
+      toast.error('Failed to generate receipt');
+    } finally {
+      setDownloading(null);
+    }
+  };
+
   const formatCurrency = (amount) => {
     return `₦${Number(amount).toLocaleString()}`;
   };
@@ -95,6 +123,8 @@ const OrderTrack = () => {
     if (status === 'cancelled') return -1;
     return stepKeys.indexOf(status);
   };
+
+  const canDownload = order && (order.status === 'confirmed' || order.status === 'delivered');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -235,6 +265,46 @@ const OrderTrack = () => {
                 {STATUS_CONFIG[order.status].message}
               </p>
             </div>
+
+            {canDownload && (
+              <div className="bg-gradient-to-r from-navy/5 to-padi-green/5 rounded-2xl border border-navy/10 p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <FiDownload size={20} className="text-padi-green" />
+                  <h3 className="font-sora font-bold text-navy">Download Documents</h3>
+                </div>
+                <div className="flex gap-3 flex-wrap">
+                  <button
+                    onClick={handleDownloadInvoice}
+                    disabled={downloading !== null}
+                    className="flex items-center gap-2 bg-navy text-white px-5 py-3 rounded-xl font-medium hover:bg-navy/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1 min-w-[160px] justify-center"
+                  >
+                    {downloading === 'invoice' ? (
+                      <FiRefreshCw size={16} className="animate-spin" />
+                    ) : (
+                      <FiFileText size={16} />
+                    )}
+                    {downloading === 'invoice' ? 'Generating...' : 'Download Invoice'}
+                  </button>
+                  <button
+                    onClick={handleDownloadReceipt}
+                    disabled={downloading !== null}
+                    className="flex items-center gap-2 bg-padi-green text-white px-5 py-3 rounded-xl font-medium hover:bg-padi-green-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1 min-w-[160px] justify-center"
+                  >
+                    {downloading === 'receipt' ? (
+                      <FiRefreshCw size={16} className="animate-spin" />
+                    ) : (
+                      <FiDownload size={16} />
+                    )}
+                    {downloading === 'receipt' ? 'Generating...' : 'Download Receipt'}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-3">
+                  {order.status === 'confirmed'
+                    ? 'Invoice is ready. Receipt available for confirmed orders.'
+                    : 'Both invoice and receipt are available for delivered orders.'}
+                </p>
+              </div>
+            )}
 
             <div className="bg-white rounded-2xl shadow-sm border p-6">
               <h3 className="font-sora font-bold text-lg text-navy mb-4">Order Details</h3>

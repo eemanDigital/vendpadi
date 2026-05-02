@@ -58,18 +58,6 @@ const [showOrderConfirm, setShowOrderConfirm] = useState(false);
 const [lastOrderInfo, setLastOrderInfo] = useState(null);
 const [pendingDeliveryInfo, setPendingDeliveryInfo] = useState(null);
 
-useEffect(() => {
-  try {
-    const saved = localStorage.getItem(`vendpadi_orders_${slug}`);
-    if (saved) {
-      const orders = JSON.parse(saved);
-      if (orders.length > 0) {
-        setLastOrderInfo(orders[orders.length - 1]);
-      }
-    }
-  } catch {}
-}, [slug]);
-
 const bundles = store?.bundles || [];
 
   const whatsappLink = useMemo(() => {
@@ -208,17 +196,8 @@ const bundles = store?.bundles || [];
           shortId: trackingData.shortId,
           orderId: trackingData.orderId,
           trackingUrl: trackingData.trackingUrl,
-          storeSlug: slug,
-          trackedAt: new Date().toISOString()
         };
         setLastOrderInfo(orderData);
-        
-        try {
-          const key = `vendpadi_orders_${slug}`;
-          const existing = JSON.parse(localStorage.getItem(key) || '[]');
-          existing.push(orderData);
-          localStorage.setItem(key, JSON.stringify(existing.slice(-10)));
-        } catch {}
       }
     }
   }, [cartItems, store, cartTotal, slug, dispatch, deliveryInfo]);
@@ -282,20 +261,9 @@ const bundles = store?.bundles || [];
           shortId: trackingData.shortId,
           orderId: trackingData.orderId,
           trackingUrl: trackingData.trackingUrl,
-          storeSlug: slug,
-          customerPhone: phone,
-          customerName: name,
-          trackedAt: new Date().toISOString()
         };
         setLastOrderInfo(orderData);
         setShowOrderConfirm(true);
-        
-        try {
-          const key = `vendpadi_orders_${slug}`;
-          const existing = JSON.parse(localStorage.getItem(key) || '[]');
-          existing.push(orderData);
-          localStorage.setItem(key, JSON.stringify(existing.slice(-10)));
-        } catch {}
       }
     }
   }, [cartItems, store, cartTotal, slug, dispatch, deliveryInfo, pendingDeliveryInfo]);
@@ -482,10 +450,7 @@ const bundles = store?.bundles || [];
 
                 <div className="space-y-2">
                   <p className="text-sm text-gray-600">
-                    Keep your <span className="font-semibold text-navy">Order ID</span> and <span className="font-semibold text-navy">phone number</span> to track your order status.
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    You can always access your orders via the <Link to="/my-orders" className="text-padi-green hover:underline font-medium">My Orders</Link> page.
+                    Keep your <span className="font-semibold text-navy">Order ID</span> to track your order status on the <Link to="/track" className="text-padi-green hover:underline font-medium">Track Order</Link> page.
                   </p>
                 </div>
 

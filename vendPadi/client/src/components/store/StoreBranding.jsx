@@ -16,10 +16,10 @@ const StoreBranding = ({ plan }) => {
           </Link>
           {' '}•{' '}
           <Link 
-            to="/my-orders" 
+            to="/track" 
             className={linkClass}
           >
-            My Orders →
+            Track Order →
           </Link>
         </p>
       </div>
@@ -38,10 +38,10 @@ const StoreBranding = ({ plan }) => {
         </Link>
         {' '}•{' '}
         <Link 
-          to="/my-orders" 
-          className={linkClass}
+          to="/register" 
+          className="text-gold hover:text-gold/80 font-medium transition-colors"
         >
-          My Orders →
+          Remove branding →
         </Link>
         {' '}•{' '}
         <Link 

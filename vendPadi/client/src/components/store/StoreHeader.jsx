@@ -82,8 +82,9 @@ const StoreHeader = ({ vendor, onBack, onShare, onWishlist, wishlistCount = 0, c
 
           <div className="flex items-center gap-1 sm:gap-2">
           <Link
-            to="/my-orders"
+            to="/track"
             className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-gray-50/80 hover:bg-gray-100 transition-all flex-shrink-0 group"
+            title="Track Order"
           >
             <FiPackage size={16} className="text-gray-500 group-hover:text-navy transition-colors" />
           </Link>
