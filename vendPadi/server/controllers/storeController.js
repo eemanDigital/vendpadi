@@ -162,7 +162,12 @@ exports.createOrder = catchAsync(async (req, res) => {
 
   res.status(201).json({ 
     message: 'Order created successfully',
-    order 
+    order,
+    trackingInfo: {
+      orderId: order._id.toString(),
+      shortId: order._id.toString().slice(-8).toUpperCase(),
+      trackingUrl: `${process.env.CLIENT_URL || 'http://localhost:5173'}/track?orderId=${order._id.toString()}&phone=${encodeURIComponent(customerPhone || '')}`
+    }
   });
 });
 
@@ -286,6 +291,11 @@ exports.createOrderByCustomLink = catchAsync(async (req, res) => {
 
   res.status(201).json({ 
     message: 'Order created successfully',
-    order 
+    order,
+    trackingInfo: {
+      orderId: order._id.toString(),
+      shortId: order._id.toString().slice(-8).toUpperCase(),
+      trackingUrl: `${process.env.CLIENT_URL || 'http://localhost:5173'}/track?orderId=${order._id.toString()}&phone=${encodeURIComponent(customerPhone || '')}`
+    }
   });
 });

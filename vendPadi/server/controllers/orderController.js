@@ -139,6 +139,98 @@ exports.updateOrderStatus = catchAsync(async (req, res) => {
   });
 });
 
+exports.trackOrderByPhone = catchAsync(async (req, res) => {
+  const { orderId, phone } = req.query;
+
+  if (!orderId) {
+    return res.status(400).json({ message: 'Order ID is required' });
+  }
+
+  let cleanId = orderId.trim();
+  if (cleanId.length === 24) {
+    // Full MongoDB ID
+  } else if (/^[0-9a-fA-F]{8}$/.test(cleanId)) {
+    // Short ID - need to search for it
+    const allOrders = await Order.find({}).populate('vendorId', 'businessName slug phone');
+    const found = allOrders.find(o => o._id.toString().slice(-8).toUpperCase() === cleanId.toUpperCase());
+    
+    if (!found) {
+      return res.status(404).json({ message: 'Order not found. Please check your order ID.' });
+    }
+
+    if (phone && found.customerPhone !== phone.trim()) {
+      return res.status(404).json({ message: 'Phone number does not match this order.' });
+    }
+
+    const statusMessages = {
+      pending: 'Your order has been received and is being processed.',
+      confirmed: 'Your order has been confirmed and is being prepared.',
+      delivered: 'Your order has been delivered.',
+      cancelled: 'Your order has been cancelled.'
+    };
+
+    return res.json({
+      orderId: found._id,
+      shortId: found._id.toString().slice(-8).toUpperCase(),
+      customerName: found.customerName,
+      customerPhone: found.customerPhone,
+      items: found.items,
+      totalAmount: found.totalAmount,
+      status: found.status,
+      statusMessage: statusMessages[found.status] || '',
+      deliveryInfo: found.deliveryInfo,
+      note: found.note,
+      createdAt: found.createdAt,
+      updatedAt: found.updatedAt,
+      vendor: found.vendorId ? {
+        businessName: found.vendorId.businessName,
+        phone: found.vendorId.phone
+      } : null
+    });
+  } else {
+    return res.status(400).json({ message: 'Invalid order ID format' });
+  }
+
+  const query = { _id: cleanId };
+  if (phone) {
+    query.customerPhone = phone.trim();
+  }
+
+  const order = await Order.findOne(query).populate('vendorId', 'businessName slug phone');
+
+  if (!order) {
+    return res.status(404).json({ 
+      message: phone ? 'Order not found. Please check your order ID and phone number.' : 'Order not found.' 
+    });
+  }
+
+  const statusMessages = {
+    pending: 'Your order has been received and is being processed.',
+    confirmed: 'Your order has been confirmed and is being prepared.',
+    delivered: 'Your order has been delivered.',
+    cancelled: 'Your order has been cancelled.'
+  };
+
+  res.json({
+    orderId: order._id,
+    shortId: order._id.toString().slice(-8).toUpperCase(),
+    customerName: order.customerName,
+    customerPhone: order.customerPhone,
+    items: order.items,
+    totalAmount: order.totalAmount,
+    status: order.status,
+    statusMessage: statusMessages[order.status] || '',
+    deliveryInfo: order.deliveryInfo,
+    note: order.note,
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+    vendor: order.vendorId ? {
+      businessName: order.vendorId.businessName,
+      phone: order.vendorId.phone
+    } : null
+  });
+});
+
 exports.getOrderStats = catchAsync(async (req, res) => {
   const vendorId = req.vendor._id;
   

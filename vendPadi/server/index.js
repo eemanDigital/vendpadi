@@ -19,7 +19,9 @@ const analyticsRoutes = require("./routes/analyticsRoutes");
 const trackingRoutes = require("./routes/trackingRoutes");
 const bundleRoutes = require("./routes/bundleRoutes");
 const manualInvoiceRoutes = require("./routes/manualInvoiceRoutes");
+const wishlistRoutes = require("./routes/wishlistRoutes");
 
+require("./models/Wishlist");
 require("./models/ManualInvoice");
 
 const { sanitizeBody } = require("./middleware/sanitizeMiddleware");
@@ -163,6 +165,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/track", trackingRoutes);
 app.use("/api/bundles", bundleRoutes);
 app.use("/api/invoices", manualInvoiceRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 
 app.options("/api/*", (req, res) => {
   res.status(200).end();

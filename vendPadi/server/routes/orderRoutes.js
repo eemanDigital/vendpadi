@@ -3,6 +3,7 @@ const router = express.Router();
 const orderController = require('../controllers/orderController');
 const { protect } = require('../middleware/authMiddleware');
 
+router.get('/track', orderController.trackOrderByPhone);
 router.get('/', protect, orderController.getOrders);
 router.get('/stats', protect, orderController.getOrderStats);
 router.get('/:id', protect, orderController.getOrder);
