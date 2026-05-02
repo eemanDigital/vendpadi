@@ -257,8 +257,9 @@ setInterval(cleanupExpiredTrials, 60 * 60 * 1000);
 
 const fixManualInvoiceIndexes = async () => {
   try {
-    const ManualInvoice = require("./models/ManualInvoice");
-    const db = ManualInvoice.db.db;
+    const mongoose = require('mongoose');
+    const db = mongoose.connection.db;
+    if (!db) return;
     
     const indexes = await db.collection('manualinvoices').indexes();
     const hasDuplicateUniqueIndex = indexes.some(idx => 
