@@ -60,7 +60,7 @@ const CategoryBadge = ({ category }) => {
   );
 };
 
-const ImageCarousel = ({ images = [], name, category }) => {
+const ImageCarousel = ({ images = [], name, category, objectFit = "cover" }) => {
   const [current, setCurrent] = useState(0);
   const [loaded, setLoaded] = useState({});
   const [animating, setAnimating] = useState(false);
@@ -219,9 +219,10 @@ const ImageCarousel = ({ images = [], name, category }) => {
           loading="lazy"
           decoding="async"
           onLoad={() => setLoaded((prev) => ({ ...prev, [idx]: true }))}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full"
           style={{
             opacity: 0,
+            objectFit: objectFit,
             zIndex: idx === current ? 2 : 1,
             pointerEvents: "none",
           }}

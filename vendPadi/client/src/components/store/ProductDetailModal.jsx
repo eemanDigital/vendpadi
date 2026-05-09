@@ -219,6 +219,7 @@ const ProductDetailModal = ({ product, onClose, storeSlug, vendorId }) => {
                 images={product.images}
                 name={product.name}
                 category={product.category}
+                objectFit="contain"
               />
               {!product.inStock && (
                 <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px] flex items-center justify-center">
