@@ -7,7 +7,9 @@ const { protect } = require('../middleware/authMiddleware');
 router.post('/register', [
   body('businessName').trim().notEmpty().withMessage('Business name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('password')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    .matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain uppercase, lowercase, and a number'),
   body('phone').trim().notEmpty().withMessage('WhatsApp number is required'),
   body('category').notEmpty().withMessage('Category is required'),
   body('adminCode').optional().trim()
@@ -24,12 +26,16 @@ router.post('/forgot-password', [
 
 router.post('/reset-password', [
   body('token').notEmpty().withMessage('Reset token is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+  body('password')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    .matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain uppercase, lowercase, and a number')
 ], authController.resetPassword);
 
 router.put('/change-password', protect, [
   body('currentPassword').notEmpty().withMessage('Current password is required'),
-  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+  body('newPassword')
+    .isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
+    .matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('New password must contain uppercase, lowercase, and a number')
 ], authController.changePassword);
 
 router.post('/request-delete', protect, [
