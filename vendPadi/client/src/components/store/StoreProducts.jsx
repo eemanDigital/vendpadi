@@ -1,35 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiSearch } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ProductCard from "../ProductCard";
 
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: 20 },
-};
-
-const containerVariants = {
-  initial: {},
-  animate: {
-    transition: {
-      staggerChildren: 0.05,
-    },
-  },
-};
-
-const itemVariants = {
-  initial: { opacity: 0, y: 20 },
-  animate: { 
-    opacity: 1, 
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: [0.16, 1, 0.3, 1],
-    }
-  },
-  exit: { opacity: 0, y: 20 },
-};
+gsap.registerPlugin(ScrollTrigger);
 
 const gridClassMap = {
   grid: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4",
@@ -39,98 +14,115 @@ const gridClassMap = {
 
 const StoreProducts = ({ products, view, search, setSearch, onOpenDetail }) => {
   const gridClass = gridClassMap[view] || gridClassMap.grid;
+  const gridRef = useRef(null);
+  const headerRef = useRef(null);
+  const titleRef = useRef(null);
+  const subtitleRef = useRef(null);
+  const emptyRef = useRef(null);
+
+  useEffect(() => {
+    gsap.fromTo(
+      headerRef.current,
+      { opacity: 0, y: -10 },
+      { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
+    );
+    gsap.fromTo(
+      titleRef.current,
+      { opacity: 0, x: -20 },
+      { opacity: 1, x: 0, duration: 0.4, delay: 0.1, ease: "power2.out" }
+    );
+    gsap.fromTo(
+      subtitleRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.4, delay: 0.2, ease: "power2.out" }
+    );
+  }, [search, products.length]);
+
+  useEffect(() => {
+    if (!gridRef.current || products.length === 0) return;
+
+    const items = gridRef.current.children;
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: gridRef.current,
+        start: "top 90%",
+        toggleActions: "play none none none",
+      }
+    });
+
+    tl.fromTo(
+      items,
+      { opacity: 0, y: 40, scale: 0.92 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.5,
+        stagger: 0.06,
+        ease: "back.out(1.4)",
+      }
+    );
+
+    return () => {
+      tl.scrollTrigger?.kill();
+      tl.kill();
+    };
+  }, [products, view]);
+
+  useEffect(() => {
+    if (!emptyRef.current || products.length > 0) return;
+    const els = emptyRef.current.querySelectorAll(".empty-anim");
+    gsap.fromTo(
+      els,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" }
+    );
+  }, [products.length]);
 
   return (
     <main className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-28 sm:pb-36">
-      <motion.div 
-        className="flex items-center justify-between mb-5"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
+      <div ref={headerRef} className="flex items-center justify-between mb-5">
         <div>
-          <motion.h2 
-            className="font-sora font-bold text-navy text-lg"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-          >
+          <h2 ref={titleRef} className="font-sora font-bold text-navy text-lg">
             {search ? `"${search}"` : "Menu"}
-          </motion.h2>
-          <motion.p 
-            className="text-xs text-gray-400 mt-0.5"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
+          </h2>
+          <p ref={subtitleRef} className="text-xs text-gray-400 mt-0.5">
             {products.length} {products.length === 1 ? "item" : "items"}
-          </motion.p>
+          </p>
         </div>
-      </motion.div>
+      </div>
 
       {products.length === 0 ? (
-        <motion.div {...fadeIn} className="text-center py-20">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-5"
-          >
+        <div ref={emptyRef} className="text-center py-20">
+          <div className="empty-anim w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-5">
             <FiSearch size={36} className="text-gray-400" />
-          </motion.div>
-          <motion.h3 
-            className="font-sora font-semibold text-navy text-xl mb-2"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
+          </div>
+          <h3 className="empty-anim font-sora font-semibold text-navy text-xl mb-2">
             No items found
-          </motion.h3>
-          <motion.p 
-            className="text-gray-500 text-sm mb-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
+          </h3>
+          <p className="empty-anim text-gray-500 text-sm mb-6">
             Try adjusting your search
-          </motion.p>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          </p>
+          <button
             onClick={() => setSearch("")}
             className="text-padi-green font-semibold text-sm hover:underline"
           >
             Clear search
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
       ) : (
-        <motion.div
-          variants={containerVariants}
-          initial="initial"
-          animate="animate"
-          className={gridClass}
-        >
-          <AnimatePresence mode="popLayout">
-            {products.map((product, index) => (
-              <motion.div
-                key={product._id}
-                variants={itemVariants}
-                transition={{ 
-                  delay: Math.min(index * 0.05, 0.3),
-                  duration: 0.4,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                <ProductCard
-                  product={product}
-                  onOpenDetail={onOpenDetail}
-                  view={view}
-                  index={index}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <div ref={gridRef} className={gridClass}>
+          {products.map((product) => (
+            <div key={product._id}>
+              <ProductCard
+                product={product}
+                onOpenDetail={onOpenDetail}
+                view={view}
+              />
+            </div>
+          ))}
+        </div>
       )}
     </main>
   );

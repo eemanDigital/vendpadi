@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import gsap from "gsap";
 import StockBadge from "./ui/StockBadge";
 import WishlistButton from "./store/WishlistButton";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   FiChevronLeft,
   FiChevronRight,
@@ -14,8 +14,6 @@ import {
   FiHome,
   FiGrid,
   FiZap,
-  FiPlus,
-  FiMinus,
 } from "react-icons/fi";
 
 const CategoryIcon = ({ category, size = 16, className = "" }) => {
@@ -64,9 +62,133 @@ const CategoryBadge = ({ category }) => {
 
 const ImageCarousel = ({ images = [], name, category }) => {
   const [current, setCurrent] = useState(0);
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState({});
+  const [animating, setAnimating] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const hasMany = images && images.length > 1;
+  const slidesRef = useRef({});
+  const containerRef = useRef(null);
+  const navRef = useRef(null);
+  const dotsRef = useRef(null);
+  const kenBurns = useRef(null);
+  const skeletonRef = useRef(null);
+
+  useEffect(() => {
+    if (!images?.length) return;
+    const anyLoaded = Object.values(loaded).some(Boolean);
+    if (anyLoaded && skeletonRef.current) {
+      gsap.to(skeletonRef.current, { opacity: 0, duration: 0.3, ease: "power2.out" });
+    }
+    if (loaded[current]) {
+      const el = slidesRef.current[current];
+      if (el) {
+        gsap.set(el, { opacity: 1 });
+      }
+    }
+  }, [loaded, current, images]);
+
+  useEffect(() => {
+    if (navRef.current) {
+      gsap.to(navRef.current, {
+        opacity: isHovered && hasMany ? 1 : 0,
+        duration: 0.25,
+        ease: "power2.out",
+      });
+    }
+  }, [isHovered, hasMany]);
+
+  useEffect(() => {
+    if (dotsRef.current) {
+      const dots = gsap.utils.toArray(dotsRef.current.children);
+      gsap.to(dots, {
+        width: (i) => i === current ? 22 : 6,
+        backgroundColor: (i) => i === current ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.45)",
+        duration: 0.35,
+        ease: "back.out(3)",
+        overwrite: "auto",
+      });
+    }
+  }, [current]);
+
+  useEffect(() => {
+    const el = slidesRef.current[current];
+    if (!el || !loaded[current]) return;
+
+    kenBurns.current?.kill();
+    kenBurns.current = gsap.timeline({ repeat: -1, yoyo: true })
+      .to(el, { scale: 1.07, duration: 5, ease: "sine.inOut" });
+
+    return () => kenBurns.current?.kill();
+  }, [current, loaded]);
+
+  useEffect(() => {
+    return () => kenBurns.current?.kill();
+  }, []);
+
+  const goTo = (dir) => {
+    if (animating || !hasMany) return;
+    setAnimating(true);
+
+    const next = (current + dir + images.length) % images.length;
+    const currentEl = slidesRef.current[current];
+    const nextEl = slidesRef.current[next];
+
+    if (!currentEl || !nextEl) {
+      setCurrent(next);
+      setAnimating(false);
+      return;
+    }
+
+    kenBurns.current?.kill();
+    gsap.killTweensOf(currentEl);
+    gsap.killTweensOf(nextEl);
+
+    gsap.set(nextEl, {
+      x: dir * 80,
+      scale: 0.85,
+      opacity: 0,
+      rotation: dir * -6,
+      filter: "blur(4px)",
+    });
+    gsap.set(nextEl, { zIndex: 2 });
+    gsap.set(currentEl, { zIndex: 1 });
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        gsap.set(nextEl, { filter: "blur(0px)" });
+        setCurrent(next);
+        setAnimating(false);
+      }
+    });
+
+    tl.to(currentEl, {
+      x: dir * -50,
+      scale: 0.8,
+      opacity: 0,
+      rotation: dir * 5,
+      filter: "blur(6px)",
+      duration: 0.35,
+      ease: "power2.in",
+    }, 0);
+
+    tl.to(nextEl, {
+      x: 0,
+      scale: 1,
+      opacity: 1,
+      rotation: 0,
+      filter: "blur(0px)",
+      duration: 0.5,
+      ease: "back.out(1.7)",
+    }, 0.12);
+
+    tl.to(navRef.current?.children || [], {
+      scale: 0.92,
+      duration: 0.08,
+      yoyo: true,
+      repeat: 1,
+      ease: "power2.out",
+    }, 0);
+  };
 
   if (!images || images.length === 0) {
     const meta = CATEGORY_META[category] || CATEGORY_META.other;
@@ -78,87 +200,83 @@ const ImageCarousel = ({ images = [], name, category }) => {
   }
 
   return (
-    <motion.div
-      className="relative w-full h-full group"
+    <div
+      ref={containerRef}
+      className="relative w-full h-full overflow-hidden"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200"
-        initial={{ opacity: 1 }}
-        animate={{ opacity: loaded ? 0 : 1 }}
+      <div
+        ref={skeletonRef}
+        className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 z-10"
       />
-      <motion.img
-        src={images[current]}
-        alt={name}
-        loading="lazy"
-        decoding="async"
-        onLoad={() => setLoaded(true)}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: loaded ? 1 : 0 }}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      <AnimatePresence>
-        {hasMany && isHovered && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-between px-2"
-          >
-            <motion.button
-              onClick={(e) => {
-                e.stopPropagation();
-                setCurrent((i) => (i - 1 + images.length) % images.length);
-              }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-8 h-8 bg-white/95 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
-            >
-              <FiChevronLeft size={16} className="text-gray-700" />
-            </motion.button>
-            <motion.button
-              onClick={(e) => {
-                e.stopPropagation();
-                setCurrent((i) => (i + 1) % images.length);
-              }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-8 h-8 bg-white/95 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
-            >
-              <FiChevronRight size={16} className="text-gray-700" />
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {images.map((src, idx) => (
+        <img
+          key={src}
+          ref={(el) => { if (el) slidesRef.current[idx] = el; }}
+          src={src}
+          alt={name}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setLoaded((prev) => ({ ...prev, [idx]: true }))}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            opacity: 0,
+            zIndex: idx === current ? 2 : 1,
+            pointerEvents: "none",
+          }}
+        />
+      ))}
+      <div
+        ref={navRef}
+        className="absolute inset-0 flex items-center justify-between px-2 z-20"
+        style={{ opacity: 0, pointerEvents: isHovered && hasMany ? "auto" : "none" }}
+      >
+        <button
+          onClick={(e) => { e.stopPropagation(); goTo(-1); }}
+          className="w-8 h-8 bg-white/95 hover:bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow"
+        >
+          <FiChevronLeft size={16} className="text-gray-700" />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); goTo(1); }}
+          className="w-8 h-8 bg-white/95 hover:bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow"
+        >
+          <FiChevronRight size={16} className="text-gray-700" />
+        </button>
+      </div>
       {hasMany && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+        <div ref={dotsRef} className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
           {images.map((_, idx) => (
-            <motion.div
+            <div
               key={idx}
-              className={`h-1.5 rounded-full transition-all ${
-                idx === current ? "bg-white w-5" : "bg-white/50 w-2"
-              }`}
-              animate={{
-                width: idx === current ? 20 : 8,
+              className="h-1.5 rounded-full"
+              style={{
+                backgroundColor: idx === 0 ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.45)",
+                width: idx === 0 ? 22 : 6,
               }}
-              transition={{ duration: 0.2 }}
             />
           ))}
         </div>
       )}
-    </motion.div>
+    </div>
   );
-};
-
-const cardVariants = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: 20 },
 };
 
 const GridCard = ({ product, onOpenDetail, index = 0 }) => {
   if (!product) return null;
+
+  const cardRef = useRef(null);
+  const imageWrapRef = useRef(null);
+  const overlayRef = useRef(null);
+  const overlayTextRef = useRef(null);
+  const badgeRef = useRef(null);
+  const wishlistRef = useRef(null);
+  const stockBarRef = useRef(null);
+  const stockLabelRef = useRef(null);
+  const hoverTl = useRef(null);
+  const overlayTl = useRef(null);
+  const initialized = useRef(false);
 
   const stockPercent = product.stock > 0 ? Math.min(100, (product.stock / (product.lowStockThreshold || 5) * 100)) : 0;
   const isLow = product.lowStockAlert;
@@ -167,49 +285,84 @@ const GridCard = ({ product, onOpenDetail, index = 0 }) => {
   const flashSalePrice = product.flashSale?.discountPrice;
   const discountPct = product.discountPercentage;
 
-  const handleCardClick = () => {
-    if (onOpenDetail) {
-      onOpenDetail(product);
+  useEffect(() => {
+    if (initialized.current || !cardRef.current) return;
+    initialized.current = true;
+
+    hoverTl.current = gsap.timeline({ paused: true })
+      .to(cardRef.current, { y: -4, duration: 0.3, ease: "power2.out" }, 0)
+      .to(imageWrapRef.current, { scale: 1.05, duration: 0.4, ease: "power2.out" }, 0);
+
+    overlayTl.current = gsap.timeline({ paused: true })
+      .to(overlayRef.current, { opacity: 1, duration: 0.2, ease: "power2.out" }, 0)
+      .to(overlayTextRef.current, { y: 0, opacity: 1, duration: 0.2, ease: "back.out(2)" }, 0.1);
+
+    gsap.fromTo(
+      badgeRef.current?.children || [],
+      { opacity: 0, x: -10 },
+      { opacity: 1, x: 0, duration: 0.3, stagger: 0.05, delay: 0.1, ease: "power2.out" }
+    );
+
+    gsap.fromTo(
+      wishlistRef.current?.children || [],
+      { opacity: 0, x: 10 },
+      { opacity: 1, x: 0, duration: 0.3, stagger: 0.05, delay: 0.15, ease: "power2.out" }
+    );
+
+    if (stockBarRef.current) {
+      gsap.fromTo(stockBarRef.current,
+        { width: "0%" },
+        { width: `${stockPercent}%`, duration: 0.5, delay: 0.3, ease: "power2.out" }
+      );
     }
+
+    if (stockLabelRef.current) {
+      gsap.fromTo(stockLabelRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3, delay: 0.2 });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (stockBarRef.current) {
+      gsap.fromTo(stockBarRef.current,
+        { width: "0%" },
+        { width: `${stockPercent}%`, duration: 0.5, ease: "power2.out" }
+      );
+    }
+  }, [stockPercent]);
+
+  const handleMouseEnter = () => {
+    hoverTl.current?.play();
+    overlayTl.current?.play();
+  };
+
+  const handleMouseLeave = () => {
+    hoverTl.current?.reverse();
+    overlayTl.current?.reverse();
+  };
+
+  const handleCardClick = () => {
+    if (onOpenDetail) onOpenDetail(product);
   };
 
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      whileHover={{ y: -4 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+    <div
+      ref={cardRef}
       onClick={handleCardClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 active:scale-[0.98] transition-all duration-300 cursor-pointer flex flex-col shadow-sm hover:shadow-xl"
     >
       <div className="aspect-square sm:aspect-[4/3] relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-        <motion.div
-          className="w-full h-full"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        >
+        <div ref={imageWrapRef} className="w-full h-full">
           <ImageCarousel images={product.images} name={product.name} category={product.category} />
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="absolute top-2 left-2 z-10 flex gap-1.5 flex-wrap"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+        <div ref={badgeRef} className="absolute top-2 left-2 z-10 flex gap-1.5 flex-wrap">
           {isFlashSale && !isOut && (
-            <motion.span
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-lg flex items-center gap-1"
-            >
+            <span className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-lg flex items-center gap-1">
               <FiZap size={10} />
               {discountPct}% OFF
-            </motion.span>
+            </span>
           )}
           {isLow && !isOut && !isFlashSale && (
             <span className="bg-amber-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-lg flex items-center gap-1">
@@ -222,63 +375,49 @@ const GridCard = ({ product, onOpenDetail, index = 0 }) => {
               Out of Stock
             </span>
           )}
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="absolute top-2 right-2 z-10 flex flex-col gap-1.5"
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.15 }}
-        >
+        <div ref={wishlistRef} className="absolute top-2 right-2 z-10 flex flex-col gap-1.5">
           <WishlistButton product={product} size="sm" />
           <CategoryBadge category={product.category} />
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4"
-          initial={{ opacity: 0 }}
-          whileHover={{ opacity: 1 }}
+        <div
+          ref={overlayRef}
+          className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent flex items-end justify-center pb-4"
+          style={{ opacity: 0 }}
         >
-          <motion.span
-            initial={{ y: 10, opacity: 0 }}
-            whileHover={{ y: 0, opacity: 1 }}
+          <span
+            ref={overlayTextRef}
             className="bg-white/95 text-navy text-xs font-semibold px-4 py-2 rounded-full flex items-center gap-2 shadow-lg"
+            style={{ opacity: 0, y: 10 }}
           >
             <FiEye size={14} />
             View Details
-          </motion.span>
-        </motion.div>
+          </span>
+        </div>
       </div>
 
       <div className="p-3 sm:p-4 flex flex-col flex-1">
-        <motion.h3
-          className="font-sora font-bold text-navy text-xs sm:text-sm leading-tight line-clamp-2 mb-2 sm:mb-3"
-          whileHover={{ color: "#10B981" }}
-        >
+        <h3 className="font-sora font-bold text-navy text-xs sm:text-sm leading-tight line-clamp-2 mb-2 sm:mb-3">
           {product.name}
-        </motion.h3>
+        </h3>
 
         <div className="flex items-center justify-between mb-2 sm:mb-3">
           <div className="flex flex-col">
             {isFlashSale ? (
               <>
-                <motion.span
-                  className="font-bold text-base sm:text-lg text-red-500"
-                  whileHover={{ scale: 1.05 }}
-                >
+                <span className="font-bold text-base sm:text-lg text-red-500">
                   ₦{flashSalePrice?.toLocaleString()}
-                </motion.span>
+                </span>
                 <span className="text-xs text-gray-400 line-through">
                   ₦{product.price.toLocaleString()}
                 </span>
               </>
             ) : (
-              <motion.span
-                className="font-bold text-base sm:text-lg text-padi-green"
-                whileHover={{ scale: 1.05 }}
-              >
+              <span className="font-bold text-base sm:text-lg text-padi-green">
                 ₦{product.price.toLocaleString()}
-              </motion.span>
+              </span>
             )}
           </div>
           {product.stock > 0 && (
@@ -288,62 +427,65 @@ const GridCard = ({ product, onOpenDetail, index = 0 }) => {
 
         {product.stock > 0 && (
           <div className="mt-auto hidden sm:block">
-            <motion.div
-              className="flex items-center justify-between text-xs mb-1.5"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
+            <div ref={stockLabelRef} className="flex items-center justify-between text-xs mb-1.5">
               <span className="text-gray-500 font-medium">Stock Level</span>
               <span className={`font-bold ${isLow ? 'text-amber-600' : 'text-gray-700'}`}>
                 {product.stock} units
               </span>
-            </motion.div>
+            </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <motion.div
-                className={`h-full rounded-full transition-all duration-500 ${isLow ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500'}`}
-                initial={{ width: 0 }}
-                animate={{ width: `${stockPercent}%` }}
-                transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              <div
+                ref={stockBarRef}
+                className={`h-full rounded-full ${isLow ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500'}`}
               />
             </div>
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 const ListCard = ({ product, onOpenDetail, index = 0 }) => {
   if (!product) return null;
 
+  const cardRef = useRef(null);
+  const imageRef = useRef(null);
+  const hoverTl = useRef(null);
+  const initialized = useRef(false);
+
   const isLow = product.lowStockAlert;
   const isOut = !product.inStock;
   const isFlashSale = product.isFlashSaleActive;
   const flashSalePrice = product.flashSale?.discountPrice;
 
+  useEffect(() => {
+    if (initialized.current || !cardRef.current) return;
+    initialized.current = true;
+
+    hoverTl.current = gsap.timeline({ paused: true })
+      .to(cardRef.current, { x: 4, duration: 0.3, ease: "power2.out" }, 0)
+      .to(imageRef.current, { scale: 1.05, duration: 0.3, ease: "power2.out" }, 0);
+  }, []);
+
+  const handleMouseEnter = () => hoverTl.current?.play();
+  const handleMouseLeave = () => hoverTl.current?.reverse();
+
   const handleCardClick = () => {
-    if (onOpenDetail) {
-      onOpenDetail(product);
-    }
+    if (onOpenDetail) onOpenDetail(product);
   };
 
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      whileHover={{ x: 4 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+    <div
+      ref={cardRef}
       onClick={handleCardClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className="group bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-lg active:scale-[0.98] transition-all duration-300 cursor-pointer flex"
     >
-      <motion.div
+      <div
+        ref={imageRef}
         className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0 relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
-        whileHover={{ scale: 1.05 }}
-        transition={{ duration: 0.3 }}
       >
         <ImageCarousel images={product.images} name={product.name} category={product.category} />
 
@@ -366,7 +508,7 @@ const ListCard = ({ product, onOpenDetail, index = 0 }) => {
             <span className="bg-white text-gray-600 px-2 py-1 rounded text-xs font-bold">Out</span>
           </div>
         )}
-      </motion.div>
+      </div>
 
       <div className="flex-1 p-2.5 sm:p-4 flex flex-col justify-between min-w-0">
         <div>
@@ -410,16 +552,13 @@ const ListCard = ({ product, onOpenDetail, index = 0 }) => {
               <span className="text-[10px] sm:text-xs text-gray-400 hidden sm:inline">{product.stock} in stock</span>
             </div>
           </div>
-          <motion.div
-            className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-400 bg-gray-50 px-1.5 sm:px-2 py-1 rounded-lg"
-            whileHover={{ scale: 1.05, backgroundColor: "#f0fdf4" }}
-          >
+          <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-400 bg-gray-50 px-1.5 sm:px-2 py-1 rounded-lg">
             <FiEye size={10} className="sm:w-3 sm:h-3" />
             <span className="hidden sm:inline">View</span>
-          </motion.div>
+          </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
